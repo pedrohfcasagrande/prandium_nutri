@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Prandium Nutri — Wordmark grande (splash / hero). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" role="img" aria-label="Prandium Nutri">
+  <title>Prandium Nutri</title>
+  <defs>
+    <linearGradient id="pn-word-g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0d9488"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <g font-family="'Inter','Helvetica Neue',Arial,sans-serif" text-anchor="middle">
+    <text x="200" y="60" font-size="52" font-weight="800" fill="url(#pn-word-g)" letter-spacing="-1.5">Prandium</text>
+    <text x="200" y="96" font-size="24" font-weight="500" fill="currentColor" opacity="0.55" letter-spacing="7">NUTRI</text>
+  </g>
+</svg>

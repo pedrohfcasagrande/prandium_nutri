@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 export type LanguageMode = 'auto' | 'pt' | 'en' | 'fr';
 export type Lang = 'pt' | 'en' | 'fr';
-const KEY = 'nutritracker.lang';
+const KEY = 'prandiumnutri.lang';
 const SUPPORTED: Lang[] = ['pt', 'en', 'fr'];
 
 @Injectable({ providedIn: 'root' })
@@ -27,8 +27,12 @@ export class LanguageService {
   }
 
   setMode(m: LanguageMode) {
+    const before = this.effective();
     localStorage.setItem(KEY, m);
     this.mode.set(m);
+    // LOCALE_ID/MAT_DATE_LOCALE sao lidos no bootstrap. Se o idioma efetivo mudou,
+    // recarrega pra o pipe `date` e datepicker respeitarem o novo formato.
+    if (this.effective() !== before) window.location.reload();
   }
 
   private detectBrowser(): Lang {

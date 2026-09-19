@@ -372,9 +372,9 @@ export class MenusComponent implements OnInit {
       next: list => this.hasActiveNutri.set(list.length > 0),
       error: () => this.hasActiveNutri.set(false)
     });
-    const pending = sessionStorage.getItem('nutritracker.pendingMenu');
+    const pending = sessionStorage.getItem('prandiumnutri.pendingMenu');
     if (pending) {
-      sessionStorage.removeItem('nutritracker.pendingMenu');
+      sessionStorage.removeItem('prandiumnutri.pendingMenu');
       try {
         const parsed: MenuPlan = JSON.parse(pending);
         this.openDialog(parsed);

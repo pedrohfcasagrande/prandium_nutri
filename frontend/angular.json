@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "nutri-tracker": {
+    "prandium-nutri": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/nutri-tracker",
+            "outputPath": "dist/prandium-nutri",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -42,8 +42,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "production": { "buildTarget": "nutri-tracker:build:production" },
-            "development": { "buildTarget": "nutri-tracker:build:development" }
+            "production": { "buildTarget": "prandium-nutri:build:production" },
+            "development": { "buildTarget": "prandium-nutri:build:development" }
           },
           "defaultConfiguration": "development"
         }

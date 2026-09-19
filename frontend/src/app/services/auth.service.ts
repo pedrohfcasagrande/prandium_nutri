@@ -4,7 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthResponse, CurrentUser } from '../models/models';
 
-const KEY = 'nutritracker.session';
+const KEY = 'prandiumnutri.session';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -36,7 +36,7 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem(KEY);
-    sessionStorage.removeItem('nutritracker.impersonate');
+    sessionStorage.removeItem('prandiumnutri.impersonate');
     this.currentUser.set(null);
   }
 

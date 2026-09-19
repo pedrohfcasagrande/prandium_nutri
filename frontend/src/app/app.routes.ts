@@ -70,6 +70,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
   },
   {
+    path: 'nutritionist/dashboard',
+    canActivate: [nutritionistGuard],
+    loadComponent: () => import('./pages/nutri-dashboard/nutri-dashboard.component').then(m => m.NutriDashboardComponent)
+  },
+  {
     path: 'nutritionist/clients',
     canActivate: [nutritionistGuard],
     loadComponent: () => import('./pages/nutri-clients/nutri-clients.component').then(m => m.NutriClientsComponent)
@@ -103,6 +108,11 @@ export const routes: Routes = [
     path: 'nutritionist/company-invitations',
     canActivate: [nutritionistGuard],
     loadComponent: () => import('./pages/nutri-company-invites/nutri-company-invites.component').then(m => m.NutriCompanyInvitesComponent)
+  },
+  {
+    path: 'nutritionist/practices',
+    canActivate: [nutritionistGuard],
+    loadComponent: () => import('./pages/nutri-practices/nutri-practices.component').then(m => m.NutriPracticesComponent)
   },
   {
     path: 'invitations',

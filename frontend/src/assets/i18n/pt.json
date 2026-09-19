@@ -1,6 +1,6 @@
 {
   "app": {
-    "brand": "Nutri Tracker",
+    "brand": "Prandium Nutri",
     "tagline": "Controle suas refeições, atinja suas metas.",
     "nav": {
       "dashboard": "Dashboard",
@@ -24,7 +24,9 @@
       "pricing": "Planos",
       "findNutri": "Encontrar nutricionista",
       "nutriPublicProfile": "Meu perfil público",
-      "nutriCompanyInvites": "Convites de empresas"
+      "nutriCompanyInvites": "Convites de empresas",
+      "nutriDashboard": "Painel",
+      "nutriPractices": "Meus perfis"
     },
     "user": { "settings": "Configurações", "billing": "Meu plano", "logout": "Sair" },
     "theme": {
@@ -71,7 +73,9 @@
       "notifications": "Notificações",
       "findNutri": "Encontrar nutricionista",
       "nutriPublicProfile": "Perfil público",
-      "nutriCompanyInvites": "Convites de empresas"
+      "nutriCompanyInvites": "Convites de empresas",
+      "nutriDashboard": "Painel do nutricionista",
+      "nutriPractices": "Meus perfis de trabalho"
     }
   },
   "findNutri": {
@@ -90,7 +94,9 @@
     "sentErr": "Falha ao enviar pedido. Tente novamente.",
     "paywallTitle": "Recurso exclusivo do plano Plus",
     "paywallSub": "Faça upgrade para o Plus e conecte-se a um nutricionista.",
-    "upgradeCta": "Fazer upgrade"
+    "upgradeCta": "Fazer upgrade",
+    "private": "Particular",
+    "searchHintExtended": "Nome, especialidade, empresa..."
   },
   "nutriProfile": {
     "title": "Meu perfil público",
@@ -128,6 +134,7 @@
     "avgAdherence": "Adesão média",
     "last7d": "últimos 7 dias",
     "needsAttention": "Precisam atenção",
+    "needsAttentionTip": "Clientes com adesão menor que 30% nos últimos 7 dias (registraram refeição em menos de 2 dias). Recomendado: entrar em contato, revisar cardápio ou verificar se houve algum problema.",
     "clients": "Clientes",
     "client": "Cliente",
     "adherence": "Adesão (7d)",
@@ -371,7 +378,10 @@
     "totalCalories": "Total de calorias",
     "totalProtein": "Total de proteínas",
     "noItems": "Adicione ao menos um alimento",
-    "kcalPer100g": "{{value}} kcal / 100g"
+    "kcalPer100g": "{{value}} kcal / 100g",
+    "aiTooltip": "Sugestão gerada por IA — será adicionada ao catálogo ao selecionar.",
+    "aiSearching": "Buscando com IA...",
+    "aiSaveFail": "Não foi possível salvar o alimento sugerido"
   },
   "suggestions": {
     "title": "Sugestões de cardápio",
@@ -523,11 +533,18 @@
   },
   "pricing": {
     "title": "Planos que crescem com você",
-    "subtitle": "Escolha o plano ideal — todo o poder do Nutri Tracker em preços justos para cliente, nutricionista ou empresa.",
+    "subtitle": "Escolha o plano ideal — todo o poder do Prandium Nutri em preços justos para cliente, nutricionista ou empresa.",
     "currency": "Moeda",
     "forClient": "Cliente",
     "forNutri": "Nutricionista",
     "forCompany": "Empresa",
+    "forUSER": "Cliente",
+    "forNUTRITIONIST": "Nutricionista",
+    "forCOMPANY": "Empresa",
+    "viewAll": "Ver outros planos",
+    "allPlansTitle": "Todos os planos",
+    "free": "Grátis",
+    "perMonth": "mês",
     "freeCta": "Grátis para sempre",
     "upgradeCta": "Fazer upgrade",
     "paymentSoon": "Pagamento em breve — em desenvolvimento",
@@ -558,7 +575,15 @@
       "manage": "Gerenciar",
       "manageTooltip": "Acessar como este cliente",
       "revokeTooltip": "Revogar vínculo",
-      "revokeConfirm": "Revogar vínculo com {{name}}?"
+      "revokeConfirm": "Revogar vínculo com {{name}}?",
+      "subRenews": "próxima cobrança {{date}}",
+      "subStatus": {
+        "TRIALING": "Em teste",
+        "ACTIVE": "Assinatura ativa",
+        "PAST_DUE": "Assinatura inadimplente",
+        "CANCELED": "Assinatura cancelada",
+        "SUSPENDED": "Assinatura suspensa"
+      }
     },
     "requests": {
       "title": "Pedidos de clientes",
@@ -607,7 +632,7 @@
   },
   "onboarding": {
     "title": "Ative sua empresa",
-    "subtitle": "Você foi convidado para administrar uma empresa no Nutri Tracker",
+    "subtitle": "Você foi convidado para administrar uma empresa no Prandium Nutri",
     "invitedAs": "Convidado como: {{role}}",
     "roleOwner": "administrador principal (owner)",
     "roleAdmin": "administrador",
@@ -740,6 +765,63 @@
     "acceptFail": "Não foi possível aceitar",
     "rejected": "Convite recusado",
     "rejectFail": "Não foi possível recusar"
+  },
+  "practiceSwitcher": {
+    "tooltip": "Trocar perfil de trabalho",
+    "private": "Particular"
+  },
+  "nutriPractices": {
+    "title": "Meus perfis de trabalho",
+    "subtitle": "Um perfil por vínculo — edite bio, especialidades e se aceita novos clientes em cada um.",
+    "empty": "Você ainda não tem nenhum perfil de trabalho.",
+    "private": "Perfil particular",
+    "bio": "Bio",
+    "bioPlaceholder": "Como você se apresenta para novos clientes...",
+    "specialties": "Especialidades (separadas por vírgula)",
+    "specialtiesHint": "ex.: bariatria, diabetes, esportiva",
+    "acceptsNewClients": "Aceito novos clientes neste perfil",
+    "savedOk": "Perfil atualizado",
+    "saveErr": "Não foi possível salvar",
+    "suspendedHint": "Este perfil está suspenso porque o vínculo com a empresa foi encerrado. Você não pode editá-lo, mas o histórico continua acessível.",
+    "status": {
+      "ACTIVE": "Ativo",
+      "SUSPENDED": "Suspenso"
+    }
+  },
+  "nutriDashboard": {
+    "greeting": "Olá, {{name}}!",
+    "subtitle": "Visão geral do seu consultório e próximas ações",
+    "activeClients": "Clientes ativos",
+    "menusActive": "Cardápios ativos",
+    "adherence": "Adesão média",
+    "last7d": "últimos 7 dias",
+    "aiMonth": "Sugestões IA (mês)",
+    "pendingMenus": "Cardápios para revisar",
+    "pendingMenusEmpty": "Nenhum cardápio aguardando aprovação.",
+    "pendingMenusCount": "aguardando sua aprovação",
+    "newRequests": "Pedidos de vínculo",
+    "newRequestsEmpty": "Sem novos pedidos de clientes.",
+    "newRequestsCount": "clientes querem se vincular",
+    "attention": "Clientes em atenção",
+    "attentionEmpty": "Todos os clientes estão em dia.",
+    "attentionCount": "com adesão baixa (últimos 7d)",
+    "reviewNow": "Revisar agora",
+    "viewDetail": "Ver detalhes",
+    "myPlan": "Meu plano",
+    "myPlanSubtitle": "Sua assinatura na plataforma",
+    "currentPlan": "Plano atual",
+    "status": "Status",
+    "renewsAt": "Próxima cobrança",
+    "viewPlans": "Ver planos",
+    "manageBilling": "Gerenciar assinatura",
+    "noSubscription": "Sem assinatura ativa. Você está no plano gratuito.",
+    "sub": {
+      "TRIALING": "Em teste",
+      "ACTIVE": "Ativa",
+      "PAST_DUE": "Inadimplente",
+      "CANCELED": "Cancelada",
+      "SUSPENDED": "Suspensa"
+    }
   },
   "nutriCompanyInvites": {
     "title": "Convites de empresas",

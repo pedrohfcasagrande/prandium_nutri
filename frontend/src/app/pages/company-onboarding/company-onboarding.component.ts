@@ -212,7 +212,7 @@ export class CompanyOnboardingComponent implements OnInit {
     }).subscribe({
       next: r => {
         // Login automatico
-        localStorage.setItem('nutritracker.session', JSON.stringify({
+        localStorage.setItem('prandiumnutri.session', JSON.stringify({
           userId: r.userId, email: r.email, name: r.name,
           role: r.role, profileCompleted: r.profileCompleted, token: r.token
         }));

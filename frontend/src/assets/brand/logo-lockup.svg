@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Prandium Nutri — Lockup horizontal (símbolo + wordmark).
+     Usar no toolbar, headers de email e footer do PDF. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" role="img" aria-label="Prandium Nutri">
+  <title>Prandium Nutri</title>
+  <defs>
+    <linearGradient id="pn-lock-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d9488"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <!-- Símbolo (reusa mesmo desenho, escalado à esquerda) -->
+  <g transform="translate(0,0)">
+    <circle cx="32" cy="32" r="26" fill="none" stroke="url(#pn-lock-g)" stroke-width="3"/>
+    <circle cx="32" cy="32" r="20" fill="none" stroke="url(#pn-lock-g)" stroke-width="1.2" opacity="0.35"/>
+    <path d="M32 47 C32 40, 32 32, 32 22" fill="none" stroke="url(#pn-lock-g)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M32 30 C26 28, 22 24, 22 18 C28 18, 32 22, 32 30 Z" fill="url(#pn-lock-g)"/>
+    <path d="M32 26 C36 24, 40 20, 42 15 C38 15, 34 18, 32 26 Z" fill="url(#pn-lock-g)" opacity="0.85"/>
+  </g>
+  <!-- Wordmark -->
+  <g transform="translate(74,0)" font-family="'Inter','Helvetica Neue',Arial,sans-serif">
+    <text x="0" y="30" font-size="22" font-weight="700" fill="currentColor" letter-spacing="-0.5">Prandium</text>
+    <text x="0" y="52" font-size="16" font-weight="500" fill="currentColor" opacity="0.65" letter-spacing="1.5">NUTRI</text>
+  </g>
+</svg>

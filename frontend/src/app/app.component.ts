@@ -18,6 +18,8 @@ import { LanguageService, LanguageMode } from './services/language.service';
 import { ImpersonationService } from './services/impersonation.service';
 import { NotificationPollService } from './services/notification-poll.service';
 import { NotificationBellComponent } from './components/notification-bell.component';
+import { PracticeSwitcherComponent } from './components/practice-switcher.component';
+import { PracticeService } from './services/practice.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { effect } from '@angular/core';
 
@@ -28,7 +30,7 @@ import { effect } from '@angular/core';
     CommonModule, RouterOutlet, RouterLink, RouterLinkActive,
     MatToolbarModule, MatButtonModule, MatIconModule,
     MatSidenavModule, MatListModule, MatMenuModule, MatDividerModule, MatTooltipModule,
-    TranslateModule, NotificationBellComponent
+    TranslateModule, NotificationBellComponent, PracticeSwitcherComponent
   ],
   template: `
     @if (auth.isAuthenticated() && !isAuthRoute()) {
@@ -83,6 +85,10 @@ import { effect } from '@angular/core';
             }
             @if (auth.isNutritionist()) {
               @if (showUserNav()) { <mat-divider></mat-divider> }
+              <a mat-list-item routerLink="/nutritionist/dashboard" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>dashboard</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.nutriDashboard' | translate }}</span>
+              </a>
               <a mat-list-item routerLink="/nutritionist/clients" routerLinkActive="active" (click)="onNavClick(drawer)">
                 <mat-icon matListItemIcon>groups</mat-icon>
                 <span matListItemTitle>{{ 'app.nav.nutriClients' | translate }}</span>
@@ -102,6 +108,10 @@ import { effect } from '@angular/core';
               <a mat-list-item routerLink="/nutritionist/company-invitations" routerLinkActive="active" (click)="onNavClick(drawer)">
                 <mat-icon matListItemIcon>corporate_fare</mat-icon>
                 <span matListItemTitle>{{ 'app.nav.nutriCompanyInvites' | translate }}</span>
+              </a>
+              <a mat-list-item routerLink="/nutritionist/practices" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>manage_accounts</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.nutriPractices' | translate }}</span>
               </a>
             }
             @if (auth.isCompany()) {
@@ -177,6 +187,7 @@ import { effect } from '@angular/core';
             <span class="toolbar-title">{{ pageTitle() | translate }}</span>
             <span class="spacer"></span>
 
+            <app-practice-switcher></app-practice-switcher>
             <app-notification-bell></app-notification-bell>
 
             <button mat-icon-button [matMenuTriggerFor]="langMenu"
@@ -322,12 +333,19 @@ export class AppComponent {
   private breakpointObserver = inject(BreakpointObserver);
   private router = inject(Router);
   private notif = inject(NotificationPollService);
+  private practices = inject(PracticeService);
 
   constructor() {
     // liga o polling de notificacoes assim que o user esta autenticado
     effect(() => {
       if (this.auth.isAuthenticated()) this.notif.start();
       else this.notif.stop();
+    });
+    // carrega practices quando o efetivo e nutri
+    effect(() => {
+      const user = this.auth.currentUser();
+      if (user?.role === 'NUTRITIONIST') this.practices.loadForCurrentNutri();
+      else this.practices.clear();
     });
   }
 
@@ -366,6 +384,8 @@ export class AppComponent {
       if (url.startsWith('/nutritionist/pending-menus')) return 'app.pageTitle.pendingMenus';
       if (url.startsWith('/nutritionist/public-profile')) return 'app.pageTitle.nutriPublicProfile';
       if (url.startsWith('/nutritionist/company-invitations')) return 'app.pageTitle.nutriCompanyInvites';
+      if (url.startsWith('/nutritionist/practices')) return 'app.pageTitle.nutriPractices';
+      if (url.startsWith('/nutritionist/dashboard')) return 'app.pageTitle.nutriDashboard';
       if (url.startsWith('/notifications')) return 'app.pageTitle.notifications';
       if (url.startsWith('/find-nutritionist')) return 'app.pageTitle.findNutri';
       if (url.startsWith('/company/dashboard')) return 'app.pageTitle.companyDashboard';
@@ -407,6 +427,12 @@ export class AppComponent {
 
   stopImpersonation() {
     this.imp.stop();
-    this.router.navigate(['/admin/users']);
+    const role = this.auth.currentUser()?.role;
+    const target =
+      role === 'NUTRITIONIST' ? '/nutritionist/dashboard' :
+      role === 'COMPANY'      ? '/company/dashboard' :
+      role === 'ADMIN'        ? '/admin/users' :
+                                '/dashboard';
+    this.router.navigate([target]);
   }
 }

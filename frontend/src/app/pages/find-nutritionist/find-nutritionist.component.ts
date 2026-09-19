@@ -108,6 +108,10 @@ export class RequestNutriDialogComponent {
                 <div class="avatar">{{ n.name?.[0]?.toUpperCase() }}</div>
                 <div class="info">
                   <div class="name">{{ n.name }}</div>
+                  <div class="link-badge" [class.private]="!n.companyName">
+                    <mat-icon>{{ n.companyName ? 'corporate_fare' : 'person' }}</mat-icon>
+                    {{ n.companyName ?? ('findNutri.private' | translate) }}
+                  </div>
                   @if (n.specialties) {
                     <div class="specs">
                       @for (s of splitSpecialties(n.specialties); track s) {
@@ -150,6 +154,13 @@ export class RequestNutriDialogComponent {
       font-weight: 700; font-size: 1.3rem;
     }
     .name { font-weight: 700; font-size: 1.1rem; }
+    .link-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.75rem; font-weight: 600; margin-top: 2px;
+      color: #1e40af;
+      mat-icon { font-size: 14px; width: 14px; height: 14px; }
+    }
+    .link-badge.private { color: var(--nt-text-muted); }
     .specs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;
       mat-chip { font-size: 0.7rem !important; height: 22px !important; }
     }
@@ -190,7 +201,8 @@ export class FindNutritionistComponent implements OnInit {
     return this.all().filter(n =>
       n.name.toLowerCase().includes(q)
       || (n.bio ?? '').toLowerCase().includes(q)
-      || (n.specialties ?? '').toLowerCase().includes(q));
+      || (n.specialties ?? '').toLowerCase().includes(q)
+      || (n.companyName ?? '').toLowerCase().includes(q));
   });
 
   ngOnInit() {

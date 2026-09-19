@@ -1,6 +1,6 @@
 {
   "app": {
-    "brand": "Nutri Tracker",
+    "brand": "Prandium Nutri",
     "tagline": "Suivez vos repas, atteignez vos objectifs.",
     "nav": {
       "dashboard": "Tableau de bord",
@@ -24,7 +24,9 @@
       "pricing": "Plans",
       "findNutri": "Trouver un nutritionniste",
       "nutriPublicProfile": "Mon profil public",
-      "nutriCompanyInvites": "Invitations d'entreprises"
+      "nutriCompanyInvites": "Invitations d'entreprises",
+      "nutriDashboard": "Tableau de bord",
+      "nutriPractices": "Mes profils"
     },
     "user": { "settings": "Paramètres", "billing": "Mon plan", "logout": "Se déconnecter" },
     "theme": {
@@ -71,7 +73,9 @@
       "notifications": "Notifications",
       "findNutri": "Trouver un nutritionniste",
       "nutriPublicProfile": "Profil public",
-      "nutriCompanyInvites": "Invitations d'entreprises"
+      "nutriCompanyInvites": "Invitations d'entreprises",
+      "nutriDashboard": "Tableau de bord du nutritionniste",
+      "nutriPractices": "Mes profils de travail"
     }
   },
   "findNutri": {
@@ -90,7 +94,9 @@
     "sentErr": "Échec d'envoi. Réessayez.",
     "paywallTitle": "Fonctionnalité exclusive du plan Plus",
     "paywallSub": "Passez au Plus pour vous connecter à un nutritionniste.",
-    "upgradeCta": "Passer au Plus"
+    "upgradeCta": "Passer au Plus",
+    "private": "Indépendant",
+    "searchHintExtended": "Nom, spécialité, entreprise..."
   },
   "nutriProfile": {
     "title": "Mon profil public",
@@ -128,6 +134,7 @@
     "avgAdherence": "Adhésion moyenne",
     "last7d": "7 derniers jours",
     "needsAttention": "Attention requise",
+    "needsAttentionTip": "Clients avec un suivi inférieur à 30% sur les 7 derniers jours (moins de 2 jours avec des repas enregistrés). Recommandé : contactez-les, revoyez le plan ou vérifiez s'il y a un problème.",
     "clients": "Clients",
     "client": "Client",
     "adherence": "Adhésion (7j)",
@@ -371,7 +378,10 @@
     "totalCalories": "Total des calories",
     "totalProtein": "Total des protéines",
     "noItems": "Ajoutez au moins un aliment",
-    "kcalPer100g": "{{value}} kcal / 100g"
+    "kcalPer100g": "{{value}} kcal / 100g",
+    "aiTooltip": "Suggestion générée par IA — ajoutée au catalogue lors de la sélection.",
+    "aiSearching": "Recherche par IA...",
+    "aiSaveFail": "Impossible d'enregistrer la suggestion IA"
   },
   "suggestions": {
     "title": "Suggestions de menu",
@@ -523,11 +533,18 @@
   },
   "pricing": {
     "title": "Des plans qui grandissent avec vous",
-    "subtitle": "Choisissez le plan idéal — toute la puissance de Nutri Tracker à des prix justes pour clients, nutritionnistes et entreprises.",
+    "subtitle": "Choisissez le plan idéal — toute la puissance de Prandium Nutri à des prix justes pour clients, nutritionnistes et entreprises.",
     "currency": "Devise",
     "forClient": "Client",
     "forNutri": "Nutritionniste",
     "forCompany": "Entreprise",
+    "forUSER": "Client",
+    "forNUTRITIONIST": "Nutritionniste",
+    "forCOMPANY": "Entreprise",
+    "viewAll": "Voir les autres plans",
+    "allPlansTitle": "Tous les plans",
+    "free": "Gratuit",
+    "perMonth": "mois",
     "freeCta": "Gratuit pour toujours",
     "upgradeCta": "Passer à l'offre supérieure",
     "paymentSoon": "Paiement bientôt disponible",
@@ -558,7 +575,15 @@
       "manage": "Gérer",
       "manageTooltip": "Accéder en tant que ce client",
       "revokeTooltip": "Révoquer le lien",
-      "revokeConfirm": "Révoquer le lien avec {{name}} ?"
+      "revokeConfirm": "Révoquer le lien avec {{name}} ?",
+      "subRenews": "prochain prélèvement {{date}}",
+      "subStatus": {
+        "TRIALING": "Essai",
+        "ACTIVE": "Abonnement actif",
+        "PAST_DUE": "Abonnement impayé",
+        "CANCELED": "Abonnement annulé",
+        "SUSPENDED": "Abonnement suspendu"
+      }
     },
     "requests": {
       "title": "Demandes de clients",
@@ -607,7 +632,7 @@
   },
   "onboarding": {
     "title": "Activez votre entreprise",
-    "subtitle": "Vous avez été invité à administrer une entreprise sur Nutri Tracker",
+    "subtitle": "Vous avez été invité à administrer une entreprise sur Prandium Nutri",
     "invitedAs": "Invité comme : {{role}}",
     "roleOwner": "administrateur principal (propriétaire)",
     "roleAdmin": "administrateur",
@@ -740,6 +765,63 @@
     "acceptFail": "Impossible d'accepter",
     "rejected": "Invitation refusée",
     "rejectFail": "Impossible de refuser"
+  },
+  "practiceSwitcher": {
+    "tooltip": "Changer de profil de travail",
+    "private": "Indépendant"
+  },
+  "nutriPractices": {
+    "title": "Mes profils de travail",
+    "subtitle": "Un profil par lien — modifiez bio, spécialités et acceptation de nouveaux clients par profil.",
+    "empty": "Vous n'avez encore aucun profil de travail.",
+    "private": "Profil indépendant",
+    "bio": "Bio",
+    "bioPlaceholder": "Comment vous vous présentez aux nouveaux clients...",
+    "specialties": "Spécialités (séparées par des virgules)",
+    "specialtiesHint": "ex. : bariatrique, diabète, sport",
+    "acceptsNewClients": "J'accepte de nouveaux clients dans ce profil",
+    "savedOk": "Profil mis à jour",
+    "saveErr": "Impossible d'enregistrer",
+    "suspendedHint": "Ce profil est suspendu car le lien avec l'entreprise a pris fin. Vous ne pouvez pas le modifier, mais l'historique reste accessible.",
+    "status": {
+      "ACTIVE": "Actif",
+      "SUSPENDED": "Suspendu"
+    }
+  },
+  "nutriDashboard": {
+    "greeting": "Bonjour, {{name}} !",
+    "subtitle": "Vue d'ensemble de votre cabinet et prochaines actions",
+    "activeClients": "Clients actifs",
+    "menusActive": "Menus actifs",
+    "adherence": "Adhésion moyenne",
+    "last7d": "7 derniers jours",
+    "aiMonth": "Suggestions IA (mois)",
+    "pendingMenus": "Menus à valider",
+    "pendingMenusEmpty": "Aucun menu en attente de validation.",
+    "pendingMenusCount": "en attente de votre validation",
+    "newRequests": "Demandes de liaison",
+    "newRequestsEmpty": "Aucune nouvelle demande de client.",
+    "newRequestsCount": "clients souhaitent vous suivre",
+    "attention": "Clients à surveiller",
+    "attentionEmpty": "Tous les clients sont à jour.",
+    "attentionCount": "avec faible adhésion (7 jours)",
+    "reviewNow": "Consulter",
+    "viewDetail": "Voir détails",
+    "myPlan": "Mon plan",
+    "myPlanSubtitle": "Votre abonnement à la plateforme",
+    "currentPlan": "Plan actuel",
+    "status": "Statut",
+    "renewsAt": "Prochain prélèvement",
+    "viewPlans": "Voir les plans",
+    "manageBilling": "Gérer l'abonnement",
+    "noSubscription": "Aucun abonnement actif. Vous êtes sur le plan gratuit.",
+    "sub": {
+      "TRIALING": "Essai",
+      "ACTIVE": "Actif",
+      "PAST_DUE": "Impayé",
+      "CANCELED": "Annulé",
+      "SUSPENDED": "Suspendu"
+    }
   },
   "nutriCompanyInvites": {
     "title": "Invitations d'entreprises",

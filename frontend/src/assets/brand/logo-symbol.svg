@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Prandium Nutri — Symbol.
+     Prato (círculo aberto) com talos de folha crescendo no centro,
+     evocando refeição + vida. Traço leve, monocromático, escala bem em 16-512px. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Prandium Nutri">
+  <title>Prandium Nutri</title>
+  <defs>
+    <linearGradient id="pn-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d9488"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <!-- Prato: anel externo -->
+  <circle cx="32" cy="32" r="26" fill="none" stroke="url(#pn-g)" stroke-width="3"/>
+  <!-- Prato: anel interno sutil -->
+  <circle cx="32" cy="32" r="20" fill="none" stroke="url(#pn-g)" stroke-width="1.2" opacity="0.35"/>
+  <!-- Folha central (P estilizado como caule) -->
+  <path d="M32 47 C32 40, 32 32, 32 22" fill="none" stroke="url(#pn-g)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M32 30 C26 28, 22 24, 22 18 C28 18, 32 22, 32 30 Z" fill="url(#pn-g)"/>
+  <path d="M32 26 C36 24, 40 20, 42 15 C38 15, 34 18, 32 26 Z" fill="url(#pn-g)" opacity="0.85"/>
+</svg>

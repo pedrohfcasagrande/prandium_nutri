@@ -1,6 +1,6 @@
 {
   "app": {
-    "brand": "Nutri Tracker",
+    "brand": "Prandium Nutri",
     "tagline": "Track your meals, reach your goals.",
     "nav": {
       "dashboard": "Dashboard",
@@ -24,7 +24,9 @@
       "pricing": "Plans",
       "findNutri": "Find a nutritionist",
       "nutriPublicProfile": "My public profile",
-      "nutriCompanyInvites": "Company invites"
+      "nutriCompanyInvites": "Company invites",
+      "nutriDashboard": "Dashboard",
+      "nutriPractices": "My profiles"
     },
     "user": { "settings": "Settings", "billing": "My plan", "logout": "Sign out" },
     "theme": {
@@ -71,7 +73,9 @@
       "notifications": "Notifications",
       "findNutri": "Find a nutritionist",
       "nutriPublicProfile": "Public profile",
-      "nutriCompanyInvites": "Company invites"
+      "nutriCompanyInvites": "Company invites",
+      "nutriDashboard": "Nutritionist dashboard",
+      "nutriPractices": "My work profiles"
     }
   },
   "findNutri": {
@@ -90,7 +94,9 @@
     "sentErr": "Failed to send request. Try again.",
     "paywallTitle": "Plus plan exclusive feature",
     "paywallSub": "Upgrade to Plus to connect with a nutritionist.",
-    "upgradeCta": "Upgrade"
+    "upgradeCta": "Upgrade",
+    "private": "Independent",
+    "searchHintExtended": "Name, specialty, company..."
   },
   "nutriProfile": {
     "title": "My public profile",
@@ -128,6 +134,7 @@
     "avgAdherence": "Avg adherence",
     "last7d": "last 7 days",
     "needsAttention": "Need attention",
+    "needsAttentionTip": "Clients with adherence below 30% in the last 7 days (fewer than 2 days with logged meals). Recommended: reach out, review the plan, or check if something is wrong.",
     "clients": "Clients",
     "client": "Client",
     "adherence": "Adherence (7d)",
@@ -371,7 +378,10 @@
     "totalCalories": "Total calories",
     "totalProtein": "Total protein",
     "noItems": "Add at least one food",
-    "kcalPer100g": "{{value}} kcal / 100g"
+    "kcalPer100g": "{{value}} kcal / 100g",
+    "aiTooltip": "AI-generated suggestion — added to the catalog when selected.",
+    "aiSearching": "Searching with AI...",
+    "aiSaveFail": "Could not save AI suggestion"
   },
   "suggestions": {
     "title": "Menu suggestions",
@@ -523,11 +533,18 @@
   },
   "pricing": {
     "title": "Plans that grow with you",
-    "subtitle": "Choose the right plan — all the power of Nutri Tracker with fair pricing for clients, nutritionists and companies.",
+    "subtitle": "Choose the right plan — all the power of Prandium Nutri with fair pricing for clients, nutritionists and companies.",
     "currency": "Currency",
     "forClient": "Client",
     "forNutri": "Nutritionist",
     "forCompany": "Company",
+    "forUSER": "Client",
+    "forNUTRITIONIST": "Nutritionist",
+    "forCOMPANY": "Company",
+    "viewAll": "See other plans",
+    "allPlansTitle": "All plans",
+    "free": "Free",
+    "perMonth": "mo",
     "freeCta": "Free forever",
     "upgradeCta": "Upgrade",
     "paymentSoon": "Payment coming soon",
@@ -558,7 +575,15 @@
       "manage": "Manage",
       "manageTooltip": "Access as this client",
       "revokeTooltip": "Revoke link",
-      "revokeConfirm": "Revoke link with {{name}}?"
+      "revokeConfirm": "Revoke link with {{name}}?",
+      "subRenews": "next charge {{date}}",
+      "subStatus": {
+        "TRIALING": "Trial",
+        "ACTIVE": "Active subscription",
+        "PAST_DUE": "Subscription past due",
+        "CANCELED": "Subscription canceled",
+        "SUSPENDED": "Subscription suspended"
+      }
     },
     "requests": {
       "title": "Client requests",
@@ -607,7 +632,7 @@
   },
   "onboarding": {
     "title": "Activate your company",
-    "subtitle": "You were invited to manage a company on Nutri Tracker",
+    "subtitle": "You were invited to manage a company on Prandium Nutri",
     "invitedAs": "Invited as: {{role}}",
     "roleOwner": "main administrator (owner)",
     "roleAdmin": "administrator",
@@ -740,6 +765,63 @@
     "acceptFail": "Failed to accept",
     "rejected": "Invite rejected",
     "rejectFail": "Failed to reject"
+  },
+  "practiceSwitcher": {
+    "tooltip": "Switch work profile",
+    "private": "Independent"
+  },
+  "nutriPractices": {
+    "title": "My work profiles",
+    "subtitle": "One profile per link — edit bio, specialties and opt-in per profile.",
+    "empty": "You have no work profiles yet.",
+    "private": "Independent profile",
+    "bio": "Bio",
+    "bioPlaceholder": "How you introduce yourself to new clients...",
+    "specialties": "Specialties (comma-separated)",
+    "specialtiesHint": "e.g.: bariatric, diabetes, sports",
+    "acceptsNewClients": "I accept new clients in this profile",
+    "savedOk": "Profile updated",
+    "saveErr": "Could not save",
+    "suspendedHint": "This profile is suspended because the company link ended. You cannot edit it, but history remains accessible.",
+    "status": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended"
+    }
+  },
+  "nutriDashboard": {
+    "greeting": "Hi, {{name}}!",
+    "subtitle": "Overview of your practice and next actions",
+    "activeClients": "Active clients",
+    "menusActive": "Active plans",
+    "adherence": "Avg. adherence",
+    "last7d": "last 7 days",
+    "aiMonth": "AI suggestions (month)",
+    "pendingMenus": "Menus to review",
+    "pendingMenusEmpty": "No menu waiting for approval.",
+    "pendingMenusCount": "waiting for your approval",
+    "newRequests": "Link requests",
+    "newRequestsEmpty": "No new client requests.",
+    "newRequestsCount": "clients want to connect",
+    "attention": "Clients needing attention",
+    "attentionEmpty": "All clients are on track.",
+    "attentionCount": "with low adherence (last 7d)",
+    "reviewNow": "Review now",
+    "viewDetail": "View details",
+    "myPlan": "My plan",
+    "myPlanSubtitle": "Your platform subscription",
+    "currentPlan": "Current plan",
+    "status": "Status",
+    "renewsAt": "Next charge",
+    "viewPlans": "See plans",
+    "manageBilling": "Manage billing",
+    "noSubscription": "No active subscription. You are on the free plan.",
+    "sub": {
+      "TRIALING": "Trial",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Past due",
+      "CANCELED": "Canceled",
+      "SUSPENDED": "Suspended"
+    }
   },
   "nutriCompanyInvites": {
     "title": "Company invites",

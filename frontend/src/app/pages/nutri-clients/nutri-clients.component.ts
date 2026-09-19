@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,14 +7,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { ImpersonationService } from '../../services/impersonation.service';
-import { ClientLink, LinkStatus } from '../../models/models';
+import { PracticeService } from '../../services/practice.service';
+import { ClientLink } from '../../models/models';
 
 @Component({
   selector: 'app-nutri-clients',
@@ -22,7 +22,7 @@ import { ClientLink, LinkStatus } from '../../models/models';
   imports: [
     CommonModule, FormsModule,
     MatCardModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatChipsModule, MatTooltipModule,
+    MatButtonModule, MatIconModule, MatTooltipModule,
     MatDividerModule, MatSnackBarModule, TranslateModule
   ],
   template: `
@@ -69,18 +69,16 @@ import { ClientLink, LinkStatus } from '../../models/models';
         </div>
         <div class="client-list">
           @for (r of requests(); track r.id) {
-            <mat-card class="client-card pending request-card">
-              <div class="client-info">
-                <div class="avatar avatar-pending">{{ (r.clientName || '?')[0].toUpperCase() }}</div>
-                <div class="client-text">
-                  <div class="client-name">{{ r.clientName }}</div>
-                  <div class="client-email">{{ r.clientEmail }}</div>
-                  <div class="client-meta">
-                    <mat-chip class="status-chip chip-pending">
-                      {{ 'nutri.requests.chip' | translate }}
-                    </mat-chip>
-                    <span class="text-muted small">{{ r.invitedAt | date:'short' }}</span>
-                  </div>
+            <mat-card class="client-card request-card">
+              <div class="avatar avatar-pending">{{ (r.clientName || '?')[0].toUpperCase() }}</div>
+              <div class="client-text">
+                <div class="client-name">{{ r.clientName }}</div>
+                <div class="client-email">{{ r.clientEmail }}</div>
+                <div class="client-meta">
+                  <span class="status-pill pill-pending">
+                    {{ 'nutri.requests.chip' | translate }}
+                  </span>
+                  <span class="text-muted small">{{ r.invitedAt | date:'short' }}</span>
                 </div>
               </div>
               <div class="client-actions">
@@ -112,27 +110,32 @@ import { ClientLink, LinkStatus } from '../../models/models';
           @for (c of clients(); track c.id) {
             <mat-card class="client-card" [class.pending]="c.status === 'PENDING'"
                                           [class.active]="c.status === 'ACTIVE'">
-              <div class="client-info">
-                <div class="avatar" [class.avatar-pending]="c.status === 'PENDING'">
-                  {{ (c.clientName || '?')[0].toUpperCase() }}
-                </div>
-                <div class="client-text">
-                  <div class="client-name">{{ c.clientName }}</div>
-                  <div class="client-email">{{ c.clientEmail }}</div>
-                  <div class="client-meta">
-                    <mat-chip class="status-chip" [class]="'chip-' + c.status.toLowerCase()">
-                      {{ ('nutri.status.' + c.status) | translate }}
-                    </mat-chip>
-                    @if (c.acceptedAt) {
-                      <span class="text-muted small">
-                        {{ 'nutri.clients.acceptedOn' | translate }} {{ c.acceptedAt | date:'shortDate' }}
-                      </span>
-                    } @else {
-                      <span class="text-muted small">
-                        {{ 'nutri.clients.invitedOn' | translate }} {{ c.invitedAt | date:'shortDate' }}
-                      </span>
-                    }
-                  </div>
+              <div class="avatar" [class.avatar-pending]="c.status === 'PENDING'">
+                {{ (c.clientName || '?')[0].toUpperCase() }}
+              </div>
+              <div class="client-text">
+                <div class="client-name">{{ c.clientName }}</div>
+                <div class="client-email">{{ c.clientEmail }}</div>
+                <div class="client-meta">
+                  <span class="status-pill" [class]="'pill-' + c.status.toLowerCase()">
+                    {{ ('nutri.status.' + c.status) | translate }}
+                  </span>
+                  @if (c.subscriptionStatus) {
+                    <span class="status-pill sub-pill" [class]="'subpill-' + c.subscriptionStatus.toLowerCase()"
+                          [matTooltip]="subTooltip(c)">
+                      <mat-icon class="sub-icon">{{ subIcon(c.subscriptionStatus) }}</mat-icon>
+                      {{ (c.subscriptionPlanName || c.subscriptionPlanCode) }}
+                    </span>
+                  }
+                  @if (c.acceptedAt) {
+                    <span class="text-muted small">
+                      {{ 'nutri.clients.acceptedOn' | translate }} {{ c.acceptedAt | date:'shortDate' }}
+                    </span>
+                  } @else {
+                    <span class="text-muted small">
+                      {{ 'nutri.clients.invitedOn' | translate }} {{ c.invitedAt | date:'shortDate' }}
+                    </span>
+                  }
                 </div>
               </div>
               <div class="client-actions">
@@ -160,7 +163,7 @@ import { ClientLink, LinkStatus } from '../../models/models';
     .invite-card mat-card-title { display: flex; align-items: center; gap: 8px; }
     .invite-card mat-icon { color: var(--nt-primary); }
 
-    .invite-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+    .invite-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     .grow { flex: 1 1 260px; }
 
     .history-header h2 { font-size: 1.35rem; margin: 0; font-weight: 600;
@@ -171,13 +174,14 @@ import { ClientLink, LinkStatus } from '../../models/models';
     .client-list { display: flex; flex-direction: column; gap: 12px; }
     .client-card {
       padding: 16px 20px !important;
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 16px; flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px; align-items: center;
     }
     .client-card.pending { border-left: 4px solid var(--nt-accent) !important; }
     .client-card.active { border-left: 4px solid var(--nt-primary) !important; }
+    .request-card { border-left: 4px solid #f59e0b !important; }
 
-    .client-info { display: flex; gap: 14px; align-items: center; }
     .avatar {
       width: 48px; height: 48px; border-radius: 50%;
       background: linear-gradient(135deg, var(--nt-primary), var(--nt-primary-dark));
@@ -188,19 +192,34 @@ import { ClientLink, LinkStatus } from '../../models/models';
     .avatar.avatar-pending {
       background: linear-gradient(135deg, var(--nt-accent), #d97706);
     }
+    .client-text { min-width: 0; }
     .client-name { font-weight: 600; font-size: 1.05rem; }
-    .client-email { color: var(--nt-text-muted); font-size: 0.9rem; margin: 2px 0 4px; }
+    .client-email { color: var(--nt-text-muted); font-size: 0.9rem; margin: 2px 0 6px; }
     .client-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .small { font-size: 0.8rem; }
 
-    .status-chip { font-weight: 600; font-size: 0.75rem !important; }
-    .chip-pending { background: #fef3c7 !important; color: #92400e !important; }
-    .chip-active { background: #d1fae5 !important; color: #065f46 !important; }
-    .chip-rejected, .chip-revoked_by_nutri, .chip-revoked_by_client, .chip-expired {
-      background: var(--nt-surface-2) !important; color: var(--nt-text-muted) !important;
+    .status-pill {
+      display: inline-flex; align-items: center;
+      padding: 2px 10px; border-radius: 12px;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;
     }
+    .pill-pending { background: #fef3c7; color: #92400e; }
+    .pill-active { background: #d1fae5; color: #065f46; }
+    .pill-rejected, .pill-revoked_by_nutri, .pill-revoked_by_client, .pill-expired {
+      background: var(--nt-surface-2); color: var(--nt-text-muted);
+    }
+    .sub-pill { gap: 4px; cursor: help; }
+    .sub-icon { font-size: 12px !important; width: 12px !important; height: 12px !important; }
+    .subpill-active, .subpill-trialing { background: #dcfce7; color: #166534; }
+    .subpill-past_due { background: #fee2e2; color: #991b1b; }
+    .subpill-canceled, .subpill-suspended { background: var(--nt-surface-2); color: var(--nt-text-muted); }
 
-    .client-actions { display: flex; gap: 8px; align-items: center; }
+    .client-actions { display: flex; gap: 8px; align-items: center; justify-self: end; }
+
+    @media (max-width: 640px) {
+      .client-card { grid-template-columns: auto 1fr; }
+      .client-actions { grid-column: 1 / -1; justify-self: start; }
+    }
   `]
 })
 export class NutriClientsComponent implements OnInit {
@@ -208,6 +227,7 @@ export class NutriClientsComponent implements OnInit {
   private snack = inject(MatSnackBar);
   private translate = inject(TranslateService);
   private impersonation = inject(ImpersonationService);
+  private practiceCtx = inject(PracticeService);
   private router = inject(Router);
 
   clients = signal<ClientLink[]>([]);
@@ -215,9 +235,22 @@ export class NutriClientsComponent implements OnInit {
   email = '';
   loading = signal(false);
 
+  private firstLoad = true;
+  constructor() {
+    // Recarrega quando a practice ativa muda (nao no primeiro run)
+    effect(() => {
+      this.practiceCtx.activePracticeId();
+      if (this.firstLoad) { this.firstLoad = false; return; }
+      this.load();
+    });
+  }
+
   ngOnInit(): void { this.load(); this.loadRequests(); }
 
-  load() { this.api.nutriListClients().subscribe(c => this.clients.set(c)); }
+  load() {
+    this.api.nutriListClients(this.practiceCtx.activePracticeId())
+        .subscribe(c => this.clients.set(c));
+  }
   loadRequests() { this.api.clientRequests().subscribe({
     next: r => this.requests.set(r),
     error: () => this.requests.set([])
@@ -248,7 +281,7 @@ export class NutriClientsComponent implements OnInit {
   invite() {
     if (!this.email) return;
     this.loading.set(true);
-    this.api.nutriInviteClient(this.email).subscribe({
+    this.api.nutriInviteClient(this.email, this.practiceCtx.activePracticeId()).subscribe({
       next: () => {
         this.loading.set(false);
         this.email = '';
@@ -276,5 +309,26 @@ export class NutriClientsComponent implements OnInit {
 
   canRevoke(status: string): boolean {
     return status === 'ACTIVE' || status === 'PENDING';
+  }
+
+  subIcon(status: string): string {
+    switch (status) {
+      case 'ACTIVE':
+      case 'TRIALING':  return 'workspace_premium';
+      case 'PAST_DUE':  return 'error';
+      case 'CANCELED':
+      case 'SUSPENDED': return 'cancel';
+      default:          return 'info';
+    }
+  }
+
+  subTooltip(c: ClientLink): string {
+    const parts = [this.translate.instant('nutri.clients.subStatus.' + c.subscriptionStatus)];
+    if (c.subscriptionRenewsAt) {
+      parts.push(this.translate.instant('nutri.clients.subRenews', {
+        date: new Date(c.subscriptionRenewsAt).toLocaleDateString()
+      }));
+    }
+    return parts.join(' · ');
   }
 }

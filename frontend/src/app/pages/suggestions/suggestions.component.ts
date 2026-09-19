@@ -358,7 +358,7 @@ export class SuggestionsComponent {
   }
 
   saveAsMenu() {
-    sessionStorage.setItem('nutritracker.pendingMenu', JSON.stringify(this.buildPlanFromCurrent(false)));
+    sessionStorage.setItem('prandiumnutri.pendingMenu', JSON.stringify(this.buildPlanFromCurrent(false)));
     this.router.navigate(['/menus']);
   }
 

@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 
 export type ThemeMode = 'auto' | 'light' | 'dark';
-const KEY = 'nutritracker.theme';
+const KEY = 'prandiumnutri.theme';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {

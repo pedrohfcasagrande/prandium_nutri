@@ -1,22 +1,23 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { NutriMetricsOverview } from '../../models/models';
 import { AlertBannerComponent } from '../../components/alert-banner.component';
+import { PracticeService } from '../../services/practice.service';
 
 @Component({
   selector: 'app-nutri-metrics',
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule, MatIconModule, MatTableModule, MatChipsModule,
+    MatCardModule, MatIconModule, MatTableModule, MatTooltipModule,
     MatProgressSpinnerModule, MatProgressBarModule, TranslateModule, AlertBannerComponent
   ],
   template: `
@@ -70,10 +71,15 @@ import { AlertBannerComponent } from '../../components/alert-banner.component';
             </div>
           </mat-card>
           @if (o.clientsNeedingAttention > 0) {
-            <mat-card class="kpi">
+            <mat-card class="kpi"
+                      [matTooltip]="'nutriMetrics.needsAttentionTip' | translate"
+                      matTooltipPosition="above">
               <div class="kpi-icon" style="background:#fee2e2;color:#991b1b"><mat-icon>priority_high</mat-icon></div>
               <div>
-                <div class="kpi-label">{{ 'nutriMetrics.needsAttention' | translate }}</div>
+                <div class="kpi-label">
+                  {{ 'nutriMetrics.needsAttention' | translate }}
+                  <mat-icon class="info-icon">info</mat-icon>
+                </div>
                 <div class="kpi-value">{{ o.clientsNeedingAttention | number }}</div>
               </div>
             </mat-card>
@@ -113,9 +119,11 @@ import { AlertBannerComponent } from '../../components/alert-banner.component';
                 <th mat-header-cell *matHeaderCellDef>{{ 'nutriMetrics.menu' | translate }}</th>
                 <td mat-cell *matCellDef="let r">
                   @if (r.hasActivePlan) {
-                    <mat-chip class="chip-ok"><mat-icon>check</mat-icon> {{ 'nutriMetrics.active' | translate }}</mat-chip>
+                    <span class="status-pill pill-ok">
+                      <mat-icon>check</mat-icon> {{ 'nutriMetrics.active' | translate }}
+                    </span>
                   } @else {
-                    <mat-chip class="chip-warn">{{ 'nutriMetrics.noMenu' | translate }}</mat-chip>
+                    <span class="status-pill pill-warn">{{ 'nutriMetrics.noMenu' | translate }}</span>
                   }
                 </td>
               </ng-container>
@@ -123,9 +131,10 @@ import { AlertBannerComponent } from '../../components/alert-banner.component';
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let r">
                   @if (r.needsAttention) {
-                    <mat-chip class="chip-attn">
+                    <span class="status-pill pill-attn"
+                          [matTooltip]="'nutriMetrics.needsAttentionTip' | translate">
                       <mat-icon>priority_high</mat-icon> {{ 'nutriMetrics.attention' | translate }}
-                    </mat-chip>
+                    </span>
                   }
                 </td>
               </ng-container>
@@ -170,24 +179,42 @@ import { AlertBannerComponent } from '../../components/alert-banner.component';
       display: flex; align-items: center; gap: 10px;
       mat-progress-bar { flex: 1; min-width: 80px; }
     }
-    .chip-ok { background: #dcfce7 !important; color: #166534 !important;
-      mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 12px;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;
+      mat-icon { font-size: 14px; width: 14px; height: 14px; }
     }
-    .chip-warn { background: #fef3c7 !important; color: #92400e !important; }
-    .chip-attn { background: #fee2e2 !important; color: #991b1b !important;
-      mat-icon { font-size: 16px; width: 16px; height: 16px; }
-    }
+    .pill-ok { background: #dcfce7; color: #166534; }
+    .pill-warn { background: #fef3c7; color: #92400e; }
+    .pill-attn { background: #fee2e2; color: #991b1b; cursor: help; }
     .row-attn { background: rgba(239, 68, 68, 0.04); }
+    .info-icon { font-size: 14px; width: 14px; height: 14px; vertical-align: middle;
+                 opacity: 0.6; margin-left: 2px; }
+    .kpi { cursor: default; }
   `]
 })
 export class NutriMetricsComponent implements OnInit {
   private api = inject(ApiService);
+  private practiceCtx = inject(PracticeService);
   loading = signal(true);
   overview = signal<NutriMetricsOverview | null>(null);
   cols = ['name', 'adherence', 'lastMeal', 'menu', 'attention'];
 
-  ngOnInit(): void {
-    this.api.nutriMetricsOverview().subscribe({
+  private firstLoad = true;
+  constructor() {
+    effect(() => {
+      this.practiceCtx.activePracticeId();
+      if (this.firstLoad) { this.firstLoad = false; return; }
+      this.load();
+    });
+  }
+
+  ngOnInit(): void { this.load(); }
+
+  private load() {
+    this.loading.set(true);
+    this.api.nutriMetricsOverview(this.practiceCtx.activePracticeId()).subscribe({
       next: o => { this.overview.set(o); this.loading.set(false); },
       error: () => this.loading.set(false)
     });

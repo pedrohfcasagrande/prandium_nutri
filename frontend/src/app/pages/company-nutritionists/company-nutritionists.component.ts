@@ -204,11 +204,6 @@ export class CompanyNutritionistsComponent implements OnInit {
     this.router.navigate(['/nutritionist/clients']);
   }
 
-  revoke(n: CompanyNutriLink) {
-    if (!confirm(this.translate.instant('company.nutris.revokeConfirm', { name: n.nutritionistName }))) return;
-    this.api.companyRevokeNutri(n.id).subscribe(() => this.load());
-  }
-
   private dialog = inject(MatDialog);
 
   openRevoke(n: CompanyNutriLink) {

@@ -126,6 +126,17 @@ export interface CompanyInvite {
   expiresAt: string;
 }
 
+export type PracticeStatus = 'ACTIVE' | 'SUSPENDED';
+export interface Practice {
+  id: number;
+  companyId: number | null;
+  companyName: string | null;
+  bio: string | null;
+  specialties: string | null;
+  acceptsNewClients: boolean;
+  status: PracticeStatus;
+}
+
 export interface ClientLink {
   id: number;
   clientId: number | null;
@@ -135,6 +146,10 @@ export interface ClientLink {
   invitedAt: string;
   acceptedAt?: string;
   revokedAt?: string;
+  subscriptionStatus?: SubscriptionStatus | null;
+  subscriptionPlanCode?: string | null;
+  subscriptionPlanName?: string | null;
+  subscriptionRenewsAt?: string | null;
 }
 
 export interface NutritionistLink {
@@ -218,13 +233,14 @@ export interface AdminUser {
 }
 
 export interface Food {
-  id?: number;
+  id?: number | null;
   name: string;
   category?: string;
   caloriesPer100g: number;
   proteinPer100g: number;
   carbsPer100g: number;
   fatPer100g: number;
+  aiSuggested?: boolean;
 }
 
 export interface MealItem {
@@ -321,10 +337,13 @@ export interface AppNotification {
 }
 
 export interface NutriPublic {
-  id: number;
+  id: number;              // practiceId (Fase 5B)
+  nutritionistId: number;  // userId do nutri
   name: string;
   bio: string | null;
   specialties: string | null;
+  companyId?: number | null;
+  companyName?: string | null;
 }
 
 export interface CompanyClient {

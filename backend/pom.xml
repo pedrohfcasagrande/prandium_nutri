@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.nutritracker</groupId>
-    <artifactId>nutri-tracker-backend</artifactId>
+    <groupId>com.prandiumnutri</groupId>
+    <artifactId>prandium-nutri-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>nutri-tracker-backend</name>
-    <description>Backend para controle de refeicoes, calorias e proteinas</description>
+    <name>prandium-nutri-backend</name>
+    <description>Prandium Nutri — controle de refeicoes, calorias e proteinas</description>
 
     <properties>
         <java.version>21</java.version>

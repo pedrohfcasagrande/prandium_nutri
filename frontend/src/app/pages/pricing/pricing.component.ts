@@ -11,10 +11,95 @@ import { MatChipsModule } from '@angular/material/chips';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Plan, PlanTarget, Pricing } from '../../models/models';
 import { LanguageSwitcherComponent } from '../../components/language-switcher.component';
+
+@Component({
+  selector: 'app-all-plans-dialog',
+  standalone: true,
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, TranslateModule],
+  template: `
+    <h2 mat-dialog-title>
+      <mat-icon>view_list</mat-icon>
+      {{ 'pricing.allPlansTitle' | translate }}
+    </h2>
+    <mat-dialog-content class="all">
+      @if (plans()) {
+        @for (group of ['USER','NUTRITIONIST','COMPANY']; track group) {
+          <section class="group">
+            <h3>{{ ('pricing.for' + group) | translate }}</h3>
+            <div class="grid">
+              @for (p of byTarget(group); track p.code) {
+                <div class="plan" [class]="'tier-' + p.tier.toLowerCase()">
+                  <div class="head">
+                    <div class="tier">{{ p.tier }}</div>
+                    <div class="name">{{ p.name }}</div>
+                  </div>
+                  <div class="price">
+                    @if (p.amountCents === 0) {
+                      <strong>{{ 'pricing.free' | translate }}</strong>
+                    } @else {
+                      <strong>{{ formatPrice(p.amountCents, p.currency) }}</strong>
+                      <span class="per">/ {{ 'pricing.perMonth' | translate }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+      }
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-flat-button color="primary" (click)="ref.close()">
+        {{ 'app.actions.back' | translate }}
+      </button>
+    </mat-dialog-actions>
+  `,
+  styles: [`
+    h2[mat-dialog-title] { display: flex; align-items: center; gap: 8px;
+      mat-icon { color: var(--nt-primary); }
+    }
+    .all { min-width: min(90vw, 720px); max-height: 70vh; }
+    .group { margin-bottom: 20px; h3 { margin: 4px 0 10px; font-size: 1rem; color: var(--nt-text-muted); } }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .plan { padding: 12px; border: 1px solid var(--nt-border); border-radius: 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .plan.tier-free { border-left: 4px solid var(--nt-text-muted); }
+    .plan.tier-plus, .plan.tier-pro { border-left: 4px solid var(--nt-primary); }
+    .plan.tier-starter, .plan.tier-growth, .plan.tier-business { border-left: 4px solid #6d28d9; }
+    .tier { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; color: var(--nt-text-muted); }
+    .name { font-weight: 600; }
+    .price strong { font-size: 1.1rem; }
+    .per { font-size: 0.75rem; color: var(--nt-text-muted); margin-left: 4px; }
+  `]
+})
+export class AllPlansDialogComponent {
+  ref = inject(MatDialogRef<AllPlansDialogComponent>);
+  private api = inject(ApiService);
+  plans = signal<Plan[] | null>(null);
+  private currency: string;
+
+  constructor() {
+    this.currency = navigator.language.startsWith('pt') ? 'BRL'
+                  : navigator.language.startsWith('fr') ? 'EUR' : 'USD';
+    this.api.pricing(this.currency).subscribe(p => this.plans.set(p.plans));
+  }
+
+  byTarget(target: string): Plan[] {
+    return (this.plans() ?? []).filter(p => p.target === target);
+  }
+
+  formatPrice(cents: number, currency: string): string {
+    const val = cents / 100;
+    const locale = currency === 'BRL' ? 'pt-BR' : currency === 'EUR' ? 'fr-FR' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(val);
+  }
+}
 
 @Component({
   selector: 'app-pricing',
@@ -22,7 +107,8 @@ import { LanguageSwitcherComponent } from '../../components/language-switcher.co
   imports: [
     CommonModule, FormsModule,
     MatCardModule, MatButtonModule, MatIconModule, MatButtonToggleModule,
-    MatSelectModule, MatFormFieldModule, MatChipsModule, MatSnackBarModule, TranslateModule,
+    MatSelectModule, MatFormFieldModule, MatChipsModule, MatSnackBarModule,
+    MatDialogModule, TranslateModule,
     LanguageSwitcherComponent
   ],
   template: `
@@ -56,17 +142,23 @@ import { LanguageSwitcherComponent } from '../../components/language-switcher.co
         <p>{{ 'pricing.subtitle' | translate }}</p>
 
         <div class="filters">
-          <mat-button-toggle-group [value]="target" (change)="onTargetChange($event.value)" hideSingleSelectionIndicator>
-            <mat-button-toggle value="USER">
-              <mat-icon>person</mat-icon> {{ 'pricing.forClient' | translate }}
-            </mat-button-toggle>
-            <mat-button-toggle value="NUTRITIONIST">
-              <mat-icon>medical_services</mat-icon> {{ 'pricing.forNutri' | translate }}
-            </mat-button-toggle>
-            <mat-button-toggle value="COMPANY">
-              <mat-icon>corporate_fare</mat-icon> {{ 'pricing.forCompany' | translate }}
-            </mat-button-toggle>
-          </mat-button-toggle-group>
+          @if (!auth.isAuthenticated()) {
+            <mat-button-toggle-group [value]="target" (change)="onTargetChange($event.value)" hideSingleSelectionIndicator>
+              <mat-button-toggle value="USER">
+                <mat-icon>person</mat-icon> {{ 'pricing.forClient' | translate }}
+              </mat-button-toggle>
+              <mat-button-toggle value="NUTRITIONIST">
+                <mat-icon>medical_services</mat-icon> {{ 'pricing.forNutri' | translate }}
+              </mat-button-toggle>
+              <mat-button-toggle value="COMPANY">
+                <mat-icon>corporate_fare</mat-icon> {{ 'pricing.forCompany' | translate }}
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          } @else {
+            <button mat-stroked-button (click)="openAllPlans()">
+              <mat-icon>view_list</mat-icon> {{ 'pricing.viewAll' | translate }}
+            </button>
+          }
 
           <mat-form-field appearance="outline" class="currency" subscriptSizing="dynamic">
             <mat-label>{{ 'pricing.currency' | translate }}</mat-label>
@@ -205,6 +297,11 @@ export class PricingComponent implements OnInit {
   private translate = inject(TranslateService);
   private snack = inject(MatSnackBar);
   private router = inject(Router);
+  private dialog = inject(MatDialog);
+
+  openAllPlans() {
+    this.dialog.open(AllPlansDialogComponent, { autoFocus: false, restoreFocus: true });
+  }
 
   private route = inject(ActivatedRoute);
   pricing = signal<Pricing | null>(null);

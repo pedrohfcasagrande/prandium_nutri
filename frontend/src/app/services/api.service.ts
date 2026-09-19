@@ -8,7 +8,7 @@ import {
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
   NutriPublic, NutritionistLink,
-  OnboardingInfo, PendingInvite, PlanTarget, Pricing,
+  OnboardingInfo, PendingInvite, PlanTarget, Practice, Pricing,
   ProgressEntry, ProgressSummary, Subscription, User
 } from '../models/models';
 
@@ -29,6 +29,15 @@ export class ApiService {
     let params = new HttpParams();
     if (q) params = params.set('q', q);
     return this.http.get<Food[]>(`${this.base}/foods`, { params });
+  }
+
+  aiLookupFoods(q: string): Observable<Food[]> {
+    const params = new HttpParams().set('q', q);
+    return this.http.get<Food[]>(`${this.base}/foods/ai-lookup`, { params });
+  }
+
+  createFood(food: Food): Observable<Food> {
+    return this.http.post<Food>(`${this.base}/foods`, food);
   }
 
   listMeals(date: string): Observable<Meal[]> {
@@ -100,11 +109,15 @@ export class ApiService {
     return this.http.delete<void>(`${this.base}/menu-plans/${id}`);
   }
 
-  nutriListClients(): Observable<ClientLink[]> {
-    return this.http.get<ClientLink[]>(`${this.base}/nutritionist/clients`);
+  nutriListClients(practiceId?: number | null): Observable<ClientLink[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<ClientLink[]>(`${this.base}/nutritionist/clients`, { params });
   }
-  nutriInviteClient(clientEmail: string): Observable<ClientLink> {
-    return this.http.post<ClientLink>(`${this.base}/nutritionist/clients/invite`, { clientEmail });
+  nutriInviteClient(clientEmail: string, practiceId?: number | null): Observable<ClientLink> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.post<ClientLink>(`${this.base}/nutritionist/clients/invite`, { clientEmail }, { params });
   }
   nutriRevokeClient(linkId: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/nutritionist/clients/${linkId}`);
@@ -113,6 +126,12 @@ export class ApiService {
   // Nutricionista <-> empresa
   nutriMyCompanies(): Observable<NutriCompany[]> {
     return this.http.get<NutriCompany[]>(`${this.base}/nutritionist/companies`);
+  }
+  nutriMyPractices(): Observable<Practice[]> {
+    return this.http.get<Practice[]>(`${this.base}/nutritionist/practices`);
+  }
+  nutriUpdatePractice(id: number, dto: { bio?: string; specialties?: string; acceptsNewClients: boolean }): Observable<Practice> {
+    return this.http.put<Practice>(`${this.base}/nutritionist/practices/${id}`, dto);
   }
   nutriCompanyInvitesPending(): Observable<CompanyInvite[]> {
     return this.http.get<CompanyInvite[]>(`${this.base}/nutritionist/company-invitations`);
@@ -143,10 +162,6 @@ export class ApiService {
   companyInviteNutri(email: string): Observable<CompanyNutriLink> {
     return this.http.post<CompanyNutriLink>(`${this.base}/company/nutritionists/invite`, { clientEmail: email });
   }
-  companyRevokeNutri(linkId: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/company/nutritionists/${linkId}`);
-  }
-
   // Multi-admin da empresa
   companyListMembers(): Observable<CompanyMember[]> {
     return this.http.get<CompanyMember[]>(`${this.base}/company/members`);
@@ -254,8 +269,10 @@ export class ApiService {
     return this.http.get<CompanyMetricsOverview>(`${this.base}/company/metrics/overview`);
   }
 
-  nutriMetricsOverview(): Observable<NutriMetricsOverview> {
-    return this.http.get<NutriMetricsOverview>(`${this.base}/nutritionist/metrics/overview`);
+  nutriMetricsOverview(practiceId?: number | null): Observable<NutriMetricsOverview> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<NutriMetricsOverview>(`${this.base}/nutritionist/metrics/overview`, { params });
   }
 
   listAlerts(scope: 'admin' | 'company' | 'nutritionist'): Observable<AppAlert[]> {

@@ -2,7 +2,7 @@
 # application-local.yml esta no .gitignore — nao sera commitado.
 # Carregado automaticamente por qualquer perfil (dev/sandbox/prod).
 
-nutritracker:
+prandiumnutri:
   gemini:
     api-key: SUA_CHAVE_GEMINI_AQUI       # https://aistudio.google.com/apikey
   google:

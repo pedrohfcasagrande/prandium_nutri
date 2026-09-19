@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-const KEY = 'nutritracker.currentUserId';
+const KEY = 'prandiumnutri.currentUserId';
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {

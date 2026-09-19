@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
@@ -8,7 +8,9 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationPollService } from '../services/notification-poll.service';
+import { AuthService } from '../services/auth.service';
 import { AppNotification } from '../models/models';
+import { notificationTarget } from '../services/notification-target';
 
 @Component({
   selector: 'app-notification-bell',
@@ -16,7 +18,7 @@ import { AppNotification } from '../models/models';
   imports: [
     CommonModule,
     MatIconModule, MatButtonModule, MatMenuModule, MatBadgeModule, MatDividerModule,
-    TranslateModule
+    TranslateModule, RouterLink
   ],
   template: `
     <button mat-icon-button [matMenuTriggerFor]="menu"
@@ -44,7 +46,7 @@ import { AppNotification } from '../models/models';
           <button mat-menu-item class="notif-item"
                   [class.unread]="!n.readAt"
                   (click)="open(n)">
-            <mat-icon [class]="iconClass(n.type)">{{ iconFor(n.type) }}</mat-icon>
+            <mat-icon [class]="iconClass(n)">{{ iconFor(n) }}</mat-icon>
             <div class="notif-body">
               <div class="notif-title">{{ n.title }}</div>
               @if (n.body) { <div class="notif-msg">{{ n.body }}</div> }
@@ -53,10 +55,10 @@ import { AppNotification } from '../models/models';
           </button>
         }
         <mat-divider></mat-divider>
-        <button mat-menu-item (click)="viewAll($event)">
+        <a mat-menu-item routerLink="/notifications">
           <mat-icon>chevron_right</mat-icon>
           <span>{{ 'notifications.viewAll' | translate }}</span>
-        </button>
+        </a>
       }
     </mat-menu>
   `,
@@ -87,6 +89,7 @@ import { AppNotification } from '../models/models';
 export class NotificationBellComponent {
   polls = inject(NotificationPollService);
   private router = inject(Router);
+  private auth = inject(AuthService);
 
   badge(): string { return this.polls.unreadCount() > 9 ? '9+' : String(this.polls.unreadCount()); }
 
@@ -97,31 +100,32 @@ export class NotificationBellComponent {
 
   open(n: AppNotification) {
     if (!n.readAt) this.polls.markRead(n.id);
-    if (n.entityType === 'MenuPlan') {
-      const target = n.type === 'MENU_SUBMITTED' ? '/nutritionist/pending-menus' : '/menus';
-      this.router.navigate([target]);
-    }
+    const target = notificationTarget(n, this.auth.currentUser()?.role);
+    if (target) this.router.navigate([target]);
   }
 
-  viewAll(ev: Event) {
-    ev.stopPropagation();
-    this.router.navigate(['/notifications']);
-  }
-
-  iconFor(t: string): string {
-    switch (t) {
+  iconFor(n: AppNotification): string {
+    switch (n.type) {
       case 'MENU_APPROVED': return 'check_circle';
       case 'MENU_REJECTED': return 'cancel';
       case 'MENU_SUBMITTED': return 'assignment';
+    }
+    switch (n.entityType) {
+      case 'CompanyNutritionist': return 'corporate_fare';
+      case 'NutritionistClientLink': return 'person_add';
       default: return 'notifications';
     }
   }
 
-  iconClass(t: string): string {
-    switch (t) {
+  iconClass(n: AppNotification): string {
+    switch (n.type) {
       case 'MENU_APPROVED': return 'icon-approved';
       case 'MENU_REJECTED': return 'icon-rejected';
       case 'MENU_SUBMITTED': return 'icon-submitted';
+    }
+    switch (n.entityType) {
+      case 'CompanyNutritionist': return 'icon-submitted';
+      case 'NutritionistClientLink': return 'icon-approved';
       default: return 'icon-generic';
     }
   }

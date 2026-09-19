@@ -33,22 +33,20 @@ import { CompanyInvite } from '../../models/models';
         <div class="invite-list">
           @for (inv of invites(); track inv.linkId) {
             <mat-card class="invite-card">
-              <div class="invite-body">
-                <div class="avatar">
-                  <mat-icon>corporate_fare</mat-icon>
+              <div class="avatar">
+                <mat-icon>corporate_fare</mat-icon>
+              </div>
+              <div class="text">
+                <div class="invite-text">
+                  <strong>{{ inv.companyName }}</strong>
+                  {{ 'nutriCompanyInvites.wantsYou' | translate }}
                 </div>
-                <div>
-                  <div class="invite-text">
-                    <strong>{{ inv.companyName }}</strong>
-                    {{ 'nutriCompanyInvites.wantsYou' | translate }}
-                  </div>
-                  <div class="text-muted small">
-                    {{ 'nutriCompanyInvites.invitedOn' | translate }}
-                    {{ inv.invitedAt | date:'short' }}
-                  </div>
-                  <div class="text-muted small">
-                    {{ 'nutriCompanyInvites.expiresOn' | translate }} {{ inv.expiresAt | date:'short' }}
-                  </div>
+                <div class="text-muted small">
+                  {{ 'nutriCompanyInvites.invitedOn' | translate }}
+                  {{ inv.invitedAt | date:'short' }}
+                </div>
+                <div class="text-muted small">
+                  {{ 'nutriCompanyInvites.expiresOn' | translate }} {{ inv.expiresAt | date:'short' }}
                 </div>
               </div>
               <div class="invite-actions">
@@ -71,11 +69,12 @@ import { CompanyInvite } from '../../models/models';
     .invite-list { display: flex; flex-direction: column; gap: 12px; }
     .invite-card {
       padding: 16px 20px !important;
-      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-      align-items: center;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px; align-items: center;
       border-left: 4px solid var(--nt-accent) !important;
     }
-    .invite-body { display: flex; align-items: center; gap: 14px; }
+    .text { min-width: 0; }
     .avatar {
       width: 48px; height: 48px; border-radius: 50%;
       background: linear-gradient(135deg, var(--nt-accent), #d97706);
@@ -83,7 +82,12 @@ import { CompanyInvite } from '../../models/models';
     }
     .invite-text { font-size: 1.05rem; }
     .small { font-size: 0.85rem; }
-    .invite-actions { display: flex; gap: 8px; }
+    .invite-actions { display: flex; gap: 8px; justify-self: end; }
+
+    @media (max-width: 640px) {
+      .invite-card { grid-template-columns: auto 1fr; }
+      .invite-actions { grid-column: 1 / -1; justify-self: start; }
+    }
   `]
 })
 export class NutriCompanyInvitesComponent implements OnInit {

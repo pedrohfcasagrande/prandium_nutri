@@ -1,6 +1,6 @@
 spring:
   application:
-    name: nutri-tracker
+    name: prandium-nutri
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   # Importa application-local.yml se existir (git-ignored, para secrets locais)
@@ -11,7 +11,7 @@ server:
   port: ${SERVER_PORT:8080}
 
 # Config compartilhada (defaults). Cada perfil sobrescreve o que precisa.
-nutritracker:
+prandiumnutri:
   ai:
     provider: ${AI_PROVIDER:gemini}
   openai:
@@ -34,7 +34,7 @@ nutritracker:
     password: ${ADMIN_PASSWORD:admin@123}
   mail:
     enabled: ${MAIL_ENABLED:false}
-    from: ${MAIL_FROM:no-reply@nutritracker.local}
+    from: ${MAIL_FROM:no-reply@prandiumnutri.local}
   reset:
     expiration-hours: ${RESET_EXPIRATION_HOURS:1}
     frontend-url: ${FRONTEND_URL:http://localhost:4200}

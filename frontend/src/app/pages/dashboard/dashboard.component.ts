@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { ImpersonationService } from '../../services/impersonation.service';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -275,6 +277,9 @@ import { DatePickerComponent } from '../../components/date-picker.component';
 })
 export class DashboardComponent implements OnInit {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private imp = inject(ImpersonationService);
+  private router = inject(Router);
   summary = signal<DailySummary | null>(null);
   progress = signal<ProgressSummary | null>(null);
   activePlan = signal<MenuPlan | null>(null);
@@ -305,7 +310,16 @@ export class DashboardComponent implements OnInit {
     }
   };
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    // Nutri/empresa/admin sem impersonation nao tem "meu dashboard de refeicoes";
+    // redireciona para a home apropriada do papel efetivo.
+    if (!this.imp.target()) {
+      const role = this.auth.currentUser()?.role;
+      if (role === 'NUTRITIONIST') { this.router.navigate(['/nutritionist/dashboard']); return; }
+      if (role === 'COMPANY')      { this.router.navigate(['/company/dashboard']); return; }
+    }
+    this.load();
+  }
 
   load() {
     this.api.dashboard(this.date).subscribe(s => this.summary.set(s));

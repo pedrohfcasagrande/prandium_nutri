@@ -75,12 +75,27 @@ import { DatePickerComponent } from '../../components/date-picker.component';
               <mat-autocomplete #auto="matAutocomplete"
                                 (optionSelected)="selectFood($event.option.value)"
                                 [displayWith]="displayFood">
-                @for (f of foodOptions(); track f.id) {
+                @for (f of foodOptions(); track f.id ?? f.name) {
                   <mat-option [value]="f">
                     <div class="food-option">
-                      <span class="food-name">{{ f.name }}</span>
+                      <span class="food-name">
+                        {{ f.name }}
+                        @if (f.aiSuggested) {
+                          <span class="ai-badge" title="{{ 'meals.aiTooltip' | translate }}">
+                            <mat-icon>auto_awesome</mat-icon> IA
+                          </span>
+                        }
+                      </span>
                       <span class="food-kcal">{{ 'meals.kcalPer100g' | translate:{ value: f.caloriesPer100g } }}</span>
                     </div>
+                  </mat-option>
+                }
+                @if (aiLoading()) {
+                  <mat-option [disabled]="true">
+                    <span class="ai-loading">
+                      <mat-icon>auto_awesome</mat-icon>
+                      {{ 'meals.aiSearching' | translate }}
+                    </span>
                   </mat-option>
                 }
               </mat-autocomplete>
@@ -251,8 +266,20 @@ import { DatePickerComponent } from '../../components/date-picker.component';
     .add-btn { height: 56px; padding: 0 20px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 
     .food-option { display: flex; justify-content: space-between; gap: 16px; align-items: center; width: 100%; }
-    .food-name { font-weight: 500; }
+    .food-name { font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
     .food-kcal { color: var(--nt-text-muted); font-size: 0.85rem; }
+    .ai-badge {
+      display: inline-flex; align-items: center; gap: 2px;
+      background: #ede9fe; color: #6d28d9;
+      font-size: 0.7rem; font-weight: 700;
+      padding: 2px 6px; border-radius: 8px;
+      mat-icon { font-size: 12px; width: 12px; height: 12px; }
+    }
+    .ai-loading {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--nt-text-muted); font-style: italic;
+      mat-icon { font-size: 16px; width: 16px; height: 16px; color: #6d28d9; }
+    }
 
     .preview-block {
       background: var(--nt-surface-2);
@@ -335,6 +362,7 @@ export class MealsComponent implements OnInit {
 
   meals = signal<Meal[]>([]);
   foodOptions = signal<Food[]>([]);
+  aiLoading = signal(false);
   filterDate = new Date().toISOString().slice(0, 10);
   foodQuery = '';
   pendingFood: Food | null = null;
@@ -359,9 +387,31 @@ export class MealsComponent implements OnInit {
 
   load() { this.api.listMeals(this.filterDate).subscribe(m => this.meals.set(m)); }
 
+  private aiLookupTimer: any = null;
+
   searchFoods() {
-    const q = typeof this.foodQuery === 'string' ? this.foodQuery : '';
-    this.api.searchFoods(q).subscribe(f => this.foodOptions.set(f.slice(0, 20)));
+    const q = typeof this.foodQuery === 'string' ? this.foodQuery.trim() : '';
+    if (this.aiLookupTimer) { clearTimeout(this.aiLookupTimer); this.aiLookupTimer = null; }
+    this.aiLoading.set(false);
+    this.api.searchFoods(q).subscribe(f => {
+      this.foodOptions.set(f.slice(0, 20));
+      if (q.length >= 3 && f.length === 0) {
+        this.aiLookupTimer = setTimeout(() => this.runAiLookup(q), 500);
+      }
+    });
+  }
+
+  private runAiLookup(q: string) {
+    if (q !== (this.foodQuery ?? '').trim()) return;
+    this.aiLoading.set(true);
+    this.api.aiLookupFoods(q).subscribe({
+      next: sugg => {
+        this.aiLoading.set(false);
+        if (q !== (this.foodQuery ?? '').trim()) return;
+        this.foodOptions.set(sugg);
+      },
+      error: () => this.aiLoading.set(false)
+    });
   }
 
   displayFood(f: Food | null): string { return f ? f.name : ''; }
@@ -369,15 +419,28 @@ export class MealsComponent implements OnInit {
 
   addItem() {
     if (!this.pendingFood || !this.pendingGrams) return;
-    const factor = this.pendingGrams / 100;
-    this.draft.items.push({
-      foodId: this.pendingFood.id!,
-      foodName: this.pendingFood.name,
-      grams: this.pendingGrams,
-      calories: this.pendingFood.caloriesPer100g * factor,
-      protein: this.pendingFood.proteinPer100g * factor
-    });
-    this.pendingFood = null; this.pendingGrams = null; this.foodQuery = '';
+    const finalize = (food: Food) => {
+      const factor = this.pendingGrams! / 100;
+      this.draft.items.push({
+        foodId: food.id!,
+        foodName: food.name,
+        grams: this.pendingGrams!,
+        calories: food.caloriesPer100g * factor,
+        protein: food.proteinPer100g * factor
+      });
+      this.pendingFood = null; this.pendingGrams = null; this.foodQuery = '';
+    };
+
+    if (this.pendingFood.id == null) {
+      // Alimento sugerido pela IA — persiste antes de adicionar
+      this.api.createFood(this.pendingFood).subscribe({
+        next: created => finalize(created),
+        error: () => this.snack.open(
+          this.translate.instant('meals.aiSaveFail'), 'OK', { duration: 3000 })
+      });
+    } else {
+      finalize(this.pendingFood);
+    }
   }
 
   itemKcal(it: any): number { return it.calories ?? 0; }

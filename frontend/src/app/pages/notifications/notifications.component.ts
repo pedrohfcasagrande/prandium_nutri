@@ -8,7 +8,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { NotificationPollService } from '../../services/notification-poll.service';
+import { AuthService } from '../../services/auth.service';
 import { AppNotification } from '../../models/models';
+import { notificationTarget } from '../../services/notification-target';
 
 @Component({
   selector: 'app-notifications',
@@ -41,7 +43,7 @@ import { AppNotification } from '../../models/models';
         <div class="list">
           @for (n of items(); track n.id) {
             <mat-card class="item" [class.unread]="!n.readAt" (click)="open(n)">
-              <mat-icon [class]="iconClass(n.type)">{{ iconFor(n.type) }}</mat-icon>
+              <mat-icon [class]="iconClass(n)">{{ iconFor(n) }}</mat-icon>
               <div class="body">
                 <div class="row">
                   <strong>{{ n.title }}</strong>
@@ -82,6 +84,7 @@ import { AppNotification } from '../../models/models';
 export class NotificationsComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private auth = inject(AuthService);
   polls = inject(NotificationPollService);
 
   items = signal<AppNotification[]>([]);
@@ -99,26 +102,32 @@ export class NotificationsComponent implements OnInit {
       this.polls.markRead(n.id);
       this.items.update(list => list.map(x => x.id === n.id ? { ...x, readAt: new Date().toISOString() } : x));
     }
-    if (n.entityType === 'MenuPlan') {
-      const target = n.type === 'MENU_SUBMITTED' ? '/nutritionist/pending-menus' : '/menus';
-      this.router.navigate([target]);
-    }
+    const target = notificationTarget(n, this.auth.currentUser()?.role);
+    if (target) this.router.navigate([target]);
   }
 
-  iconFor(t: string): string {
-    switch (t) {
+  iconFor(n: AppNotification): string {
+    switch (n.type) {
       case 'MENU_APPROVED': return 'check_circle';
       case 'MENU_REJECTED': return 'cancel';
       case 'MENU_SUBMITTED': return 'assignment';
+    }
+    switch (n.entityType) {
+      case 'CompanyNutritionist': return 'corporate_fare';
+      case 'NutritionistClientLink': return 'person_add';
       default: return 'notifications';
     }
   }
 
-  iconClass(t: string): string {
-    switch (t) {
+  iconClass(n: AppNotification): string {
+    switch (n.type) {
       case 'MENU_APPROVED': return 'icon-approved';
       case 'MENU_REJECTED': return 'icon-rejected';
       case 'MENU_SUBMITTED': return 'icon-submitted';
+    }
+    switch (n.entityType) {
+      case 'CompanyNutritionist': return 'icon-submitted';
+      case 'NutritionistClientLink': return 'icon-approved';
       default: return 'icon-generic';
     }
   }

@@ -6,7 +6,7 @@ export interface ImpersonationTarget {
   email: string;
 }
 
-const KEY = 'nutritracker.impersonate';
+const KEY = 'prandiumnutri.impersonate';
 
 @Injectable({ providedIn: 'root' })
 export class ImpersonationService {
