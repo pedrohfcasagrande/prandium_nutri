@@ -1,0 +1,16 @@
+# Copie este arquivo para application-local.yml e preencha os valores.
+# application-local.yml esta no .gitignore — nao sera commitado.
+# Carregado automaticamente por qualquer perfil (dev/sandbox/prod).
+
+nutritracker:
+  gemini:
+    api-key: SUA_CHAVE_GEMINI_AQUI       # https://aistudio.google.com/apikey
+  google:
+    client-id: SEU_CLIENT_ID.apps.googleusercontent.com   # Google Cloud Console -> OAuth 2.0 Client IDs
+  # Opcional em dev (pagamentos mockados). Preencha para sandbox/prod:
+  # stripe:
+  #   secret-key: sk_test_...
+  #   webhook-secret: whsec_...
+  # mercadopago:
+  #   access-token: TEST-...
+  #   webhook-secret: ...

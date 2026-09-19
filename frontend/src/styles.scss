@@ -1,0 +1,214 @@
+@use '@angular/material' as mat;
+
+// --- Angular Material M3 theme (light + dark) ---
+@include mat.core();
+
+$nt-light: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$cyan-palette,
+    tertiary: mat.$blue-palette,
+  ),
+));
+
+$nt-dark: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$cyan-palette,
+    tertiary: mat.$blue-palette,
+  ),
+));
+
+html {
+  color-scheme: light;
+  @include mat.all-component-themes($nt-light);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  @include mat.all-component-colors($nt-dark);
+}
+
+// --- Custom tokens (light default) ---
+:root {
+  --nt-bg: #f5f8fa;
+  --nt-surface: #ffffff;
+  --nt-surface-2: #eef2f6;
+  --nt-primary: #0d9488;
+  --nt-primary-dark: #0f766e;
+  --nt-primary-soft: #ccfbf1;
+  --nt-accent: #f59e0b;
+  --nt-accent-soft: #fef3c7;
+  --nt-purple: #8b5cf6;
+  --nt-text: #1e293b;
+  --nt-text-muted: #64748b;
+  --nt-border: #e2e8f0;
+  --nt-border-strong: #cbd5e1;
+  --nt-danger: #dc2626;
+  --nt-danger-soft: #fef2f2;
+  --nt-hero-bg: linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%);
+  --nt-radius: 14px;
+  --nt-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  --nt-shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="dark"] {
+  --nt-bg: #0f172a;
+  --nt-surface: #1e293b;
+  --nt-surface-2: #273449;
+  --nt-primary: #2dd4bf;
+  --nt-primary-dark: #14b8a6;
+  --nt-primary-soft: rgba(45, 212, 191, 0.15);
+  --nt-accent: #fbbf24;
+  --nt-accent-soft: rgba(251, 191, 36, 0.15);
+  --nt-purple: #a78bfa;
+  --nt-text: #f1f5f9;
+  --nt-text-muted: #94a3b8;
+  --nt-border: #334155;
+  --nt-border-strong: #475569;
+  --nt-danger: #f87171;
+  --nt-danger-soft: rgba(248, 113, 113, 0.12);
+  --nt-hero-bg: linear-gradient(135deg, #0b3541 0%, #0f2745 100%);
+  --nt-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --nt-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+// --- Base ---
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+  background: var(--nt-bg);
+  color: var(--nt-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+* { box-sizing: border-box; }
+
+// --- Layout helpers ---
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (max-width: 600px) {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  h1 { margin: 0; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.01em; color: var(--nt-text); }
+  p { margin: 0; color: var(--nt-text-muted); }
+}
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.card-surface {
+  background: var(--nt-surface);
+  border-radius: var(--nt-radius);
+  box-shadow: var(--nt-shadow);
+  border: 1px solid var(--nt-border);
+  padding: 24px;
+}
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.spacer { flex: 1 1 auto; }
+.text-muted { color: var(--nt-text-muted); }
+
+// --- Material component overrides ---
+.mat-mdc-card {
+  border-radius: var(--nt-radius) !important;
+  box-shadow: var(--nt-shadow) !important;
+  border: 1px solid var(--nt-border);
+  background: var(--nt-surface) !important;
+  color: var(--nt-text) !important;
+}
+.mat-mdc-card-header { padding: 20px 24px 8px !important; }
+.mat-mdc-card-content { padding: 8px 24px 20px !important; }
+.mat-mdc-card-actions { padding: 8px 20px 20px !important; min-height: auto !important; }
+.mat-mdc-card-title { color: var(--nt-text) !important; }
+.mat-mdc-card-subtitle { color: var(--nt-text-muted) !important; }
+
+.mat-toolbar {
+  background: var(--nt-surface) !important;
+  color: var(--nt-text) !important;
+  border-bottom: 1px solid var(--nt-border);
+}
+
+.mat-mdc-form-field { width: 100%; }
+
+.mat-mdc-list-item.active {
+  background: var(--nt-primary-soft) !important;
+  border-left: 3px solid var(--nt-primary);
+  .mdc-list-item__primary-text { color: var(--nt-primary-dark) !important; font-weight: 600; }
+  mat-icon { color: var(--nt-primary) !important; }
+}
+.mat-mdc-list-item .mdc-list-item__primary-text { color: var(--nt-text) !important; }
+
+.mat-mdc-menu-panel {
+  background: var(--nt-surface) !important;
+}
+.mat-mdc-menu-item .mdc-list-item__primary-text {
+  color: var(--nt-text) !important;
+}
+
+// --- Utility classes ---
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 1.05rem;
+}
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--nt-text-muted);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  mat-icon { font-size: 48px; width: 48px; height: 48px; opacity: 0.5; }
+}
+.alert-error {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--nt-danger-soft);
+  color: var(--nt-danger);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+}
+
+// Suffix (g, kg, cm, %...) grudava na borda direita do mat-form-field.
+// Adiciona respiro entre input e a borda direita do outline.
+.mat-mdc-form-field .mat-mdc-form-field-text-suffix {
+  padding-left: 8px;
+  padding-right: 4px;
+  color: var(--nt-text-muted);
+}
+.mat-mdc-form-field .mat-mdc-form-field-icon-suffix {
+  padding-right: 4px;
+}
+
+// Material 18 MDC nao adiciona gap entre <mat-icon> e o texto de <button mat-*>.
+// Aplica gap consistente em todos os botoes que combinam icone + texto.
+.mat-mdc-button-base .mdc-button__label,
+.mat-mdc-outlined-button .mdc-button__label,
+.mat-mdc-unelevated-button .mdc-button__label,
+.mat-mdc-raised-button .mdc-button__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+// Menu items tambem
+.mat-mdc-menu-item .mat-mdc-menu-item-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

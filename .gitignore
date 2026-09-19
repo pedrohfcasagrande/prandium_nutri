@@ -1,0 +1,22 @@
+# IDE
+.idea/
+*.iml
+
+# Backend
+backend/target/
+backend/.mvn/
+backend/HELP.md
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+backend/src/main/resources/application-local.yml
