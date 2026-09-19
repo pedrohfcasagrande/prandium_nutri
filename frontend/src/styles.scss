@@ -212,3 +212,18 @@ body {
   align-items: center;
   gap: 8px;
 }
+
+// Paginator: alinha com o resto da UI. Quando esta dentro de um mat-card (tabelas),
+// nao ganha borda extra; quando esta solto (lista de cards), ganha o mesmo card-surface.
+.mat-mdc-paginator {
+  background: transparent !important;
+  color: var(--nt-text) !important;
+  border-radius: var(--nt-radius);
+}
+// Quando esta fora de um mat-card (irmao direto do .page), aplica card-surface pra consistencia
+.page > .mat-mdc-paginator {
+  background: var(--nt-surface) !important;
+  border: 1px solid var(--nt-border);
+  box-shadow: var(--nt-shadow);
+  margin-top: 4px;
+}

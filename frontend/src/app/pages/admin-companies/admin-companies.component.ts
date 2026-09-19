@@ -17,6 +17,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { AdminCompany } from '../../models/models';
 import { AdminCompanyCreateDialog } from './admin-company-create.dialog';
+import { SearchSortBarComponent } from '../../components/search-sort-bar.component';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-admin-companies',
@@ -26,7 +28,7 @@ import { AdminCompanyCreateDialog } from './admin-company-create.dialog';
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatButtonModule, MatIconModule, MatTableModule, MatChipsModule,
     MatTooltipModule, MatSlideToggleModule, MatDialogModule, MatSnackBarModule,
-    TranslateModule
+    TranslateModule, SearchSortBarComponent, MatPaginatorModule
   ],
   template: `
     <div class="page">
@@ -39,6 +41,8 @@ import { AdminCompanyCreateDialog } from './admin-company-create.dialog';
           <mat-icon>add</mat-icon> {{ 'adminCompanies.newBtn' | translate }}
         </button>
       </div>
+
+      <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (!companies().length) {
         <div class="empty card-surface">
@@ -114,6 +118,9 @@ import { AdminCompanyCreateDialog } from './admin-company-create.dialog';
               <tr mat-header-row *matHeaderRowDef="cols"></tr>
               <tr mat-row *matRowDef="let row; columns: cols"></tr>
             </table>
+            <mat-paginator [length]="total()" [pageSize]="pageSize" [pageIndex]="pageIndex"
+                           [pageSizeOptions]="[10, 25, 50]" (page)="onPage($event)"
+                           showFirstLastButtons></mat-paginator>
           </mat-card-content>
         </mat-card>
       }
@@ -161,7 +168,20 @@ export class AdminCompaniesComponent implements OnInit {
 
   ngOnInit(): void { this.load(); }
 
-  load() { this.api.adminListCompanies().subscribe(c => this.companies.set(c)); }
+  query = '';
+  sort: 'created' | 'name' = 'name';
+  pageIndex = 0;
+  pageSize = 10;
+  total = signal(0);
+
+  load() {
+    this.api.adminListCompanies(this.query, this.sort, this.pageIndex, this.pageSize)
+        .subscribe(p => { this.companies.set(p.items); this.total.set(p.total); });
+  }
+
+  onSearch(q: string) { this.query = q; this.pageIndex = 0; this.load(); }
+  onSort(s: 'created' | 'name') { this.sort = s; this.pageIndex = 0; this.load(); }
+  onPage(e: PageEvent) { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
 
   openCreate() {
     const ref = this.dialog.open(AdminCompanyCreateDialog, { width: '560px' });

@@ -56,6 +56,7 @@ class MockPaymentClientTest {
                 .role(Role.NUTRITIONIST).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true)
                 .consentAcceptedAt(LocalDateTime.now())
+                .cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
                 .build();
         user = userRepo.save(user);
         subscriptionService.createFreeSubscription(PlanTarget.NUTRITIONIST, user.getId(), "BRL");

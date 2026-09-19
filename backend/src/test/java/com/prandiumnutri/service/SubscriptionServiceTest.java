@@ -74,7 +74,8 @@ class SubscriptionServiceTest {
         User nutri = userRepo.save(User.builder()
                 .name("Nutri Head").email("nh-" + System.nanoTime() + "@x.com")
                 .passwordHash("$2a$10$x").role(Role.NUTRITIONIST).provider(AuthProvider.LOCAL)
-                .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).build());
+                .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
         var sub = subscriptionService.createFreeSubscription(PlanTarget.NUTRITIONIST, nutri.getId(), "BRL");
 
         // Cria 4 vinculos ACTIVE — acima do limite NUTRI_FREE (3)
@@ -82,7 +83,8 @@ class SubscriptionServiceTest {
             User client = userRepo.save(User.builder()
                     .name("C" + i).email("c" + i + "-" + System.nanoTime() + "@x.com")
                     .passwordHash("$2a$10$x").role(Role.USER).provider(AuthProvider.LOCAL)
-                    .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).build());
+                    .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
             nclRepo.save(NutritionistClientLink.builder()
                     .nutritionist(nutri).client(client)
                     .invitedByEmail(client.getEmail()).inviteToken(UUID.randomUUID().toString())

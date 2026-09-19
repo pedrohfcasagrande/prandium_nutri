@@ -16,6 +16,8 @@ import { ApiService } from '../../services/api.service';
 import { ImpersonationService } from '../../services/impersonation.service';
 import { CompanyNutriLink } from '../../models/models';
 import { RevokeNutriDialogComponent, RevokeDialogResult } from './revoke-nutri-dialog.component';
+import { SearchSortBarComponent } from '../../components/search-sort-bar.component';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-company-nutritionists',
@@ -24,7 +26,8 @@ import { RevokeNutriDialogComponent, RevokeDialogResult } from './revoke-nutri-d
     CommonModule, FormsModule,
     MatCardModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatChipsModule, MatTooltipModule,
-    MatSnackBarModule, MatDialogModule, TranslateModule
+    MatSnackBarModule, MatDialogModule, TranslateModule,
+    SearchSortBarComponent, MatPaginatorModule
   ],
   template: `
     <div class="page">
@@ -58,8 +61,9 @@ import { RevokeNutriDialogComponent, RevokeDialogResult } from './revoke-nutri-d
       </mat-card>
 
       <div class="page-header history-header">
-        <h2>{{ 'company.nutris.listTitle' | translate }} ({{ nutris().length }})</h2>
+        <h2>{{ 'company.nutris.listTitle' | translate }} ({{ total() }})</h2>
       </div>
+      <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (!nutris().length) {
         <div class="empty card-surface">
@@ -75,8 +79,14 @@ import { RevokeNutriDialogComponent, RevokeDialogResult } from './revoke-nutri-d
                 {{ (n.nutritionistName || '?')[0].toUpperCase() }}
               </div>
               <div class="nutri-info">
-                <div class="nutri-name">{{ n.nutritionistName }}</div>
-                <div class="nutri-email">{{ n.nutritionistEmail }}</div>
+                <div class="nutri-name">
+                  {{ n.nutritionistName }}
+                  @if (n.nutritionistCrn) { <span class="crn-inline">· {{ n.nutritionistCrn }}</span> }
+                </div>
+                <div class="nutri-email">
+                  {{ n.nutritionistEmail }}
+                  @if (n.nutritionistCpf) { <span class="cpf-inline">· {{ n.nutritionistCpf }}</span> }
+                </div>
                 <div class="nutri-meta">
                   <span class="status-chip" [class]="'chip-' + n.status.toLowerCase()">
                     {{ ('nutri.status.' + n.status) | translate }}
@@ -112,6 +122,9 @@ import { RevokeNutriDialogComponent, RevokeDialogResult } from './revoke-nutri-d
             </mat-card>
           }
         </div>
+        <mat-paginator [length]="total()" [pageSize]="pageSize" [pageIndex]="pageIndex"
+                       [pageSizeOptions]="[10, 25, 50]" (page)="onPage($event)"
+                       showFirstLastButtons></mat-paginator>
       }
     </div>
   `,
@@ -143,6 +156,8 @@ import { RevokeNutriDialogComponent, RevokeDialogResult } from './revoke-nutri-d
     .avatar.avatar-pending { background: linear-gradient(135deg, var(--nt-accent), #d97706); }
     .nutri-info { min-width: 0; }
     .nutri-name { font-weight: 600; font-size: 1.05rem; }
+    .crn-inline, .cpf-inline { font-weight: 400; font-size: 0.85em;
+      color: var(--nt-text-muted); font-variant-numeric: tabular-nums; margin-left: 2px; }
     .nutri-email { color: var(--nt-text-muted); font-size: 0.9rem; margin: 2px 0 6px;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .nutri-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -178,9 +193,22 @@ export class CompanyNutritionistsComponent implements OnInit {
   nutris = signal<CompanyNutriLink[]>([]);
   email = '';
 
+  query = '';
+  sort: 'created' | 'name' = 'name';
+  pageIndex = 0;
+  pageSize = 10;
+  total = signal(0);
+
   ngOnInit(): void { this.load(); }
 
-  load() { this.api.companyNutritionists().subscribe(n => this.nutris.set(n)); }
+  load() {
+    this.api.companyNutritionists(this.query, this.sort, this.pageIndex, this.pageSize)
+        .subscribe(p => { this.nutris.set(p.items); this.total.set(p.total); });
+  }
+
+  onSearch(q: string) { this.query = q; this.pageIndex = 0; this.load(); }
+  onSort(s: 'created' | 'name') { this.sort = s; this.pageIndex = 0; this.load(); }
+  onPage(e: PageEvent) { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
 
   invite() {
     if (!this.email) return;

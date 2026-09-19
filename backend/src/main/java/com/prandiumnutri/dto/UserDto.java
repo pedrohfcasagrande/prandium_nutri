@@ -11,6 +11,10 @@ import java.time.LocalDate;
 public record UserDto(
         Long id,
         @NotBlank @Email String email,
+        /** CPF mascarado (ex "123.***.***-45"). Nunca retorna CPF completo por API. */
+        String cpf,
+        /** CRN completo (nutricionista). Nao e PII sensivel. */
+        String crn,
         @NotBlank String name,
         Sex sex,
         LocalDate birthDate,

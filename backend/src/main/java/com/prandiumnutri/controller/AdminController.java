@@ -1,11 +1,10 @@
 package com.prandiumnutri.controller;
 
 import com.prandiumnutri.dto.AdminUserDto;
+import com.prandiumnutri.dto.PageDto;
 import com.prandiumnutri.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/users")
@@ -15,8 +14,11 @@ public class AdminController {
     private final UserService userService;
 
     @GetMapping
-    public List<AdminUserDto> listUsers() {
-        return userService.listAll();
+    public PageDto<AdminUserDto> listUsers(@RequestParam(required = false) String q,
+                                            @RequestParam(required = false) String sort,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size) {
+        return PageDto.of(userService.listAll(q, sort), page, size);
     }
 
     @PutMapping("/{id}/active")

@@ -129,6 +129,7 @@ class SponsorshipTest {
                 .passwordHash("$2a$10$x").role(Role.NUTRITIONIST).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true).acceptsNewClients(true)
                 .consentAcceptedAt(LocalDateTime.now())
+                .cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
                 .build());
     }
 
@@ -139,6 +140,7 @@ class SponsorshipTest {
                 .passwordHash("$2a$10$x").role(Role.USER).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true)
                 .consentAcceptedAt(LocalDateTime.now())
+                .cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
                 .build());
     }
 }

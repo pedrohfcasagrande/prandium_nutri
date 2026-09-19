@@ -19,8 +19,12 @@ public class AdminCompanyController {
     private final CurrentUser currentUser;
 
     @GetMapping
-    public List<AdminCompanyDto> list() {
-        return onboardingService.listAll();
+    public com.prandiumnutri.dto.PageDto<AdminCompanyDto> list(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return com.prandiumnutri.dto.PageDto.of(onboardingService.listAll(q, sort), page, size);
     }
 
     @GetMapping("/{id}")

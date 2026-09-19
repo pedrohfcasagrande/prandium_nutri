@@ -40,7 +40,29 @@ public class CompanyOnboardingService {
 
     @Transactional(readOnly = true)
     public List<AdminCompanyDto> listAll() {
-        return companyRepository.findAll().stream().map(this::toAdminDto).toList();
+        return listAll(null, null);
+    }
+
+    /** Fase 6B: q busca em name/tradeName/taxId/contactEmail; sort = 'name' | 'created' (default). */
+    @Transactional(readOnly = true)
+    public List<AdminCompanyDto> listAll(String q, String sort) {
+        var stream = companyRepository.findAll().stream();
+        if (q != null && !q.isBlank()) {
+            String needle = q.trim().toLowerCase();
+            String digits = q.replaceAll("\\D", "");
+            stream = stream.filter(c ->
+                (c.getName() != null && c.getName().toLowerCase().contains(needle))
+             || (c.getTradeName() != null && c.getTradeName().toLowerCase().contains(needle))
+             || (c.getContactEmail() != null && c.getContactEmail().toLowerCase().contains(needle))
+             || (!digits.isEmpty() && c.getTaxId() != null && c.getTaxId().replaceAll("\\D", "").contains(digits))
+            );
+        }
+        java.util.Comparator<Company> comp = !"created".equalsIgnoreCase(sort)
+                ? java.util.Comparator.comparing(c -> c.getName() == null ? "" : c.getName().toLowerCase())
+                : java.util.Comparator.comparing(
+                        (Company c) -> c.getCreatedAt() == null ? java.time.LocalDateTime.MIN : c.getCreatedAt()
+                  ).reversed();
+        return stream.sorted(comp).map(this::toAdminDto).toList();
     }
 
     @Transactional(readOnly = true)

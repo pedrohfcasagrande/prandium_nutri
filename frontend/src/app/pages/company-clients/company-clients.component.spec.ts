@@ -10,6 +10,10 @@ describe('CompanyClientsComponent', () => {
   let component: CompanyClientsComponent;
   let http: HttpTestingController;
 
+  const emptyPage = { items: [], total: 0, page: 0, size: 10 };
+  const clientsUrl = `${environment.apiUrl}/company/clients`;
+  const nutrisUrl = `${environment.apiUrl}/company/nutritionists`;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CompanyClientsComponent],
@@ -26,9 +30,8 @@ describe('CompanyClientsComponent', () => {
     http = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
 
-    // Absorve os requests iniciais
-    http.expectOne(`${environment.apiUrl}/company/clients`).flush([]);
-    http.expectOne(`${environment.apiUrl}/company/nutritionists`).flush([]);
+    http.expectOne(r => r.url === clientsUrl).flush(emptyPage);
+    http.expectOne(r => r.url === nutrisUrl).flush(emptyPage);
   });
 
   afterEach(() => http.verify());
@@ -44,19 +47,31 @@ describe('CompanyClientsComponent', () => {
     expect(component.activeNutris()[0].id).toBe(10);
   });
 
-  it('filtered filtra por query', () => {
-    const seed = [
-      { linkId: 1, clientId: 1, clientName: 'Joao Silva', clientEmail: 'j@x',
-        nutriId: 10, nutriName: 'Ana', status: 'ACTIVE', lastMealDate: null },
-      { linkId: 2, clientId: 2, clientName: 'Maria', clientEmail: 'm@x',
-        nutriId: 10, nutriName: 'Ana', status: 'ACTIVE', lastMealDate: null }
-    ] as any;
-    component.query = 'joao';
-    component.clients.set(seed);
-    expect(component.filtered().length).toBe(1);
-    component.query = '';
-    component.clients.set([...seed]);  // dispara recomputacao
-    expect(component.filtered().length).toBe(2);
+  it('onSearch dispara reload com q e reset page', () => {
+    component.pageIndex = 5;
+    component.onSearch('joao');
+    expect(component.pageIndex).toBe(0);
+    const req = http.expectOne(r => r.url === clientsUrl && r.params.get('q') === 'joao');
+    req.flush(emptyPage);
+    http.expectOne(r => r.url === nutrisUrl).flush(emptyPage);
+  });
+
+  it('onSort dispara reload com sort', () => {
+    component.onSort('name');
+    const req = http.expectOne(r => r.url === clientsUrl && r.params.get('sort') === 'name');
+    req.flush(emptyPage);
+    http.expectOne(r => r.url === nutrisUrl).flush(emptyPage);
+  });
+
+  it('onPage dispara reload mantendo pageIndex', () => {
+    component.onPage({ pageIndex: 2, pageSize: 25, length: 100 } as any);
+    expect(component.pageIndex).toBe(2);
+    expect(component.pageSize).toBe(25);
+    const req = http.expectOne(r => r.url === clientsUrl
+                                     && r.params.get('page') === '2'
+                                     && r.params.get('size') === '25');
+    req.flush(emptyPage);
+    http.expectOne(r => r.url === nutrisUrl).flush(emptyPage);
   });
 
   it('transfer chama endpoint com target correto', () => {
@@ -69,8 +84,8 @@ describe('CompanyClientsComponent', () => {
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual({ targetNutriId: 99 });
     req.flush(null);
-    http.expectOne(`${environment.apiUrl}/company/clients`).flush([]);
-    http.expectOne(`${environment.apiUrl}/company/nutritionists`).flush([]);
+    http.expectOne(r => r.url === clientsUrl).flush(emptyPage);
+    http.expectOne(r => r.url === nutrisUrl).flush(emptyPage);
   });
 
   it('transfer no-op quando target igual ao atual', () => {

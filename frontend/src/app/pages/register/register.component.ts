@@ -65,6 +65,23 @@ import { LanguageSwitcherComponent } from '../../components/language-switcher.co
             </mat-form-field>
 
             <mat-form-field appearance="outline">
+              <mat-label>{{ 'register.cpf' | translate }}</mat-label>
+              <input matInput inputmode="numeric" [(ngModel)]="cpf"
+                     [placeholder]="'register.cpfHint' | translate"
+                     (input)="onCpfInput($event)" maxlength="14">
+              <mat-icon matPrefix>badge</mat-icon>
+            </mat-form-field>
+
+            @if (role === 'NUTRITIONIST') {
+              <mat-form-field appearance="outline">
+                <mat-label>{{ 'register.crn' | translate }}</mat-label>
+                <input matInput [(ngModel)]="crn"
+                       [placeholder]="'register.crnHint' | translate">
+                <mat-icon matPrefix>medical_information</mat-icon>
+              </mat-form-field>
+            }
+
+            <mat-form-field appearance="outline">
               <mat-label>{{ 'register.password' | translate }}</mat-label>
               <input matInput [type]="showPwd ? 'text' : 'password'"
                      [(ngModel)]="password" autocomplete="new-password">
@@ -190,6 +207,8 @@ export class RegisterComponent {
 
   name = '';
   email = '';
+  cpf = '';
+  crn = '';
   password = '';
   showPwd = false;
   dataConsent = false;
@@ -197,10 +216,24 @@ export class RegisterComponent {
   loading = signal(false);
   error = signal<string | null>(null);
 
+  onCpfInput(ev: Event) {
+    const raw = (ev.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 11);
+    // Formata "123.456.789-01" enquanto digita
+    let formatted = raw;
+    if (raw.length > 9) formatted = `${raw.slice(0,3)}.${raw.slice(3,6)}.${raw.slice(6,9)}-${raw.slice(9)}`;
+    else if (raw.length > 6) formatted = `${raw.slice(0,3)}.${raw.slice(3,6)}.${raw.slice(6)}`;
+    else if (raw.length > 3) formatted = `${raw.slice(0,3)}.${raw.slice(3)}`;
+    this.cpf = formatted;
+  }
+
   submit() {
     this.error.set(null);
-    if (!this.name || !this.email || !this.password) {
+    const cpfDigits = this.cpf.replace(/\D/g, '');
+    if (!this.name || !this.email || !this.password || !cpfDigits) {
       this.error.set(this.translate.instant('register.errors.emptyFields')); return;
+    }
+    if (cpfDigits.length !== 11) {
+      this.error.set(this.translate.instant('register.errors.invalidCpf')); return;
     }
     if (this.password.length < 6) {
       this.error.set(this.translate.instant('register.errors.shortPassword')); return;
@@ -210,7 +243,10 @@ export class RegisterComponent {
     }
     this.loading.set(true);
     this.auth.register({
-      name: this.name, email: this.email, password: this.password,
+      name: this.name, email: this.email,
+      cpf: cpfDigits,
+      crn: this.role === 'NUTRITIONIST' && this.crn?.trim() ? this.crn.trim() : undefined,
+      password: this.password,
       dataConsent: this.dataConsent, role: this.role
     }).subscribe({
       next: r => {

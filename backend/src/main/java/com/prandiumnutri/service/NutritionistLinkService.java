@@ -52,13 +52,39 @@ public class NutritionistLinkService {
         return listClientsForNutri(nutritionistId, null);
     }
 
-    /** Fase 5D: se practiceId != null, retorna somente vinculos daquela practice. */
+    /** Fase 5D: filtra por practice. Sem q/sort. */
     @Transactional(readOnly = true)
     public List<ClientLinkDto> listClientsForNutri(Long nutritionistId, Long practiceId) {
-        return linkRepository.findByNutritionistIdOrderByInvitedAtDesc(nutritionistId).stream()
+        return listClientsForNutri(nutritionistId, practiceId, null, null);
+    }
+
+    /** Fase 6B: q busca em nome/email/cpf; sort = 'name' | 'invitedAt' (default desc). */
+    @Transactional(readOnly = true)
+    public List<ClientLinkDto> listClientsForNutri(Long nutritionistId, Long practiceId, String q, String sort) {
+        String needle = q == null ? null : q.trim().toLowerCase();
+        String digits = q == null ? "" : q.replaceAll("\\D", "");
+        var stream = linkRepository.findByNutritionistIdOrderByInvitedAtDesc(nutritionistId).stream()
                 .filter(l -> practiceId == null
-                          || (l.getPractice() != null && l.getPractice().getId().equals(practiceId)))
-                .map(this::toClientLinkDto).toList();
+                          || (l.getPractice() != null && l.getPractice().getId().equals(practiceId)));
+        if (needle != null && !needle.isEmpty()) {
+            stream = stream.filter(l -> {
+                var c = l.getClient();
+                if (c == null) return l.getInvitedByEmail() != null && l.getInvitedByEmail().toLowerCase().contains(needle);
+                if (c.getName() != null && c.getName().toLowerCase().contains(needle)) return true;
+                if (c.getEmail() != null && c.getEmail().toLowerCase().contains(needle)) return true;
+                if (!digits.isEmpty() && c.getCpf() != null && c.getCpf().contains(digits)) return true;
+                return false;
+            });
+        }
+        java.util.Comparator<NutritionistClientLink> comp = !"created".equalsIgnoreCase(sort)
+                ? java.util.Comparator.comparing(l -> {
+                    var c = l.getClient();
+                    return (c != null && c.getName() != null ? c.getName() : "").toLowerCase();
+                  })
+                : java.util.Comparator.comparing(
+                        (NutritionistClientLink l) -> l.getInvitedAt() == null ? java.time.LocalDateTime.MIN : l.getInvitedAt()
+                  ).reversed();
+        return stream.sorted(comp).map(this::toClientLinkDto).toList();
     }
 
     @Transactional
@@ -344,6 +370,7 @@ public class NutritionistLinkService {
                 c != null ? c.getId() : null,
                 c != null ? c.getName() : "(pendente)",
                 c != null ? c.getEmail() : l.getInvitedByEmail(),
+                c != null ? com.prandiumnutri.support.CpfUtil.mask(c.getCpf()) : null,
                 l.getStatus(), l.getInvitedAt(), l.getAcceptedAt(), l.getRevokedAt(),
                 sub.map(com.prandiumnutri.domain.Subscription::getStatus).orElse(null),
                 sub.map(s -> s.getPlan() != null ? s.getPlan().getCode() : null).orElse(null),

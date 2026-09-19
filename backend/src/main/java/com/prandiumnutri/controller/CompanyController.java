@@ -39,9 +39,13 @@ public class CompanyController {
 
     @GetMapping("/nutritionists")
     @PreAuthorize("hasRole('COMPANY')")
-    public List<CompanyNutriLinkDto> nutritionists() {
+    public com.prandiumnutri.dto.PageDto<CompanyNutriLinkDto> nutritionists(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Long companyId = companyService.getByOwner(currentUser.getAuthenticatedId()).getId();
-        return companyService.listNutritionists(companyId);
+        return com.prandiumnutri.dto.PageDto.of(companyService.listNutritionists(companyId, q, sort), page, size);
     }
 
     @PostMapping("/nutritionists/invite")
@@ -70,9 +74,13 @@ public class CompanyController {
 
     @GetMapping("/clients")
     @PreAuthorize("hasRole('COMPANY')")
-    public java.util.List<com.prandiumnutri.dto.CompanyClientDto> clients() {
+    public com.prandiumnutri.dto.PageDto<com.prandiumnutri.dto.CompanyClientDto> clients(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Long companyId = companyService.getByOwner(currentUser.getAuthenticatedId()).getId();
-        return companyService.listClients(companyId);
+        return com.prandiumnutri.dto.PageDto.of(companyService.listClients(companyId, q, sort), page, size);
     }
 
     @PutMapping("/clients/{clientId}/nutri")

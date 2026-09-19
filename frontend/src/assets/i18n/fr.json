@@ -236,6 +236,20 @@
       "mismatch": "Les mots de passe ne correspondent pas."
     }
   },
+  "search": {
+    "placeholder": "Rechercher par nom, e-mail, CPF, CNPJ ou CRN...",
+    "clear": "Effacer la recherche",
+    "sortTooltip": "Tri : récent en premier / alphabétique"
+  },
+  "paginator": {
+    "itemsPerPage": "Éléments par page :",
+    "nextPage": "Page suivante",
+    "previousPage": "Page précédente",
+    "firstPage": "Première page",
+    "lastPage": "Dernière page",
+    "range": "{{start}} – {{end}} sur {{total}}",
+    "rangeEmpty": "0 sur {{total}}"
+  },
   "register": {
     "title": "Créer un compte",
     "subtitle": "Commencez à suivre votre alimentation en quelques minutes.",
@@ -245,6 +259,10 @@
     "iAmCompany": "Je suis une entreprise ? S'inscrire ici →",
     "name": "Nom",
     "email": "E-mail",
+    "cpf": "CPF (identifiant fiscal)",
+    "cpfHint": "000.000.000-00",
+    "crn": "CRN (optionnel)",
+    "crnHint": "Ex. : CRN3 12345",
     "password": "Mot de passe (min. 6 caractères)",
     "submit": "Créer le compte",
     "haveAccount": "Vous avez déjà un compte ?",
@@ -256,6 +274,7 @@
     },
     "errors": {
       "emptyFields": "Remplissez tous les champs",
+      "invalidCpf": "CPF invalide — doit contenir 11 chiffres",
       "shortPassword": "Le mot de passe doit contenir au moins 6 caractères",
       "noConsent": "Vous devez accepter la politique de collecte des données",
       "createFail": "Échec de la création du compte"
@@ -490,7 +509,10 @@
     "manageTooltip": "Gérer cet utilisateur",
     "manage": "Gérer",
     "toggleFail": "Erreur lors de la mise à jour",
-    "deleteFail": "Erreur lors de la suppression"
+    "deleteFail": "Erreur lors de la suppression",
+    "empty": "Aucun utilisateur trouvé",
+    "statusActive": "Actif",
+    "statusInactive": "Inactif"
   },
   "billing": {
     "title": "Mon plan",

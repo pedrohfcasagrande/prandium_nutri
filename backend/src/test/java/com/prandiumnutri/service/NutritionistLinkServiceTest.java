@@ -46,6 +46,7 @@ class NutritionistLinkServiceTest {
                 .profileCompleted(true)
                 .active(true)
                 .consentAcceptedAt(LocalDateTime.now())
+                .cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
                 .build();
         u = userRepo.save(u);
         subscriptionService.createFreeSubscription(PlanTarget.NUTRITIONIST, u.getId(), "BRL");
@@ -66,7 +67,8 @@ class NutritionistLinkServiceTest {
         User client = userRepo.save(User.builder()
                 .name("Cliente Sub").email("csub-" + System.nanoTime() + "@example.com")
                 .passwordHash("$2a$10$x").role(Role.USER).provider(AuthProvider.LOCAL)
-                .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).build());
+                .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
         subscriptionService.createFreeSubscription(PlanTarget.USER, client.getId(), "BRL");
 
         linkService.invite(nutri, client.getEmail());

@@ -14,6 +14,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { ImpersonationService } from '../../services/impersonation.service';
 import { PracticeService } from '../../services/practice.service';
+import { SearchSortBarComponent } from '../../components/search-sort-bar.component';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { ClientLink } from '../../models/models';
 
 @Component({
@@ -23,7 +25,8 @@ import { ClientLink } from '../../models/models';
     CommonModule, FormsModule,
     MatCardModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatTooltipModule,
-    MatDividerModule, MatSnackBarModule, TranslateModule
+    MatDividerModule, MatSnackBarModule, TranslateModule,
+    SearchSortBarComponent, MatPaginatorModule
   ],
   template: `
     <div class="page">
@@ -97,8 +100,9 @@ import { ClientLink } from '../../models/models';
       }
 
       <div class="page-header history-header">
-        <h2>{{ 'nutri.clients.listTitle' | translate }} ({{ clients().length }})</h2>
+        <h2>{{ 'nutri.clients.listTitle' | translate }} ({{ total() }})</h2>
       </div>
+      <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (!clients().length) {
         <div class="empty card-surface">
@@ -115,7 +119,10 @@ import { ClientLink } from '../../models/models';
               </div>
               <div class="client-text">
                 <div class="client-name">{{ c.clientName }}</div>
-                <div class="client-email">{{ c.clientEmail }}</div>
+                <div class="client-email">
+                  {{ c.clientEmail }}
+                  @if (c.clientCpf) { <span class="cpf-inline">· {{ c.clientCpf }}</span> }
+                </div>
                 <div class="client-meta">
                   <span class="status-pill" [class]="'pill-' + c.status.toLowerCase()">
                     {{ ('nutri.status.' + c.status) | translate }}
@@ -156,6 +163,9 @@ import { ClientLink } from '../../models/models';
             </mat-card>
           }
         </div>
+        <mat-paginator [length]="total()" [pageSize]="pageSize" [pageIndex]="pageIndex"
+                       [pageSizeOptions]="[10, 25, 50]" (page)="onPage($event)"
+                       showFirstLastButtons></mat-paginator>
       }
     </div>
   `,
@@ -195,6 +205,7 @@ import { ClientLink } from '../../models/models';
     .client-text { min-width: 0; }
     .client-name { font-weight: 600; font-size: 1.05rem; }
     .client-email { color: var(--nt-text-muted); font-size: 0.9rem; margin: 2px 0 6px; }
+    .cpf-inline { font-variant-numeric: tabular-nums; margin-left: 4px; }
     .client-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .small { font-size: 0.8rem; }
 
@@ -247,10 +258,21 @@ export class NutriClientsComponent implements OnInit {
 
   ngOnInit(): void { this.load(); this.loadRequests(); }
 
+  query = '';
+  sort: 'created' | 'name' = 'name';
+  pageIndex = 0;
+  pageSize = 10;
+  total = signal(0);
+
   load() {
-    this.api.nutriListClients(this.practiceCtx.activePracticeId())
-        .subscribe(c => this.clients.set(c));
+    this.api.nutriListClients(this.practiceCtx.activePracticeId(), this.query, this.sort,
+                              this.pageIndex, this.pageSize)
+        .subscribe(p => { this.clients.set(p.items); this.total.set(p.total); });
   }
+
+  onSearch(q: string) { this.query = q; this.pageIndex = 0; this.load(); }
+  onSort(s: 'created' | 'name') { this.sort = s; this.pageIndex = 0; this.load(); }
+  onPage(e: PageEvent) { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
   loadRequests() { this.api.clientRequests().subscribe({
     next: r => this.requests.set(r),
     error: () => this.requests.set([])

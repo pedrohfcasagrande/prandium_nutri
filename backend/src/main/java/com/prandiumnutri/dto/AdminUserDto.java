@@ -6,6 +6,10 @@ import com.prandiumnutri.domain.Role;
 public record AdminUserDto(
         Long id,
         String email,
+        /** CPF mascarado (LGPD). */
+        String cpf,
+        /** CRN quando nutricionista, null caso contrario. */
+        String crn,
         String name,
         Role role,
         AuthProvider provider,

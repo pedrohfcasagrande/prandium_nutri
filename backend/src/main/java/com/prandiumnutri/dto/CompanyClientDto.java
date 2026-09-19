@@ -10,8 +10,16 @@ public record CompanyClientDto(
         Long clientId,
         String clientName,
         String clientEmail,
+        /** CPF mascarado do cliente (LGPD). */
+        String clientCpf,
         Long nutriId,
         String nutriName,
         LinkStatus status,
         LocalDate lastMealDate
-) {}
+) {
+    /** Overload compat (sem cpf) para caminhos que ainda nao passam pelo mascarador. */
+    public CompanyClientDto(Long linkId, Long clientId, String clientName, String clientEmail,
+                             Long nutriId, String nutriName, LinkStatus status, LocalDate lastMealDate) {
+        this(linkId, clientId, clientName, clientEmail, null, nutriId, nutriName, status, lastMealDate);
+    }
+}

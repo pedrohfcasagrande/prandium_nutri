@@ -8,7 +8,7 @@ import {
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
   NutriPublic, NutritionistLink,
-  OnboardingInfo, PendingInvite, PlanTarget, Practice, Pricing,
+  OnboardingInfo, Page, PendingInvite, PlanTarget, Practice, Pricing,
   ProgressEntry, ProgressSummary, Subscription, User
 } from '../models/models';
 
@@ -109,10 +109,13 @@ export class ApiService {
     return this.http.delete<void>(`${this.base}/menu-plans/${id}`);
   }
 
-  nutriListClients(practiceId?: number | null): Observable<ClientLink[]> {
-    let params = new HttpParams();
+  nutriListClients(practiceId?: number | null, q?: string, sort?: string,
+                    page = 0, size = 10): Observable<Page<ClientLink>> {
+    let params = new HttpParams().set('page', page).set('size', size);
     if (practiceId != null) params = params.set('practiceId', practiceId);
-    return this.http.get<ClientLink[]>(`${this.base}/nutritionist/clients`, { params });
+    if (q) params = params.set('q', q);
+    if (sort) params = params.set('sort', sort);
+    return this.http.get<Page<ClientLink>>(`${this.base}/nutritionist/clients`, { params });
   }
   nutriInviteClient(clientEmail: string, practiceId?: number | null): Observable<ClientLink> {
     let params = new HttpParams();
@@ -156,8 +159,11 @@ export class ApiService {
   companyOverview(): Observable<CompanyOverview> {
     return this.http.get<CompanyOverview>(`${this.base}/company/overview`);
   }
-  companyNutritionists(): Observable<CompanyNutriLink[]> {
-    return this.http.get<CompanyNutriLink[]>(`${this.base}/company/nutritionists`);
+  companyNutritionists(q?: string, sort?: string, page = 0, size = 10): Observable<Page<CompanyNutriLink>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (q) params = params.set('q', q);
+    if (sort) params = params.set('sort', sort);
+    return this.http.get<Page<CompanyNutriLink>>(`${this.base}/company/nutritionists`, { params });
   }
   companyInviteNutri(email: string): Observable<CompanyNutriLink> {
     return this.http.post<CompanyNutriLink>(`${this.base}/company/nutritionists/invite`, { clientEmail: email });
@@ -174,8 +180,11 @@ export class ApiService {
   }
 
   // Admin -> Companies (sales-led)
-  adminListCompanies(): Observable<AdminCompany[]> {
-    return this.http.get<AdminCompany[]>(`${this.base}/admin/companies`);
+  adminListCompanies(q?: string, sort?: string, page = 0, size = 10): Observable<Page<AdminCompany>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (q) params = params.set('q', q);
+    if (sort) params = params.set('sort', sort);
+    return this.http.get<Page<AdminCompany>>(`${this.base}/admin/companies`, { params });
   }
   adminGetCompany(id: number): Observable<AdminCompany> {
     return this.http.get<AdminCompany>(`${this.base}/admin/companies/${id}`);
@@ -206,7 +215,7 @@ export class ApiService {
   }
 
   // Planos e pricing (publicos)
-  pricing(currency?: string, target?: PlanTarget): Observable<Pricing> {
+  pricing(currency?: string, target?: PlanTarget | null): Observable<Pricing> {
     let params = new HttpParams();
     if (currency) params = params.set('currency', currency);
     if (target) params = params.set('target', target);
@@ -248,8 +257,11 @@ export class ApiService {
     return this.http.post<void>(`${this.base}/me/invitations/${token}/reject`, null);
   }
 
-  adminListUsers(): Observable<AdminUser[]> {
-    return this.http.get<AdminUser[]>(`${this.base}/admin/users`);
+  adminListUsers(q?: string, sort?: string, page = 0, size = 10): Observable<Page<AdminUser>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (q) params = params.set('q', q);
+    if (sort) params = params.set('sort', sort);
+    return this.http.get<Page<AdminUser>>(`${this.base}/admin/users`, { params });
   }
 
   adminSetActive(id: number, value: boolean): Observable<AdminUser> {
@@ -362,8 +374,11 @@ export class ApiService {
         { action, targetNutriId });
   }
 
-  companyListClients(): Observable<CompanyClient[]> {
-    return this.http.get<CompanyClient[]>(`${this.base}/company/clients`);
+  companyListClients(q?: string, sort?: string, page = 0, size = 10): Observable<Page<CompanyClient>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (q) params = params.set('q', q);
+    if (sort) params = params.set('sort', sort);
+    return this.http.get<Page<CompanyClient>>(`${this.base}/company/clients`, { params });
   }
 
   companyTransferClient(clientId: number, targetNutriId: number): Observable<void> {

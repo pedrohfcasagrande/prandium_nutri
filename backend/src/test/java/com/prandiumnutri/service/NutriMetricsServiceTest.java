@@ -100,7 +100,8 @@ class NutriMetricsServiceTest {
                 .name("Nutri").email("n-" + System.nanoTime() + "@x.com")
                 .role(Role.NUTRITIONIST).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now())
-                .passwordHash("$2a$10$x").build());
+                .passwordHash("$2a$10$x").cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
         subscriptionService.createFreeSubscription(PlanTarget.NUTRITIONIST, u.getId(), "BRL");
         return u;
     }
@@ -110,6 +111,7 @@ class NutriMetricsServiceTest {
                 .name("Client").email("c-" + System.nanoTime() + "@x.com")
                 .role(Role.USER).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now())
-                .passwordHash("$2a$10$x").build());
+                .passwordHash("$2a$10$x").cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
     }
 }

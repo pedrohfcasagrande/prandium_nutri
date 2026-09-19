@@ -3,6 +3,14 @@ export type ActivityLevel = 'SEDENTARY' | 'LIGHT' | 'MODERATE' | 'ACTIVE' | 'VER
 export type Goal = 'LOSE' | 'MAINTAIN' | 'GAIN';
 export type MealType = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER' | 'OTHER';
 export type Role = 'USER' | 'NUTRITIONIST' | 'COMPANY' | 'ADMIN';
+
+/** Envelope de paginação (Fase 7B). page/size 0-based. */
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number;
+  size: number;
+}
 export type LinkStatus = 'PENDING' | 'ACTIVE' | 'REJECTED' | 'REVOKED_BY_CLIENT' | 'REVOKED_BY_NUTRI' | 'REVOKED_BY_COMPANY' | 'EXPIRED';
 export type CompanyMemberRole = 'OWNER' | 'ADMIN';
 
@@ -103,6 +111,8 @@ export interface CompanyNutriLink {
   nutritionistId: number | null;
   nutritionistName: string;
   nutritionistEmail: string;
+  nutritionistCpf?: string;
+  nutritionistCrn?: string;
   status: LinkStatus;
   invitedAt: string;
   acceptedAt?: string;
@@ -142,6 +152,7 @@ export interface ClientLink {
   clientId: number | null;
   clientName: string;
   clientEmail: string;
+  clientCpf?: string;
   status: LinkStatus;
   invitedAt: string;
   acceptedAt?: string;
@@ -194,6 +205,10 @@ export interface CurrentUser {
 export interface User {
   id?: number;
   email: string;
+  /** CPF já mascarado ("123.***.***-45"). API nunca retorna CPF completo. */
+  cpf?: string;
+  /** CRN (nutricionista). */
+  crn?: string;
   name: string;
   sex?: Sex;
   birthDate?: string;
@@ -225,6 +240,8 @@ export interface HealthProfile {
 export interface AdminUser {
   id: number;
   email: string;
+  cpf?: string;
+  crn?: string;
   name: string;
   role: Role;
   provider: AuthProvider;
@@ -351,6 +368,7 @@ export interface CompanyClient {
   clientId: number;
   clientName: string;
   clientEmail: string;
+  clientCpf?: string;
   nutriId: number;
   nutriName: string;
   status: LinkStatus;

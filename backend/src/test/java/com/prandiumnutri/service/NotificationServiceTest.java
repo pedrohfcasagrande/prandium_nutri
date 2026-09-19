@@ -71,6 +71,7 @@ class NotificationServiceTest {
                 .name("U").email("u-" + System.nanoTime() + "@x.com")
                 .role(Role.USER).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now())
-                .passwordHash("$2a$10$x").build());
+                .passwordHash("$2a$10$x").cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
     }
 }

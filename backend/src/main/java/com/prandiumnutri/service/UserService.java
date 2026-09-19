@@ -42,7 +42,33 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<AdminUserDto> listAll() {
-        return userRepository.findAll().stream().map(this::toAdminDto).toList();
+        return listAll(null, null);
+    }
+
+    /**
+     * Fase 6B: busca por nome/email/cpf/crn + ordenacao ('name' asc | 'created' desc).
+     * @param q termo de busca (case-insensitive; casa em nome, email, cpf normalizado, crn); null = tudo
+     * @param sort 'name' ou 'created' (default = 'created')
+     */
+    @Transactional(readOnly = true)
+    public List<AdminUserDto> listAll(String q, String sort) {
+        var stream = userRepository.findAll().stream();
+        if (q != null && !q.isBlank()) {
+            String needle = q.trim().toLowerCase();
+            String digits = q.replaceAll("\\D", "");
+            stream = stream.filter(u ->
+                (u.getName() != null && u.getName().toLowerCase().contains(needle))
+             || (u.getEmail() != null && u.getEmail().toLowerCase().contains(needle))
+             || (!digits.isEmpty() && u.getCpf() != null && u.getCpf().contains(digits))
+             || (u.getCrn() != null && u.getCrn().toLowerCase().contains(needle))
+            );
+        }
+        java.util.Comparator<User> comp = !"created".equalsIgnoreCase(sort)
+                ? java.util.Comparator.comparing(u -> u.getName() == null ? "" : u.getName().toLowerCase())
+                : java.util.Comparator.comparing(
+                        (User u) -> u.getCreatedAt() == null ? java.time.LocalDateTime.MIN : u.getCreatedAt()
+                  ).reversed();
+        return stream.sorted(comp).map(this::toAdminDto).toList();
     }
 
     @Transactional
@@ -63,13 +89,19 @@ public class UserService {
     }
 
     public UserDto toDto(User u) {
-        return new UserDto(u.getId(), u.getEmail(), u.getName(), u.getSex(), u.getBirthDate(),
+        return new UserDto(u.getId(), u.getEmail(),
+                com.prandiumnutri.support.CpfUtil.mask(u.getCpf()),
+                u.getCrn(),
+                u.getName(), u.getSex(), u.getBirthDate(),
                 u.getWeightKg(), u.getHeightCm(), u.getActivityLevel(), u.getGoal(), u.getPreferences(),
                 u.getMedications(), u.isHasBariatricSurgery(), u.getPreExistingConditions(), u.getAllergies());
     }
 
     public AdminUserDto toAdminDto(User u) {
-        return new AdminUserDto(u.getId(), u.getEmail(), u.getName(), u.getRole(),
+        return new AdminUserDto(u.getId(), u.getEmail(),
+                com.prandiumnutri.support.CpfUtil.mask(u.getCpf()),
+                u.getCrn(),
+                u.getName(), u.getRole(),
                 u.getProvider(), u.isProfileCompleted(), u.isActive());
     }
 }

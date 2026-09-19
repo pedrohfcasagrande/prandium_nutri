@@ -84,6 +84,19 @@ mvn spring-boot:run
 - Admin seed: `admin@admin.com` / `admin@123` (override: `ADMIN_EMAIL` / `ADMIN_PASSWORD`)
 - Pagamentos **mockados**: `createCheckout` ativa a subscription imediatamente e retorna uma URL `?mock=true`
 
+### 2.1. Seed de desenvolvimento (Fase 7A)
+
+Se o banco estiver vazio (`users.count() < 3`), o `DevDataSeeder` (`@Profile("dev")`) popula automaticamente no startup:
+- **2 empresas:** NutriPro Saude Ltda (12345678000190) e Vida Ativa Consultoria (98765432000110)
+- **4 nutris:** Dra. Camila Rocha (NutriPro), Dr. Bruno Almeida (NutriPro), Dra. Larissa Ferreira (Vida Ativa) e Dra. Julia Mendes (independente) — cada um com CRN preenchido
+- **10 clientes** com nomes de exemplo (`joao@cliente.com`, `maria@cliente.com`, etc.)
+- Vinculos empresa-nutri e nutri-cliente prontos (2 clientes por nutri; ultimos 2 clientes sem vinculo pra testar discovery)
+- Subscriptions FREE por default; clientes vinculados viram PLUS via sponsorship se o pagador estiver em tier pago (nao ocorre no seed default porque todos comecam FREE)
+
+**Senha unificada de todos os usuarios seedados: `admin@123`** — trocar antes de subir pra sandbox/prod.
+
+Se voce ja tem dados no banco, o seed nao roda (idempotencia via `count()`).
+
 ### 3. Frontend
 ```bash
 cd frontend
@@ -115,13 +128,13 @@ Webhooks locais (test):
 
 ## Testes
 
-Backend (77 testes atualmente):
+Backend (81 testes atualmente):
 ```bash
 cd backend
 mvn test
 ```
 
-Frontend (Jest + jest-preset-angular; 41 testes atualmente):
+Frontend (Jest + jest-preset-angular; 43 testes atualmente):
 ```bash
 cd frontend
 npm test
@@ -193,6 +206,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V018      | nutritionist_clients.practice_id + subscriptions.sponsored_by_practice_id (Fase 5C) |
 | V019      | backfill retroativo de sponsorship — clientes com NCL ACTIVE viram CLIENT_PLUS |
 | V020      | rebalanceia sponsorship: cliente so fica PLUS se pagador (empresa/nutri) tem tier pago |
+| V021      | users.cpf NOT NULL UNIQUE + users.crn UNIQUE (Fase 6A) — backfill sequencial `LPAD(id,11,'0')` |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -288,9 +302,17 @@ Provider por moeda:
 - `POST /api/onboarding/accept` `{ token, password }`
 
 **Admin** — `/api/admin/**` role ADMIN
-- `GET/PUT/DELETE /api/admin/users`
+- `GET/PUT/DELETE /api/admin/users` — suporta `?q=&sort=&page=&size=` (paginado, 10 por default)
 - `POST /api/admin/companies` (cria empresa + owner + envia token)
+- `GET /api/admin/companies?q=&sort=&page=&size=` (paginado)
 - `GET /api/admin/metrics/overview` — MRR consolidado BRL (via `daily_fx_rates`), MAU/WAU/DAU, plan distribution, top empresas/nutris, contagem por audit action
+
+**Busca + ordenacao + paginacao (Fases 6B + 7B):**
+Endpoints de listagem aceitam:
+- `?q=<termo>` — busca case-insensitive em nome/email/CPF (so digitos)/CNPJ/CRN. CPF vem mascarado no response (LGPD).
+- `?sort=name|created` — alfabetico ou data desc (default = mais recentes primeiro).
+- `?page=<n>&size=<m>` — 0-based, default `page=0&size=10`. Resposta: `{ items, total, page, size }`.
+- Enderecos com suporte: `/admin/users`, `/admin/companies`, `/company/nutritionists`, `/company/clients`, `/nutritionist/clients`.
 
 **Company metrics** — `/api/company/metrics/**` role COMPANY
 - `GET /overview` — KPIs (nutris ativos/pendentes, clientes, IA mensal, refeicoes 30d, MRR da assinatura) + tabela agregada por nutri (sem PII de cliente)
@@ -393,4 +415,11 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
 - **Fase 5C (vinculo cliente ↔ practice; PLUS automatico enquanto ha vinculo ativo; revoke desativa PLUS ou transfere sponsor pra outra practice): OK**
 - **Fase 5D (practice switcher no toolbar + tela `/nutritionist/practices` + filtro por practice em clientes/metrics/dashboard): OK**
 - **Fase 5E (desvinculacao inteligente — se nutri nao tem particular, a practice vinculada revogada e convertida em particular; caso contrario, apenas suspende): OK**
-- Fase 6 (geolocalizacao restaurantes): backlog
+- **Fase 5F (feature gate por practice — nutri atuando via empresa herda `maxClientsPerNutri`/`aiSuggestionsMonthly` do plano da empresa; particular usa o plano pessoal): OK**
+- **Fase 5G (sponsor so concede PLUS quando pagador tem tier != FREE; pricing filtrado por role + dialog "Ver outros planos"): OK**
+- **Fase 6A (CPF obrigatorio + CRN opcional para nutris; V021 backfill sequencial; mascaramento LGPD `123.***.***-45`): OK**
+- **Fase 6B (busca + ordenacao — endpoints com `?q=&sort=` em admin/users, admin/companies, company/nutritionists, company/clients, nutritionist/clients; SearchSortBar reutilizavel): OK**
+- **Fase 7A (DevDataSeeder — popula 2 empresas + 4 nutris + 10 clientes se banco vazio; senha unificada `admin@123` em dev): OK**
+- **Fase 7B (paginacao — `PageDto` no backend, `Page<T>` no TS, `mat-paginator` nas 5 listagens; 10 por pagina default): OK**
+- **Fase 7C (padrao visual unificado nas listagens — `.row-card` grid `auto 1fr auto` com avatar circular + info + actions substitui `<mat-table>` em `/admin/users` e `/company/clients`, alinhando com `/company/nutritionists`): OK**
+- Fase 8 (geolocalizacao restaurantes): backlog

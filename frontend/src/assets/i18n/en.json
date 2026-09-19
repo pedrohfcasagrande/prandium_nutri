@@ -236,6 +236,20 @@
       "mismatch": "Passwords do not match."
     }
   },
+  "search": {
+    "placeholder": "Search by name, email, CPF, CNPJ or CRN...",
+    "clear": "Clear search",
+    "sortTooltip": "Sort: recent first / alphabetical"
+  },
+  "paginator": {
+    "itemsPerPage": "Items per page:",
+    "nextPage": "Next page",
+    "previousPage": "Previous page",
+    "firstPage": "First page",
+    "lastPage": "Last page",
+    "range": "{{start}} – {{end}} of {{total}}",
+    "rangeEmpty": "0 of {{total}}"
+  },
   "register": {
     "title": "Create account",
     "subtitle": "Start tracking your nutrition in minutes.",
@@ -245,6 +259,10 @@
     "iAmCompany": "I'm a company? Sign up here →",
     "name": "Name",
     "email": "Email",
+    "cpf": "Tax ID (CPF)",
+    "cpfHint": "000.000.000-00",
+    "crn": "CRN (optional)",
+    "crnHint": "Ex.: CRN3 12345",
     "password": "Password (min. 6 characters)",
     "submit": "Create account",
     "haveAccount": "Already have an account?",
@@ -256,6 +274,7 @@
     },
     "errors": {
       "emptyFields": "Fill in all fields",
+      "invalidCpf": "Invalid CPF — must contain 11 digits",
       "shortPassword": "Password must be at least 6 characters",
       "noConsent": "You must accept the data collection policy",
       "createFail": "Failed to create account"
@@ -490,7 +509,10 @@
     "manageTooltip": "Manage this user",
     "manage": "Manage",
     "toggleFail": "Failed to update user",
-    "deleteFail": "Failed to delete"
+    "deleteFail": "Failed to delete",
+    "empty": "No users found",
+    "statusActive": "Active",
+    "statusInactive": "Inactive"
   },
   "billing": {
     "title": "My plan",

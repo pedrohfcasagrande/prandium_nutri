@@ -117,7 +117,8 @@ class NutritionistPracticeServiceTest {
                 .name(name).email("nutri-" + System.nanoTime() + "@x.com")
                 .passwordHash("$2a$10$x").role(Role.NUTRITIONIST).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now())
-                .bio(bio).specialties(specialties).build());
+                .bio(bio).specialties(specialties).cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
     }
 
     @Test
@@ -184,6 +185,7 @@ class NutritionistPracticeServiceTest {
         return userRepo.save(User.builder()
                 .name("Owner").email("owner-" + System.nanoTime() + "@x.com")
                 .passwordHash("$2a$10$x").role(Role.COMPANY).provider(AuthProvider.LOCAL)
-                .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).build());
+                .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now()).cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
     }
 }

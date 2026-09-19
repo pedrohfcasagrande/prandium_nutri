@@ -22,6 +22,14 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    /** CPF sem formatacao (11 digitos). LGPD: nunca logar completo; mostrar mascarado via {@link com.prandiumnutri.support.CpfUtil}. */
+    @Column(nullable = false, unique = true, length = 11)
+    private String cpf;
+
+    /** CRN opcional (formato livre, ex "CRN3 12345"). Unico quando presente. */
+    @Column(unique = true, length = 30)
+    private String crn;
+
     @Column(nullable = false)
     private String name;
 

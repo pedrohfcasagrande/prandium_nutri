@@ -51,6 +51,7 @@ class AdminMetricsServiceTest {
                 .name("Metrics Nutri").email("metrics-" + System.nanoTime() + "@example.com")
                 .passwordHash("$2a$10$xxx").role(Role.NUTRITIONIST).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now())
+                .cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
                 .build();
         nutri = userRepo.save(nutri);
         subscriptionService.createFreeSubscription(PlanTarget.NUTRITIONIST, nutri.getId(), "BRL");

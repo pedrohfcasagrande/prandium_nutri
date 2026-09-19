@@ -78,7 +78,35 @@ public class CompanyService {
 
     @Transactional(readOnly = true)
     public List<CompanyNutriLinkDto> listNutritionists(Long companyId) {
-        return cnRepository.findByCompanyIdOrderByInvitedAtDesc(companyId).stream().map(cn -> {
+        return listNutritionists(companyId, null, null);
+    }
+
+    /** Fase 6B: q busca em nome/email/cpf/crn; sort = 'name' | 'invitedAt' (default desc). */
+    @Transactional(readOnly = true)
+    public List<CompanyNutriLinkDto> listNutritionists(Long companyId, String q, String sort) {
+        String needle = q == null ? null : q.trim().toLowerCase();
+        String digits = q == null ? "" : q.replaceAll("\\D", "");
+        var stream = cnRepository.findByCompanyIdOrderByInvitedAtDesc(companyId).stream();
+        if (needle != null && !needle.isEmpty()) {
+            stream = stream.filter(cn -> {
+                User n = cn.getNutritionist();
+                String email = n != null ? n.getEmail() : cn.getInvitedByEmail();
+                if (n != null && n.getName() != null && n.getName().toLowerCase().contains(needle)) return true;
+                if (email != null && email.toLowerCase().contains(needle)) return true;
+                if (n != null && !digits.isEmpty() && n.getCpf() != null && n.getCpf().contains(digits)) return true;
+                if (n != null && n.getCrn() != null && n.getCrn().toLowerCase().contains(needle)) return true;
+                return false;
+            });
+        }
+        java.util.Comparator<com.prandiumnutri.domain.CompanyNutritionist> comp = !"created".equalsIgnoreCase(sort)
+                ? java.util.Comparator.comparing(cn -> {
+                    var n = cn.getNutritionist();
+                    return (n != null && n.getName() != null ? n.getName() : "").toLowerCase();
+                  })
+                : java.util.Comparator.comparing(
+                        (com.prandiumnutri.domain.CompanyNutritionist cn) -> cn.getInvitedAt() == null ? LocalDateTime.MIN : cn.getInvitedAt()
+                  ).reversed();
+        return stream.sorted(comp).map(cn -> {
             User n = cn.getNutritionist();
             long clients = (n != null) ? nclRepository.countActiveOrPending(n.getId()) : 0;
             return new CompanyNutriLinkDto(
@@ -86,6 +114,8 @@ public class CompanyService {
                     n != null ? n.getId() : null,
                     n != null ? n.getName() : "(pendente)",
                     n != null ? n.getEmail() : cn.getInvitedByEmail(),
+                    n != null ? com.prandiumnutri.support.CpfUtil.mask(n.getCpf()) : null,
+                    n != null ? n.getCrn() : null,
                     cn.getStatus(), cn.getInvitedAt(), cn.getAcceptedAt(),
                     clients
             );
@@ -292,6 +322,14 @@ public class CompanyService {
 
     @Transactional(readOnly = true)
     public List<CompanyClientDto> listClients(Long companyId) {
+        return listClients(companyId, null, null);
+    }
+
+    /** Fase 6B: q busca em nome/email/cpf do cliente; sort = 'name' | 'invitedAt' (default desc). */
+    @Transactional(readOnly = true)
+    public List<CompanyClientDto> listClients(Long companyId, String q, String sort) {
+        String needle = q == null ? null : q.trim().toLowerCase();
+        String digits = q == null ? "" : q.replaceAll("\\D", "");
         List<Long> nutriIds = cnRepository.activeNutritionistIds(companyId);
         List<CompanyClientDto> out = new java.util.ArrayList<>();
         for (Long nId : nutriIds) {
@@ -302,12 +340,24 @@ public class CompanyService {
                     .toList();
             for (var l : links) {
                 User client = l.getClient();
+                if (needle != null && !needle.isEmpty()) {
+                    boolean match = false;
+                    if (client.getName() != null && client.getName().toLowerCase().contains(needle)) match = true;
+                    else if (client.getEmail() != null && client.getEmail().toLowerCase().contains(needle)) match = true;
+                    else if (!digits.isEmpty() && client.getCpf() != null && client.getCpf().contains(digits)) match = true;
+                    if (!match) continue;
+                }
                 var lastMeal = mealRepository.lastMealDate(client.getId());
                 out.add(new CompanyClientDto(l.getId(), client.getId(),
                         client.getName(), client.getEmail(),
+                        com.prandiumnutri.support.CpfUtil.mask(client.getCpf()),
                         nId, nutriName, l.getStatus(), lastMeal));
             }
         }
+        if (!"created".equalsIgnoreCase(sort)) {
+            out.sort(java.util.Comparator.comparing(x -> x.clientName() == null ? "" : x.clientName().toLowerCase()));
+        }
+        // default: mantem a ordem natural (por nutri + invitedAt desc do repo)
         return out;
     }
 

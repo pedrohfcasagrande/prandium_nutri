@@ -14,6 +14,8 @@ import { firstValueFrom } from 'rxjs';
 import { routes } from './app.routes';
 import { authInterceptor } from './services/auth.interceptor';
 import { LanguageService } from './services/language.service';
+import { MatPaginatorIntl } from '@angular/material/paginator';
+import { I18nPaginatorIntl } from './services/i18n-paginator';
 
 registerLocaleData(localePt, 'pt-BR');
 registerLocaleData(localeEn, 'en-US');
@@ -48,6 +50,7 @@ export const appConfig: ApplicationConfig = {
     provideNativeDateAdapter(),
     { provide: LOCALE_ID, useFactory: resolveLocale },
     { provide: MAT_DATE_LOCALE, useFactory: resolveLocale },
+    { provide: MatPaginatorIntl, useClass: I18nPaginatorIntl },
     importProvidersFrom(
       TranslateModule.forRoot({
         defaultLanguage: 'pt',

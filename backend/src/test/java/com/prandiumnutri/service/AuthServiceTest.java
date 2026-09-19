@@ -32,8 +32,9 @@ class AuthServiceTest {
 
     @Test
     void registerUser_createsUserAndFreeSubscription() {
+        String cpf = uniqueCpf();
         var req = new RegisterRequest("Test User", "test-user-" + System.nanoTime() + "@example.com",
-                "senha1234", true, null);
+                cpf, null, "senha1234", true, null);
         var resp = authService.register(req);
 
         assertThat(resp.role()).isEqualTo(Role.USER);
@@ -46,8 +47,9 @@ class AuthServiceTest {
 
     @Test
     void registerNutritionist_createsNutriAndFreeSubscription() {
+        String cpf = uniqueCpf();
         var req = new RegisterRequest("Nutri Test", "nutri-" + System.nanoTime() + "@example.com",
-                "senha1234", true, Role.NUTRITIONIST);
+                cpf, "CRN3 " + (System.nanoTime() % 100000), "senha1234", true, Role.NUTRITIONIST);
         var resp = authService.register(req);
 
         assertThat(resp.role()).isEqualTo(Role.NUTRITIONIST);
@@ -56,5 +58,14 @@ class AuthServiceTest {
         var sub = subscriptionService.effectiveOf(PlanTarget.NUTRITIONIST, resp.userId());
         assertThat(sub).isPresent();
         assertThat(sub.get().getPlan().getCode()).isEqualTo("NUTRI_FREE");
+    }
+
+    /** Gera CPF de 11 digitos unico o suficiente para nao colidir em testes paralelos/sequenciais. */
+    private static String uniqueCpf() {
+        long t = System.nanoTime();
+        String s = String.valueOf(Math.abs(t));
+        // Padding/truncating pra sempre ter 11 digitos
+        if (s.length() >= 11) return s.substring(s.length() - 11);
+        return "0".repeat(11 - s.length()) + s;
     }
 }

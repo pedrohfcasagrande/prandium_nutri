@@ -17,7 +17,7 @@ export class AuthService {
   readonly isNutritionist = computed(() => this.currentUser()?.role === 'NUTRITIONIST');
   readonly isCompany = computed(() => this.currentUser()?.role === 'COMPANY');
 
-  register(payload: { name: string; email: string; password: string; dataConsent: boolean; role?: 'USER' | 'NUTRITIONIST' }): Observable<AuthResponse> {
+  register(payload: { name: string; email: string; cpf: string; crn?: string; password: string; dataConsent: boolean; role?: 'USER' | 'NUTRITIONIST' }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.base}/auth/register`, payload).pipe(tap(r => this.store(r)));
   }
 

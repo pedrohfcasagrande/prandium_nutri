@@ -236,6 +236,20 @@
       "mismatch": "As senhas não coincidem."
     }
   },
+  "search": {
+    "placeholder": "Buscar por nome, e-mail, CPF, CNPJ ou CRN...",
+    "clear": "Limpar busca",
+    "sortTooltip": "Ordenação: recentes primeiro / alfabética"
+  },
+  "paginator": {
+    "itemsPerPage": "Itens por página:",
+    "nextPage": "Próxima página",
+    "previousPage": "Página anterior",
+    "firstPage": "Primeira página",
+    "lastPage": "Última página",
+    "range": "{{start}} – {{end}} de {{total}}",
+    "rangeEmpty": "0 de {{total}}"
+  },
   "register": {
     "title": "Criar conta",
     "subtitle": "Comece a acompanhar sua alimentação em minutos.",
@@ -245,6 +259,10 @@
     "iAmCompany": "Sou uma empresa? Cadastre aqui →",
     "name": "Nome",
     "email": "E-mail",
+    "cpf": "CPF",
+    "cpfHint": "000.000.000-00",
+    "crn": "CRN (opcional)",
+    "crnHint": "Ex.: CRN3 12345",
     "password": "Senha (mín. 6 caracteres)",
     "submit": "Criar conta",
     "haveAccount": "Já tem uma conta?",
@@ -256,6 +274,7 @@
     },
     "errors": {
       "emptyFields": "Preencha todos os campos",
+      "invalidCpf": "CPF inválido — deve conter 11 dígitos",
       "shortPassword": "Senha deve ter ao menos 6 caracteres",
       "noConsent": "Você precisa aceitar a política de coleta de dados",
       "createFail": "Falha ao criar conta"
@@ -490,7 +509,10 @@
     "manageTooltip": "Gerenciar este usuário",
     "manage": "Gerenciar",
     "toggleFail": "Erro ao atualizar usuário",
-    "deleteFail": "Erro ao excluir"
+    "deleteFail": "Erro ao excluir",
+    "empty": "Nenhum usuário encontrado",
+    "statusActive": "Ativo",
+    "statusInactive": "Inativo"
   },
   "billing": {
     "title": "Meu plano",

@@ -38,6 +38,7 @@ public class DataSeeder implements CommandLineRunner {
                 () -> {
                     User admin = User.builder()
                             .email(adminEmail)
+                            .cpf("00000000000")
                             .name("Administrador")
                             .passwordHash(passwordEncoder.encode(adminPassword))
                             .role(Role.ADMIN)

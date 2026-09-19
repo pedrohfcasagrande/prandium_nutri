@@ -53,7 +53,8 @@ class CompanyMetricsServiceTest {
                 .name("Nutri A").email("nutri-" + System.nanoTime() + "@x.com")
                 .role(Role.NUTRITIONIST).provider(AuthProvider.LOCAL)
                 .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now())
-                .passwordHash("$2a$10$x").build());
+                .passwordHash("$2a$10$x").cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
         cnRepo.save(CompanyNutritionist.builder()
                 .company(c).nutritionist(nutri)
                 .invitedByEmail(nutri.getEmail()).inviteToken("t-" + System.nanoTime())
@@ -67,7 +68,8 @@ class CompanyMetricsServiceTest {
                     .name("Client " + i).email("client" + i + "-" + System.nanoTime() + "@x.com")
                     .role(Role.USER).provider(AuthProvider.LOCAL)
                     .profileCompleted(true).active(true).consentAcceptedAt(LocalDateTime.now())
-                    .passwordHash("$2a$10$x").build());
+                    .passwordHash("$2a$10$x").cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
+                .build());
             linkRepo.save(NutritionistClientLink.builder()
                     .nutritionist(nutri).client(client)
                     .invitedByEmail(client.getEmail())

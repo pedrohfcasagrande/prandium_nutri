@@ -21,8 +21,15 @@ public class NutritionistController {
 
     @GetMapping("/clients")
     @PreAuthorize("hasRole('NUTRITIONIST')")
-    public List<ClientLinkDto> myClients(@RequestParam(required = false) Long practiceId) {
-        return linkService.listClientsForNutri(currentUser.getAuthenticatedId(), practiceId);
+    public com.prandiumnutri.dto.PageDto<ClientLinkDto> myClients(
+            @RequestParam(required = false) Long practiceId,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return com.prandiumnutri.dto.PageDto.of(
+                linkService.listClientsForNutri(currentUser.getAuthenticatedId(), practiceId, q, sort),
+                page, size);
     }
 
     @PostMapping("/clients/invite")

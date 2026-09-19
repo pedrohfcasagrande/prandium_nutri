@@ -37,12 +37,21 @@ public class AuthService {
         if (userRepository.findByEmail(req.email()).isPresent()) {
             throw new IllegalArgumentException("E-mail ja cadastrado");
         }
+        String cpf = com.prandiumnutri.support.CpfUtil.normalize(req.cpf());
+        if (cpf == null || cpf.length() != 11) {
+            throw new IllegalArgumentException("CPF invalido");
+        }
+        if (userRepository.findByCpf(cpf).isPresent()) {
+            throw new IllegalArgumentException("CPF ja cadastrado");
+        }
         Role role = req.role() == Role.NUTRITIONIST ? Role.NUTRITIONIST : Role.USER;
         // Nutricionista nao precisa preencher profile de saude para usar
         boolean profileCompleted = role == Role.NUTRITIONIST;
         User user = User.builder()
                 .name(req.name())
                 .email(req.email())
+                .cpf(cpf)
+                .crn(role == Role.NUTRITIONIST && req.crn() != null && !req.crn().isBlank() ? req.crn().trim() : null)
                 .passwordHash(passwordEncoder.encode(req.password()))
                 .role(role)
                 .provider(AuthProvider.LOCAL)
