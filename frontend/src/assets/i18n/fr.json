@@ -23,7 +23,8 @@
       "pendingMenus": "Menus en attente",
       "pricing": "Plans",
       "findNutri": "Trouver un nutritionniste",
-      "nutriPublicProfile": "Mon profil public"
+      "nutriPublicProfile": "Mon profil public",
+      "nutriCompanyInvites": "Invitations d'entreprises"
     },
     "user": { "settings": "Paramètres", "billing": "Mon plan", "logout": "Se déconnecter" },
     "theme": {
@@ -69,7 +70,8 @@
       "pendingMenus": "Approbations en attente",
       "notifications": "Notifications",
       "findNutri": "Trouver un nutritionniste",
-      "nutriPublicProfile": "Profil public"
+      "nutriPublicProfile": "Profil public",
+      "nutriCompanyInvites": "Invitations d'entreprises"
     }
   },
   "findNutri": {
@@ -730,6 +732,20 @@
     "subtitle": "Nutritionnistes qui souhaitent vous suivre",
     "empty": "Vous n'avez aucune invitation en attente.",
     "wantsToFollow": "souhaite suivre votre alimentation",
+    "invitedOn": "invité le",
+    "expiresOn": "expire le",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "accepted": "Lien avec {{name}} activé !",
+    "acceptFail": "Impossible d'accepter",
+    "rejected": "Invitation refusée",
+    "rejectFail": "Impossible de refuser"
+  },
+  "nutriCompanyInvites": {
+    "title": "Invitations d'entreprises",
+    "subtitle": "Entreprises qui souhaitent vous intégrer",
+    "empty": "Vous n'avez aucune invitation d'entreprise en attente.",
+    "wantsYou": "souhaite vous ajouter comme nutritionniste",
     "invitedOn": "invité le",
     "expiresOn": "expire le",
     "accept": "Accepter",

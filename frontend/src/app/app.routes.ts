@@ -100,6 +100,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/nutri-profile/nutri-profile.component').then(m => m.NutriProfileComponent)
   },
   {
+    path: 'nutritionist/company-invitations',
+    canActivate: [nutritionistGuard],
+    loadComponent: () => import('./pages/nutri-company-invites/nutri-company-invites.component').then(m => m.NutriCompanyInvitesComponent)
+  },
+  {
     path: 'invitations',
     loadComponent: () => import('./pages/invitations/invitations.component').then(m => m.InvitationsComponent)
   },

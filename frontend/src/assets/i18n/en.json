@@ -23,7 +23,8 @@
       "pendingMenus": "Pending menus",
       "pricing": "Plans",
       "findNutri": "Find a nutritionist",
-      "nutriPublicProfile": "My public profile"
+      "nutriPublicProfile": "My public profile",
+      "nutriCompanyInvites": "Company invites"
     },
     "user": { "settings": "Settings", "billing": "My plan", "logout": "Sign out" },
     "theme": {
@@ -69,7 +70,8 @@
       "pendingMenus": "Pending approvals",
       "notifications": "Notifications",
       "findNutri": "Find a nutritionist",
-      "nutriPublicProfile": "Public profile"
+      "nutriPublicProfile": "Public profile",
+      "nutriCompanyInvites": "Company invites"
     }
   },
   "findNutri": {
@@ -730,6 +732,20 @@
     "subtitle": "Nutritionists who want to follow you",
     "empty": "You have no pending invites.",
     "wantsToFollow": "wants to follow your nutrition",
+    "invitedOn": "invited on",
+    "expiresOn": "expires on",
+    "accept": "Accept",
+    "reject": "Reject",
+    "accepted": "Link with {{name}} activated!",
+    "acceptFail": "Failed to accept",
+    "rejected": "Invite rejected",
+    "rejectFail": "Failed to reject"
+  },
+  "nutriCompanyInvites": {
+    "title": "Company invites",
+    "subtitle": "Companies that want you on their team",
+    "empty": "You have no pending company invites.",
+    "wantsYou": "wants to add you as a nutritionist",
     "invitedOn": "invited on",
     "expiresOn": "expires on",
     "accept": "Accept",

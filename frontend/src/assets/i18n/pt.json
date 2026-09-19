@@ -23,7 +23,8 @@
       "pendingMenus": "Cardápios pendentes",
       "pricing": "Planos",
       "findNutri": "Encontrar nutricionista",
-      "nutriPublicProfile": "Meu perfil público"
+      "nutriPublicProfile": "Meu perfil público",
+      "nutriCompanyInvites": "Convites de empresas"
     },
     "user": { "settings": "Configurações", "billing": "Meu plano", "logout": "Sair" },
     "theme": {
@@ -69,7 +70,8 @@
       "pendingMenus": "Aprovações pendentes",
       "notifications": "Notificações",
       "findNutri": "Encontrar nutricionista",
-      "nutriPublicProfile": "Perfil público"
+      "nutriPublicProfile": "Perfil público",
+      "nutriCompanyInvites": "Convites de empresas"
     }
   },
   "findNutri": {
@@ -730,6 +732,20 @@
     "subtitle": "Nutricionistas que querem te acompanhar",
     "empty": "Você não tem convites pendentes no momento.",
     "wantsToFollow": "quer acompanhar sua alimentação",
+    "invitedOn": "convite em",
+    "expiresOn": "expira em",
+    "accept": "Aceitar",
+    "reject": "Recusar",
+    "accepted": "Vínculo com {{name}} ativado!",
+    "acceptFail": "Não foi possível aceitar",
+    "rejected": "Convite recusado",
+    "rejectFail": "Não foi possível recusar"
+  },
+  "nutriCompanyInvites": {
+    "title": "Convites de empresas",
+    "subtitle": "Empresas que querem te ter no time",
+    "empty": "Você não tem convites de empresa pendentes.",
+    "wantsYou": "quer te vincular como nutricionista",
     "invitedOn": "convite em",
     "expiresOn": "expira em",
     "accept": "Aceitar",

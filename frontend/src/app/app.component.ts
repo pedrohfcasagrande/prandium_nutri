@@ -99,6 +99,10 @@ import { effect } from '@angular/core';
                 <mat-icon matListItemIcon>badge</mat-icon>
                 <span matListItemTitle>{{ 'app.nav.nutriPublicProfile' | translate }}</span>
               </a>
+              <a mat-list-item routerLink="/nutritionist/company-invitations" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>corporate_fare</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.nutriCompanyInvites' | translate }}</span>
+              </a>
             }
             @if (auth.isCompany()) {
               @if (showUserNav()) { <mat-divider></mat-divider> }
@@ -361,6 +365,7 @@ export class AppComponent {
       if (url.startsWith('/nutritionist/metrics')) return 'app.pageTitle.nutriMetrics';
       if (url.startsWith('/nutritionist/pending-menus')) return 'app.pageTitle.pendingMenus';
       if (url.startsWith('/nutritionist/public-profile')) return 'app.pageTitle.nutriPublicProfile';
+      if (url.startsWith('/nutritionist/company-invitations')) return 'app.pageTitle.nutriCompanyInvites';
       if (url.startsWith('/notifications')) return 'app.pageTitle.notifications';
       if (url.startsWith('/find-nutritionist')) return 'app.pageTitle.findNutri';
       if (url.startsWith('/company/dashboard')) return 'app.pageTitle.companyDashboard';
