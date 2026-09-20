@@ -4,6 +4,7 @@ import com.prandiumnutri.dto.*;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.AuthService;
 import com.prandiumnutri.service.PasswordResetService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,22 +20,32 @@ public class AuthController {
     private final CurrentUser currentUser;
 
     @PostMapping("/register")
-    public AuthResponse register(@Valid @RequestBody RegisterRequest req) {
-        return authService.register(req);
+    public AuthResponse register(@Valid @RequestBody RegisterRequest req, HttpServletRequest http) {
+        return authService.register(req, http);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest req) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest req, HttpServletRequest http) {
         try {
-            return authService.login(req);
+            return authService.login(req, http);
         } catch (BadCredentialsException e) {
             throw e;
         }
     }
 
     @PostMapping("/oauth/google")
-    public AuthResponse google(@Valid @RequestBody GoogleLoginRequest req) {
-        return authService.loginWithGoogle(req);
+    public AuthResponse google(@Valid @RequestBody GoogleLoginRequest req, HttpServletRequest http) {
+        return authService.loginWithGoogle(req, http);
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest req, HttpServletRequest http) {
+        return authService.refresh(req.refreshToken(), http);
+    }
+
+    @PostMapping("/logout")
+    public void logout(@RequestBody(required = false) RefreshTokenRequest req) {
+        authService.logout(req != null ? req.refreshToken() : null);
     }
 
     @PostMapping("/change-password")

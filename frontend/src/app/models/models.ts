@@ -185,7 +185,9 @@ export interface PendingInvite {
 export type AuthProvider = 'LOCAL' | 'GOOGLE';
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresInSeconds: number;
   userId: number;
   email: string;
   name: string;
@@ -200,6 +202,7 @@ export interface CurrentUser {
   role: Role;
   profileCompleted: boolean;
   token: string;
+  refreshToken: string;
 }
 
 export interface User {

@@ -30,11 +30,22 @@ export class AuthService {
       .pipe(tap(r => this.store(r)));
   }
 
+  refresh(): Observable<AuthResponse> {
+    const rt = this.currentUser()?.refreshToken;
+    return this.http.post<AuthResponse>(`${this.base}/auth/refresh`, { refreshToken: rt })
+      .pipe(tap(r => this.store(r)));
+  }
+
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
     return this.http.post<void>(`${this.base}/auth/change-password`, { currentPassword, newPassword });
   }
 
   logout() {
+    const rt = this.currentUser()?.refreshToken;
+    if (rt) {
+      // fire-and-forget: nao bloqueia navegacao se falhar
+      this.http.post(`${this.base}/auth/logout`, { refreshToken: rt }).subscribe({ error: () => {} });
+    }
     localStorage.removeItem(KEY);
     sessionStorage.removeItem('prandiumnutri.impersonate');
     this.currentUser.set(null);
@@ -56,7 +67,8 @@ export class AuthService {
   private store(r: AuthResponse) {
     const user: CurrentUser = {
       userId: r.userId, email: r.email, name: r.name,
-      role: r.role, profileCompleted: r.profileCompleted, token: r.token
+      role: r.role, profileCompleted: r.profileCompleted,
+      token: r.accessToken, refreshToken: r.refreshToken
     };
     localStorage.setItem(KEY, JSON.stringify(user));
     this.currentUser.set(user);

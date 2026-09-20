@@ -4,7 +4,9 @@ import com.prandiumnutri.domain.*;
 import com.prandiumnutri.dto.*;
 import com.prandiumnutri.repository.*;
 import com.prandiumnutri.security.JwtService;
+import com.prandiumnutri.security.RefreshTokenService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,7 @@ public class CompanyOnboardingService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${prandiumnutri.invite.expiration-days:14}")
     private int expirationDays;
@@ -186,7 +189,7 @@ public class CompanyOnboardingService {
      * Retorna JWT + info do user.
      */
     @Transactional
-    public AuthResponse acceptOnboarding(String token, AcceptOnboardingRequest req) {
+    public AuthResponse acceptOnboarding(String token, AcceptOnboardingRequest req, HttpServletRequest http) {
         CompanyMember cm = memberRepository.findByInviteToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Convite invalido"));
         if (cm.getStatus() != LinkStatus.PENDING) {
@@ -231,8 +234,14 @@ public class CompanyOnboardingService {
             companyRepository.save(c);
         }
 
+        RefreshTokenService.IssuedToken refresh = refreshTokenService.issue(
+                user,
+                http != null ? http.getHeader("User-Agent") : null,
+                http != null ? http.getRemoteAddr() : null);
         return new AuthResponse(
                 jwtService.generate(user),
+                refresh.raw(),
+                jwtService.getExpirationSeconds(),
                 user.getId(), user.getEmail(), user.getName(),
                 user.getRole(), user.isProfileCompleted()
         );

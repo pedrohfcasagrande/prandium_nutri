@@ -35,7 +35,7 @@ class AuthServiceTest {
         String cpf = uniqueCpf();
         var req = new RegisterRequest("Test User", "test-user-" + System.nanoTime() + "@example.com",
                 cpf, null, "senha1234", true, null);
-        var resp = authService.register(req);
+        var resp = authService.register(req, null);
 
         assertThat(resp.role()).isEqualTo(Role.USER);
         assertThat(resp.profileCompleted()).isFalse();
@@ -50,7 +50,7 @@ class AuthServiceTest {
         String cpf = uniqueCpf();
         var req = new RegisterRequest("Nutri Test", "nutri-" + System.nanoTime() + "@example.com",
                 cpf, "CRN3 " + (System.nanoTime() % 100000), "senha1234", true, Role.NUTRITIONIST);
-        var resp = authService.register(req);
+        var resp = authService.register(req, null);
 
         assertThat(resp.role()).isEqualTo(Role.NUTRITIONIST);
         assertThat(resp.profileCompleted()).isTrue();

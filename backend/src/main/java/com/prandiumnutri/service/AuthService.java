@@ -10,6 +10,9 @@ import com.prandiumnutri.dto.*;
 import com.prandiumnutri.repository.UserRepository;
 import com.prandiumnutri.security.GoogleTokenVerifier;
 import com.prandiumnutri.security.JwtService;
+import com.prandiumnutri.security.RefreshTokenService;
+import com.prandiumnutri.security.RefreshTokenService.RefreshResult;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,9 +34,10 @@ public class AuthService {
     private final SubscriptionService subscriptionService;
     private final AuditService auditService;
     private final NutritionistPracticeService practiceService;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
-    public AuthResponse register(RegisterRequest req) {
+    public AuthResponse register(RegisterRequest req, HttpServletRequest http) {
         if (userRepository.findByEmail(req.email()).isPresent()) {
             throw new IllegalArgumentException("E-mail ja cadastrado");
         }
@@ -68,11 +72,11 @@ public class AuthService {
             practiceService.ensureParticular(user);
         }
         auditService.record(AuditAction.REGISTER, user.getId(), user.getRole());
-        return toAuthResponse(user);
+        return toAuthResponse(user, http);
     }
 
-    @Transactional(readOnly = true)
-    public AuthResponse login(LoginRequest req) {
+    @Transactional
+    public AuthResponse login(LoginRequest req, HttpServletRequest http) {
         User user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> new BadCredentialsException(GENERIC_ERROR));
         if (user.getPasswordHash() == null || !passwordEncoder.matches(req.password(), user.getPasswordHash())) {
@@ -82,11 +86,11 @@ public class AuthService {
             throw new BadCredentialsException(GENERIC_ERROR);
         }
         auditService.record(AuditAction.LOGIN, user.getId(), user.getRole());
-        return toAuthResponse(user);
+        return toAuthResponse(user, http);
     }
 
     @Transactional
-    public AuthResponse loginWithGoogle(GoogleLoginRequest req) {
+    public AuthResponse loginWithGoogle(GoogleLoginRequest req, HttpServletRequest http) {
         GoogleIdToken.Payload payload = googleTokenVerifier.verify(req.idToken());
         String email = payload.getEmail();
         String name = (String) payload.get("name");
@@ -113,7 +117,31 @@ public class AuthService {
             user = userRepository.save(user);
         }
         auditService.record(AuditAction.LOGIN, user.getId(), user.getRole());
-        return toAuthResponse(user);
+        return toAuthResponse(user, http);
+    }
+
+    public AuthResponse refresh(String presentedRefreshToken, HttpServletRequest http) {
+        RefreshResult r = refreshTokenService.rotate(
+                presentedRefreshToken,
+                http != null ? http.getHeader("User-Agent") : null,
+                http != null ? http.getRemoteAddr() : null);
+        return new AuthResponse(
+                jwtService.generate(r.user()),
+                r.rawRefreshToken(),
+                jwtService.getExpirationSeconds(),
+                r.user().getId(),
+                r.user().getEmail(),
+                r.user().getName(),
+                r.user().getRole(),
+                r.user().isProfileCompleted()
+        );
+    }
+
+    @Transactional
+    public void logout(String presentedRefreshToken) {
+        if (presentedRefreshToken != null && !presentedRefreshToken.isBlank()) {
+            refreshTokenService.revoke(presentedRefreshToken);
+        }
     }
 
     @Transactional
@@ -125,9 +153,15 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    private AuthResponse toAuthResponse(User user) {
+    private AuthResponse toAuthResponse(User user, HttpServletRequest http) {
+        RefreshTokenService.IssuedToken refresh = refreshTokenService.issue(
+                user,
+                http != null ? http.getHeader("User-Agent") : null,
+                http != null ? http.getRemoteAddr() : null);
         return new AuthResponse(
                 jwtService.generate(user),
+                refresh.raw(),
+                jwtService.getExpirationSeconds(),
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
