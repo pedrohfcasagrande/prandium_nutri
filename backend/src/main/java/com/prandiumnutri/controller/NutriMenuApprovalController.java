@@ -69,4 +69,20 @@ public class NutriMenuApprovalController {
                             @RequestParam(required = false) Long practiceId) {
         service.deleteForClient(currentUser.getAuthenticated(), id, practiceId);
     }
+
+    /** Nutri gera cardapio via IA em nome do cliente (Fase 8.1). */
+    @PostMapping("/generate/{clientId}")
+    @PreAuthorize("hasRole('NUTRITIONIST')")
+    public com.prandiumnutri.dto.SuggestionResponse generateForClient(
+            @PathVariable Long clientId,
+            @RequestParam(required = false) Long practiceId,
+            @RequestBody(required = false) Map<String, String> body) {
+        String notes = body == null ? null : body.get("extraNotes");
+        com.prandiumnutri.domain.SuggestionScope scope = com.prandiumnutri.domain.SuggestionScope.WEEK;
+        if (body != null && body.get("scope") != null) {
+            try { scope = com.prandiumnutri.domain.SuggestionScope.valueOf(body.get("scope").toUpperCase()); }
+            catch (IllegalArgumentException ignored) { }
+        }
+        return service.generateForClient(currentUser.getAuthenticated(), clientId, practiceId, notes, scope);
+    }
 }

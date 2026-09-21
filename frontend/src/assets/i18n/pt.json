@@ -28,7 +28,8 @@
       "nutriCompanyInvites": "Convites de empresas",
       "nutriDashboard": "Painel",
       "nutriPractices": "Meus perfis",
-      "appointments": "Consultas"
+      "appointments": "Consultas",
+      "myAssessment": "Minha ficha"
     },
     "user": { "settings": "Configurações", "billing": "Meu plano", "logout": "Sair" },
     "theme": {
@@ -49,7 +50,9 @@
       "add": "Adicionar",
       "back": "Voltar",
       "continue": "Continuar",
-      "remove": "Remover"
+      "remove": "Remover",
+      "yes": "Sim",
+      "no": "Não"
     },
     "pageTitle": {
       "dashboard": "Dashboard",
@@ -79,7 +82,9 @@
       "nutriCompanyInvites": "Convites de empresas",
       "nutriDashboard": "Painel do nutricionista",
       "nutriPractices": "Meus perfis de trabalho",
-      "appointments": "Consultas"
+      "appointments": "Consultas",
+      "myAssessment": "Minha ficha",
+      "assessment": "Ficha de análise"
     }
   },
   "findNutri": {
@@ -217,6 +222,31 @@
     "rejected": "Cardápio recusado",
     "error": "Falha ao processar",
     "chipActive": "Ativo",
+    "editorSubtitle": "Preencha as informações e escolha entre montar manualmente ou gerar com IA",
+    "sectionBasics": "Informações do cardápio",
+    "sectionAi": "Assistente de IA (opcional)",
+    "sectionContent": "Conteúdo do cardápio",
+    "contentHelp": "Cole aqui um cardápio pronto, digite manualmente ou use o botão acima para gerar via IA e depois revisar.",
+    "tabManual": "Manual",
+    "tabAi": "Gerar com IA",
+    "manualHint": "Digite ou cole o cardápio abaixo. Você pode usar markdown (## para dia, ### para refeição, - para itens).",
+    "aiPreviewLabel": "Conteúdo do cardápio",
+    "aiPreviewHint": "Revise e ajuste o resultado gerado antes de salvar.",
+    "aiPreviewPlaceholder": "O cardápio gerado aparecerá aqui — você pode editar antes de salvar.",
+    "aiTitle": "Gerar cardápio com IA",
+    "aiSubtitle": "Cardápio personalizado usando o perfil e a ficha do cliente",
+    "aiNotes": "Instruções extras (opcional)",
+    "aiNotesHint": "Ex.: sem lactose, foco em ganho de massa, etc.",
+    "aiScope": "Duração do cardápio",
+    "aiScopeWeek": "Semana",
+    "aiScopeDay": "Dia",
+    "aiGenerate": "Gerar com IA",
+    "aiGenerateDay": "Gerar sugestão do dia",
+    "aiGenerateWeek": "Gerar cardápio semanal",
+    "aiGenerating": "Gerando...",
+    "aiGenerated": "Cardápio gerado! Revise e ajuste antes de salvar.",
+    "aiErr": "Falha ao gerar. Tente novamente.",
+    "aiLimitReached": "Limite mensal de IA do plano atingido.",
     "status": {
       "DRAFT": "Rascunho",
       "PENDING": "Pendente",
@@ -533,6 +563,73 @@
       "ai": "IA"
     }
   },
+  "assessment": {
+    "title": "Ficha de análise",
+    "subtitle": "Anamnese inicial e acompanhamento antropométrico",
+    "back": "Voltar",
+    "save": "Salvar ficha",
+    "saving": "Salvando...",
+    "saved": "Ficha salva — cadastro do cliente também foi atualizado",
+    "saveErr": "Falha ao salvar",
+    "loadErr": "Falha ao carregar ficha",
+    "lastUpdate": "Última atualização",
+    "sections": {
+      "anthropometry": "Antropometria",
+      "anthropometryHint": "Medidas do corpo — sincroniza com o cadastro",
+      "clinical": "Perfil clínico",
+      "clinicalHint": "Histórico, medicações, condições",
+      "diet": "Hábitos alimentares",
+      "dietHint": "Recordatório 24h, preferências, aversões",
+      "lifestyle": "Estilo de vida",
+      "lifestyleHint": "Atividade física, sono, estresse",
+      "goals": "Objetivos e metas",
+      "goalsHint": "Meta de peso, prazo, anotações"
+    },
+    "stress": {
+      "LOW": "Baixo",
+      "MEDIUM": "Médio",
+      "HIGH": "Alto"
+    },
+    "f": {
+      "weightKg": "Peso",
+      "heightCm": "Altura",
+      "bodyFatPct": "% de gordura",
+      "waistCm": "Cintura",
+      "hipCm": "Quadril",
+      "neckCm": "Pescoço",
+      "armCm": "Braço",
+      "chiefComplaint": "Queixa principal",
+      "medicalHistory": "Histórico médico",
+      "medications": "Medicações em uso",
+      "preExistingConditions": "Condições preexistentes",
+      "allergies": "Alergias e intolerâncias",
+      "familyHistory": "Histórico familiar",
+      "dietaryRecall24h": "Recordatório alimentar de 24h",
+      "dietaryRecall24hHint": "O que o cliente comeu no dia anterior à consulta",
+      "mealFrequency": "Frequência de refeições/dia",
+      "mealFrequencyHint": "Ex.: 3 principais + 2 lanches",
+      "waterIntakeLiters": "Consumo de água",
+      "alcoholFrequency": "Álcool (frequência)",
+      "foodPreferences": "Preferências alimentares",
+      "foodAversions": "Aversões alimentares",
+      "physicalActivityDetails": "Atividade física",
+      "sleepHours": "Horas de sono",
+      "stressLevel": "Nível de estresse",
+      "smoker": "Fumante",
+      "smokingDetails": "Detalhes (cigarros/dia, tempo...)",
+      "goalNotes": "Descrição do objetivo",
+      "targetWeightKg": "Peso alvo",
+      "targetDate": "Data alvo",
+      "notes": "Observações gerais",
+      "notesHint": "Conclusões, plano de conduta, orientações..."
+    }
+  },
+  "myAssessment": {
+    "title": "Minha ficha",
+    "subtitle": "Ficha preenchida pelo seu nutricionista",
+    "empty": "Sua nutricionista ainda não preencheu sua ficha",
+    "updatedAt": "Atualizada em"
+  },
   "appointments": {
     "title": "Consultas",
     "subtitle": {
@@ -713,6 +810,8 @@
       "acceptedOn": "aceito em",
       "manage": "Gerenciar",
       "manageTooltip": "Acessar como este cliente",
+      "assessment": "Ficha",
+      "assessmentTooltip": "Abrir ficha de análise deste cliente",
       "revokeTooltip": "Revogar vínculo",
       "revokeConfirm": "Revogar vínculo com {{name}}?",
       "subRenews": "próxima cobrança {{date}}",

@@ -7,6 +7,8 @@ import com.prandiumnutri.domain.NotificationType;
 import com.prandiumnutri.domain.NutritionistClientLink;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.MenuPlanDto;
+import com.prandiumnutri.domain.SuggestionScope;
+import com.prandiumnutri.dto.SuggestionResponse;
 import com.prandiumnutri.repository.MenuPlanRepository;
 import com.prandiumnutri.repository.NutritionistClientLinkRepository;
 import com.prandiumnutri.repository.UserRepository;
@@ -28,6 +30,7 @@ public class MenuPlanService {
     private final UserRepository userRepository;
     private final NutritionistClientLinkRepository linkRepository;
     private final NotificationService notificationService;
+    private final MenuSuggestionService suggestionService;
 
     @Transactional(readOnly = true)
     public List<MenuPlanDto> list(Long userId) {
@@ -195,6 +198,20 @@ public class MenuPlanService {
                 "MenuPlan", saved.getId()
         );
         return toDto(saved);
+    }
+
+    /**
+     * Nutri gera um cardapio via IA para o cliente. Retorna texto pronto pra ser
+     * colado no editor de cardapio; nao persiste nada. Autoriza vinculo ativo
+     * naquela practice. O gate de plano (por practice) e aplicado pelo
+     * MenuSuggestionService.
+     */
+    @Transactional
+    public SuggestionResponse generateForClient(User nutri, Long clientId, Long practiceId,
+                                                 String extraNotes, SuggestionScope scope) {
+        authorizeNutriForClient(nutri.getId(), clientId, practiceId);
+        SuggestionScope effective = scope == null ? SuggestionScope.WEEK : scope;
+        return suggestionService.suggest(clientId, extraNotes, effective, practiceId);
     }
 
     @Transactional

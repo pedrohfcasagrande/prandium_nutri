@@ -147,6 +147,11 @@ import { ClientLink } from '../../models/models';
               </div>
               <div class="client-actions">
                 @if (c.status === 'ACTIVE' && c.clientId) {
+                  <button mat-stroked-button (click)="openAssessment(c)"
+                          [matTooltip]="'nutri.clients.assessmentTooltip' | translate">
+                    <mat-icon>assignment</mat-icon>
+                    {{ 'nutri.clients.assessment' | translate }}
+                  </button>
                   <button mat-flat-button color="primary" (click)="manage(c)"
                           [matTooltip]="'nutri.clients.manageTooltip' | translate">
                     <mat-icon>manage_accounts</mat-icon>
@@ -253,7 +258,8 @@ export class NutriClientsComponent implements OnInit {
       this.practiceCtx.activePracticeId();
       if (this.firstLoad) { this.firstLoad = false; return; }
       this.load();
-    });
+      this.loadRequests();
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void { this.load(); this.loadRequests(); }
@@ -322,6 +328,11 @@ export class NutriClientsComponent implements OnInit {
     if (!c.clientId) return;
     this.impersonation.start({ id: c.clientId, name: c.clientName, email: c.clientEmail });
     this.router.navigate(['/dashboard']);
+  }
+
+  openAssessment(c: ClientLink) {
+    if (!c.clientId) return;
+    this.router.navigate(['/nutritionist/clients', c.clientId, 'assessment']);
   }
 
   revoke(c: ClientLink) {

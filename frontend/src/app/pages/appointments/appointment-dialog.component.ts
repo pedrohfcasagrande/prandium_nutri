@@ -39,7 +39,7 @@ export interface AppointmentDialogData {
             <mat-label>{{ 'appointments.pickNutri' | translate }}</mat-label>
             <mat-select [(ngModel)]="nutritionistId">
               @for (n of data.nutritionists; track n.id) {
-                <mat-option [value]="n.userId">{{ n.name }}</mat-option>
+                <mat-option [value]="n.nutritionistId">{{ n.name }}</mat-option>
               }
             </mat-select>
           </mat-form-field>

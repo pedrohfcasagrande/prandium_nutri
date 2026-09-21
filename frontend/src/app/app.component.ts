@@ -85,6 +85,10 @@ import { effect } from '@angular/core';
                   <mat-icon matListItemIcon>event</mat-icon>
                   <span matListItemTitle>{{ 'app.nav.appointments' | translate }}</span>
                 </a>
+                <a mat-list-item routerLink="/my-assessment" routerLinkActive="active" (click)="onNavClick(drawer)">
+                  <mat-icon matListItemIcon>assignment</mat-icon>
+                  <span matListItemTitle>{{ 'app.nav.myAssessment' | translate }}</span>
+                </a>
               }
             }
             @if (auth.isNutritionist()) {
@@ -401,6 +405,8 @@ export class AppComponent {
       if (url.startsWith('/appointments')
        || url.startsWith('/nutritionist/appointments')
        || url.startsWith('/company/appointments')) return 'app.pageTitle.appointments';
+      if (url.startsWith('/my-assessment')) return 'app.pageTitle.myAssessment';
+      if (url.match(/\/nutritionist\/clients\/\d+\/assessment/)) return 'app.pageTitle.assessment';
       if (url.startsWith('/notifications')) return 'app.pageTitle.notifications';
       if (url.startsWith('/find-nutritionist')) return 'app.pageTitle.findNutri';
       if (url.startsWith('/company/dashboard')) return 'app.pageTitle.companyDashboard';

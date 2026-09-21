@@ -65,19 +65,33 @@ type MealSlot = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER';
 
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="food-input">
             <mat-label>{{ 'menus.food' | translate }}</mat-label>
-            <mat-icon matPrefix>search</mat-icon>
             <input matInput [(ngModel)]="itemFoodQuery" (input)="searchFoods()"
-                   [matAutocomplete]="foodAuto"
-                   [placeholder]="'menus.foodHint' | translate">
+                   [matAutocomplete]="foodAuto">
+            <mat-icon matIconSuffix>search</mat-icon>
             <mat-autocomplete #foodAuto="matAutocomplete"
                               (optionSelected)="pickFood($event.option.value)"
                               [displayWith]="displayFood">
               @for (f of foodOptions(); track (f.id || f.name)) {
                 <mat-option [value]="f">
                   <div class="food-option">
-                    <span>{{ f.name }}</span>
+                    <span class="food-name">
+                      {{ f.name }}
+                      @if (f.aiSuggested) {
+                        <span class="ai-badge" [title]="'meals.aiTooltip' | translate">
+                          <mat-icon>auto_awesome</mat-icon> IA
+                        </span>
+                      }
+                    </span>
                     <span class="kcal">{{ f.caloriesPer100g }} kcal/100g</span>
                   </div>
+                </mat-option>
+              }
+              @if (aiLoading()) {
+                <mat-option [disabled]="true">
+                  <span class="ai-loading">
+                    <mat-icon>auto_awesome</mat-icon>
+                    {{ 'meals.aiSearching' | translate }}
+                  </span>
                 </mat-option>
               }
             </mat-autocomplete>
@@ -156,8 +170,24 @@ type MealSlot = 'BREAKFAST' | 'LUNCH' | 'SNACK' | 'DINNER';
       .add-item-row .add-btn { grid-column: 1 / -1; }
     }
     .food-input { min-width: 0; }
-    .food-option { display: flex; justify-content: space-between; gap: 12px; }
+    .food-option { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .food-option .food-name { display: inline-flex; align-items: center; gap: 6px; }
     .food-option .kcal { color: var(--nt-text-muted); font-size: 0.8rem; }
+    .ai-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #ede9fe; color: #5b21b6;
+      padding: 1px 8px; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.03em;
+      mat-icon { font-size: 12px; width: 12px; height: 12px; }
+    }
+    .ai-loading {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #5b21b6; font-size: 0.85rem;
+      mat-icon { color: #8b5cf6; font-size: 16px; width: 16px; height: 16px;
+                 animation: pulse 1.4s ease-in-out infinite; }
+    }
+    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
     .add-btn { align-self: center; }
     .preview {
       background: var(--nt-primary-soft); color: var(--nt-primary-dark);
@@ -177,6 +207,8 @@ export class MenuFormDialogComponent {
   itemFood: Food | null = null;
   itemGrams: number | null = null;
   foodOptions = signal<Food[]>([]);
+  aiLoading = signal(false);
+  private aiLookupTimer: any = null;
 
   private readonly mealLabels: Record<MealSlot, string> = {
     BREAKFAST: 'Café',
@@ -201,7 +233,28 @@ export class MenuFormDialogComponent {
 
   searchFoods() {
     const q = typeof this.itemFoodQuery === 'string' ? this.itemFoodQuery.trim() : '';
-    this.api.searchFoods(q).subscribe(f => this.foodOptions.set(f.slice(0, 20)));
+    if (this.aiLookupTimer) { clearTimeout(this.aiLookupTimer); this.aiLookupTimer = null; }
+    this.aiLoading.set(false);
+    this.api.searchFoods(q).subscribe(f => {
+      this.foodOptions.set(f.slice(0, 20));
+      // Fallback IA quando busca local nao retornou nada
+      if (q.length >= 3 && f.length === 0) {
+        this.aiLookupTimer = setTimeout(() => this.runAiLookup(q), 500);
+      }
+    });
+  }
+
+  private runAiLookup(q: string) {
+    if (q !== (this.itemFoodQuery ?? '').trim()) return;
+    this.aiLoading.set(true);
+    this.api.aiLookupFoods(q).subscribe({
+      next: sugg => {
+        this.aiLoading.set(false);
+        if (q !== (this.itemFoodQuery ?? '').trim()) return;
+        this.foodOptions.set(sugg);
+      },
+      error: () => this.aiLoading.set(false)
+    });
   }
 
   displayFood(f: Food | null): string { return f ? f.name : ''; }

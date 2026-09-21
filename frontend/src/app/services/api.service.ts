@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
-  Appointment, AppointmentRequest,
+  Appointment, AppointmentRequest, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
@@ -357,6 +357,17 @@ export class ApiService {
     return this.http.delete<void>(`${this.base}/nutritionist/menu-plans/${id}`, { params });
   }
 
+  /** Nutri gera cardapio via IA para o cliente. Retorna sugestao em markdown. */
+  nutriGenerateMenuForClient(clientId: number, opts: { extraNotes?: string; scope?: 'DAY' | 'WEEK' } = {},
+                              practiceId?: number | null): Observable<{ menu: string }> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.post<{ menu: string }>(
+      `${this.base}/nutritionist/menu-plans/generate/${clientId}`,
+      { extraNotes: opts.extraNotes ?? null, scope: opts.scope ?? 'WEEK' },
+      { params });
+  }
+
   // 4D — Nutri discovery
   availableNutris(): Observable<NutriPublic[]> {
     return this.http.get<NutriPublic[]>(`${this.base}/nutritionists/available`);
@@ -459,5 +470,26 @@ export class ApiService {
 
   companyListAppointments(): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(`${this.base}/company/appointments`);
+  }
+
+  // ============ Ficha de análise (Fase 8.2) ============
+
+  nutriGetAssessment(clientId: number, practiceId?: number | null): Observable<ClientAssessment | null> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<ClientAssessment | null>(
+      `${this.base}/nutritionist/assessments/client/${clientId}`, { params });
+  }
+
+  nutriUpsertAssessment(clientId: number, dto: ClientAssessment,
+                         practiceId?: number | null): Observable<ClientAssessment> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.put<ClientAssessment>(
+      `${this.base}/nutritionist/assessments/client/${clientId}`, dto, { params });
+  }
+
+  myAssessment(): Observable<ClientAssessment | null> {
+    return this.http.get<ClientAssessment | null>(`${this.base}/me/assessment`);
   }
 }

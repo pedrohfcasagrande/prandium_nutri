@@ -179,5 +179,15 @@ export const routes: Routes = [
     canActivate: [companyGuard],
     data: { mode: 'COMPANY' },
     loadComponent: () => import('./pages/appointments/appointments.component').then(m => m.AppointmentsComponent)
+  },
+  {
+    path: 'nutritionist/clients/:clientId/assessment',
+    canActivate: [nutritionistGuard],
+    loadComponent: () => import('./pages/assessment/nutri-assessment.component').then(m => m.NutriAssessmentComponent)
+  },
+  {
+    path: 'my-assessment',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/assessment/my-assessment.component').then(m => m.MyAssessmentComponent)
   }
 ];

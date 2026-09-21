@@ -343,6 +343,62 @@ export interface MenuPlan {
   ownerEmail?: string | null;
 }
 
+// Client assessment (ficha de análise — Fase 8.2)
+export type StressLevel = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export interface ClientAssessment {
+  id?: number;
+  clientId?: number;
+  clientName?: string;
+  clientEmail?: string;
+  nutritionistId?: number;
+  nutritionistName?: string;
+  practiceId?: number | null;
+  assessmentDate?: string;
+
+  // Antropometria
+  weightKg?: number | null;
+  heightCm?: number | null;
+  bodyFatPct?: number | null;
+  waistCm?: number | null;
+  hipCm?: number | null;
+  neckCm?: number | null;
+  armCm?: number | null;
+
+  // Clinico
+  chiefComplaint?: string | null;
+  medicalHistory?: string | null;
+  medications?: string | null;
+  preExistingConditions?: string | null;
+  allergies?: string | null;
+  familyHistory?: string | null;
+
+  // Habitos
+  dietaryRecall24h?: string | null;
+  mealFrequency?: string | null;
+  waterIntakeLiters?: number | null;
+  alcoholFrequency?: string | null;
+  foodPreferences?: string | null;
+  foodAversions?: string | null;
+
+  // Estilo
+  physicalActivityDetails?: string | null;
+  sleepHours?: number | null;
+  stressLevel?: StressLevel | null;
+  smoker: boolean;
+  smokingDetails?: string | null;
+
+  // Objetivos
+  goalNotes?: string | null;
+  targetWeightKg?: number | null;
+  targetDate?: string | null;
+
+  // Meta
+  notes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Appointments (Fase 8)
 export type AppointmentStatus = 'REQUESTED' | 'CONFIRMED' | 'RESCHEDULE_REQUESTED' | 'CANCELED' | 'COMPLETED' | 'NO_SHOW';
 export type AppointmentLocation = 'ONLINE' | 'IN_PERSON';

@@ -144,6 +144,16 @@ public class NutritionistLinkService {
                 """.formatted(nutritionist.getName(), nutritionist.getEmail(), expirationDays, link_url);
         mailService.send(normalizedEmail, "Convite de nutricionista - Nutri Tracker", body);
 
+        // Notificacao in-app quando o cliente ja existe como usuario
+        if (existingClient != null) {
+            notificationService.notify(
+                    existingClient.getId(),
+                    NotificationType.GENERIC,
+                    "Convite de nutricionista",
+                    nutritionist.getName() + " quer acompanhar sua alimentacao. Abra 'Convites' para aceitar ou recusar.",
+                    "NutritionistClientLink", link.getId());
+        }
+
         auditService.record(AuditAction.CLIENT_INVITED, nutritionist.getId(), nutritionist.getRole(),
                 "NutritionistClientLink", link.getId());
         return toClientLinkDto(link);

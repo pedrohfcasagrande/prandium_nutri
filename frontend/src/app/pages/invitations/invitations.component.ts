@@ -33,22 +33,20 @@ import { PendingInvite } from '../../models/models';
         <div class="invite-list">
           @for (inv of invites(); track inv.linkId) {
             <mat-card class="invite-card">
-              <div class="invite-body">
-                <div class="avatar">
-                  <mat-icon>medical_services</mat-icon>
+              <div class="avatar">
+                <mat-icon>medical_services</mat-icon>
+              </div>
+              <div class="info">
+                <div class="invite-text">
+                  <strong>{{ inv.nutritionistName }}</strong>
+                  {{ 'invitations.wantsToFollow' | translate }}
                 </div>
-                <div>
-                  <div class="invite-text">
-                    <strong>{{ inv.nutritionistName }}</strong>
-                    {{ 'invitations.wantsToFollow' | translate }}
-                  </div>
-                  <div class="text-muted small">
-                    {{ inv.nutritionistEmail }} · {{ 'invitations.invitedOn' | translate }}
-                    {{ inv.invitedAt | date:'short' }}
-                  </div>
-                  <div class="text-muted small">
-                    {{ 'invitations.expiresOn' | translate }} {{ inv.expiresAt | date:'short' }}
-                  </div>
+                <div class="text-muted small">
+                  {{ inv.nutritionistEmail }} · {{ 'invitations.invitedOn' | translate }}
+                  {{ inv.invitedAt | date:'short' }}
+                </div>
+                <div class="text-muted small">
+                  {{ 'invitations.expiresOn' | translate }} {{ inv.expiresAt | date:'short' }}
                 </div>
               </div>
               <div class="invite-actions">
@@ -71,19 +69,27 @@ import { PendingInvite } from '../../models/models';
     .invite-list { display: flex; flex-direction: column; gap: 12px; }
     .invite-card {
       padding: 16px 20px !important;
-      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
+      gap: 16px;
       border-left: 4px solid var(--nt-accent) !important;
     }
-    .invite-body { display: flex; align-items: center; gap: 14px; }
     .avatar {
       width: 48px; height: 48px; border-radius: 50%;
       background: linear-gradient(135deg, var(--nt-accent), #d97706);
       color: #fff; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
-    .invite-text { font-size: 1.05rem; }
+    .info { min-width: 0; }
+    .invite-text { font-size: 1.05rem; margin-bottom: 4px; }
     .small { font-size: 0.85rem; }
-    .invite-actions { display: flex; gap: 8px; }
+    .invite-actions { display: flex; gap: 8px; justify-self: end; flex-wrap: wrap; }
+
+    @media (max-width: 720px) {
+      .invite-card { grid-template-columns: auto 1fr; }
+      .invite-actions { grid-column: 1 / -1; justify-self: stretch; justify-content: flex-end; }
+    }
   `]
 })
 export class InvitationsComponent implements OnInit {

@@ -207,7 +207,7 @@ export class NutriMetricsComponent implements OnInit {
       this.practiceCtx.activePracticeId();
       if (this.firstLoad) { this.firstLoad = false; return; }
       this.load();
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void { this.load(); }
