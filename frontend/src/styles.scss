@@ -133,6 +133,15 @@ body {
   border: 1px solid var(--nt-border);
   background: var(--nt-surface) !important;
   color: var(--nt-text) !important;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 220ms ease;
+}
+// Sutil realce ao hover em cards de lista (nao afeta cards de kpi/hero)
+.list > .mat-mdc-card:hover,
+.invite-list > .mat-mdc-card:hover,
+.client-list > .mat-mdc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--nt-shadow-lg) !important;
 }
 .mat-mdc-card-header { padding: 20px 24px 8px !important; }
 .mat-mdc-card-content { padding: 8px 24px 20px !important; }
@@ -211,6 +220,85 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+// --- Transições globais ---
+
+// Fade-up ao entrar (usado por rotas e por cards de lista)
+@keyframes nt-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Slide lateral sutil para transicoes de rota
+@keyframes nt-slide-in {
+  from { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.985); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+// Shimmer para skeleton loaders
+@keyframes nt-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// Route transition: aplica-se ao HOST do componente renderizado apos <router-outlet>.
+// Cobre TODAS as telas — inclusive auth (login/register/forgot) que nao usa `.page`.
+router-outlet + * {
+  display: block;
+  animation: nt-slide-in 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+// Header extra (secundario, quando existe): entra logo depois
+router-outlet + * .page-header {
+  animation: nt-fade-up 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 60ms;
+}
+// Nas telas de auth, alem do host, o painel/card entra separadamente
+// pra ter uma percepcao clara de mudanca visual (login <-> register)
+router-outlet + * .auth-panel {
+  animation: nt-slide-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 80ms;
+}
+router-outlet + * .brand-hero {
+  animation: nt-fade-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 40ms;
+}
+router-outlet + * .auth-card {
+  animation: nt-fade-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 180ms;
+}
+
+// Stagger em listas de cards. Componentes usam [style.--i]="$index".
+// Delay capado em 900ms via CSS min() pra listas longas nao arrastarem.
+.stagger-item {
+  animation: nt-fade-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: min(calc(var(--i, 0) * 55ms), 900ms);
+}
+
+// Entrada suave dos KPI cards e cards hero das telas (dashboards, metricas)
+router-outlet + * .kpi-grid > *,
+router-outlet + * .action-grid > *,
+router-outlet + * .hero-card,
+router-outlet + * .plan-card,
+router-outlet + * .editor-card {
+  animation: nt-fade-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 120ms;
+}
+router-outlet + * .kpi-grid > *:nth-child(2) { animation-delay: 160ms; }
+router-outlet + * .kpi-grid > *:nth-child(3) { animation-delay: 200ms; }
+router-outlet + * .kpi-grid > *:nth-child(4) { animation-delay: 240ms; }
+router-outlet + * .kpi-grid > *:nth-child(5) { animation-delay: 280ms; }
+
+// Page header compacto ao scrollar
+.page-header {
+  transition: padding 180ms ease, margin 180ms ease;
+  h1 { transition: font-size 180ms ease, letter-spacing 180ms ease; }
+  p { transition: opacity 180ms ease, max-height 220ms ease, margin 180ms ease; }
+}
+.page-header.scrolled {
+  h1 { font-size: 1.3rem; letter-spacing: 0; }
+  p { opacity: 0; max-height: 0; margin: 0; pointer-events: none; overflow: hidden; }
 }
 
 // Paginator: alinha com o resto da UI. Quando esta dentro de um mat-card (tabelas),

@@ -11,6 +11,7 @@ import { ApiService } from '../../services/api.service';
 import { NutriMetricsOverview } from '../../models/models';
 import { AlertBannerComponent } from '../../components/alert-banner.component';
 import { PracticeService } from '../../services/practice.service';
+import { SkeletonComponent } from '../../components/skeleton.component';
 
 @Component({
   selector: 'app-nutri-metrics',
@@ -18,7 +19,8 @@ import { PracticeService } from '../../services/practice.service';
   imports: [
     CommonModule,
     MatCardModule, MatIconModule, MatTableModule, MatTooltipModule,
-    MatProgressSpinnerModule, MatProgressBarModule, TranslateModule, AlertBannerComponent
+    MatProgressSpinnerModule, MatProgressBarModule, TranslateModule, AlertBannerComponent,
+    SkeletonComponent
   ],
   template: `
     <div class="page">
@@ -32,7 +34,12 @@ import { PracticeService } from '../../services/practice.service';
       <app-alert-banner scope="nutritionist"></app-alert-banner>
 
       @if (loading()) {
-        <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+        <div class="kpi-grid">
+          @for (i of [0,1,2,3]; track i) { <app-skeleton type="kpi"></app-skeleton> }
+        </div>
+        <div style="margin-top:24px">
+          <app-skeleton type="card" height="260px"></app-skeleton>
+        </div>
       }
       @if (!loading() && overview(); as o) {
         <div class="kpi-grid">

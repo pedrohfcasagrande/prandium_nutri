@@ -46,8 +46,9 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
         </div>
       } @else {
         <div class="list">
-          @for (u of users(); track u.id) {
-            <mat-card class="row-card" [class.active]="u.active" [class.inactive]="!u.active"
+          @for (u of users(); track u.id; let i = $index) {
+            <mat-card class="row-card stagger-item" [style.--i]="i"
+                      [class.active]="u.active" [class.inactive]="!u.active"
                       [class.admin-row]="u.role === 'ADMIN'">
               <div class="avatar">{{ u.name?.[0]?.toUpperCase() || '?' }}</div>
               <div class="info">

@@ -11,6 +11,7 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { PracticeService } from '../../services/practice.service';
 import { ClientLink, MenuPlan, NutriMetricsOverview, Subscription } from '../../models/models';
+import { SkeletonComponent } from '../../components/skeleton.component';
 
 @Component({
   selector: 'app-nutri-dashboard',
@@ -18,7 +19,8 @@ import { ClientLink, MenuPlan, NutriMetricsOverview, Subscription } from '../../
   imports: [
     CommonModule, RouterLink,
     MatCardModule, MatIconModule, MatButtonModule,
-    MatProgressSpinnerModule, TranslateModule
+    MatProgressSpinnerModule, TranslateModule,
+    SkeletonComponent
   ],
   template: `
     <div class="page">
@@ -30,7 +32,12 @@ import { ClientLink, MenuPlan, NutriMetricsOverview, Subscription } from '../../
       </div>
 
       @if (loading()) {
-        <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+        <div class="kpi-grid">
+          @for (i of [0,1,2,3]; track i) { <app-skeleton type="kpi"></app-skeleton> }
+        </div>
+        <div class="action-grid" style="margin-top:24px">
+          @for (i of [0,1,2]; track i) { <app-skeleton type="card" height="140px"></app-skeleton> }
+        </div>
       } @else {
         <div class="kpi-grid">
           <mat-card class="kpi">

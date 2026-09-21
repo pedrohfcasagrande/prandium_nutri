@@ -53,8 +53,9 @@ type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
         </div>
       } @else {
         <div class="list">
-          @for (a of appointments(); track a.id) {
-            <mat-card class="ap-card" [class]="'status-' + a.status.toLowerCase()">
+          @for (a of appointments(); track a.id; let i = $index) {
+            <mat-card class="ap-card stagger-item" [style.--i]="i"
+                     [class]="'status-' + a.status.toLowerCase()">
               <div class="date-block">
                 <div class="day">{{ a.scheduledAt | date:'dd' }}</div>
                 <div class="month">{{ a.scheduledAt | date:'MMM' }}</div>

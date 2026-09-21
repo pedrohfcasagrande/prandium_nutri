@@ -43,8 +43,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
         </div>
       } @else {
         <div class="list">
-          @for (r of clients(); track r.linkId) {
-            <mat-card class="row-card active">
+          @for (r of clients(); track r.linkId; let i = $index) {
+            <mat-card class="row-card active stagger-item" [style.--i]="i">
               <div class="avatar">{{ (r.clientName || '?')[0].toUpperCase() }}</div>
               <div class="info">
                 <div class="name">{{ r.clientName }}</div>

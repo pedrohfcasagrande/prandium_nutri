@@ -31,8 +31,8 @@ import { PendingInvite } from '../../models/models';
         </div>
       } @else {
         <div class="invite-list">
-          @for (inv of invites(); track inv.linkId) {
-            <mat-card class="invite-card">
+          @for (inv of invites(); track inv.linkId; let i = $index) {
+            <mat-card class="invite-card stagger-item" [style.--i]="i">
               <div class="avatar">
                 <mat-icon>medical_services</mat-icon>
               </div>

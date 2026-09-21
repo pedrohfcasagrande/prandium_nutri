@@ -181,7 +181,7 @@ import { effect } from '@angular/core';
           </div>
         </mat-sidenav>
 
-        <mat-sidenav-content class="app-content">
+        <mat-sidenav-content class="app-content" #scrollContainer (scroll)="onScroll($event)">
           @if (imp.target()) {
             <div class="imp-banner">
               <mat-icon>manage_accounts</mat-icon>
@@ -439,6 +439,15 @@ export class AppComponent {
   }
 
   onNavClick(drawer: any) { if (this.isHandset()) drawer.close(); }
+
+  /** Aplica .scrolled na .page-header quando o container rola alem de 40px. */
+  onScroll(ev: Event) {
+    const el = ev.target as HTMLElement;
+    const header = el.querySelector('.page-header');
+    if (!header) return;
+    if (el.scrollTop > 40) header.classList.add('scrolled');
+    else header.classList.remove('scrolled');
+  }
 
   logout() {
     this.imp.stop();

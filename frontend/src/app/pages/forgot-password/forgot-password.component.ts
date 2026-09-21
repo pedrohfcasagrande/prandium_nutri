@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { LanguageSwitcherComponent } from '../../components/language-switcher.component';
+import { ThemeSwitcherComponent } from '../../components/theme-switcher.component';
 
 @Component({
   selector: 'app-forgot-password',
@@ -18,11 +19,15 @@ import { LanguageSwitcherComponent } from '../../components/language-switcher.co
   imports: [
     CommonModule, FormsModule, RouterLink,
     MatCardModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, TranslateModule, LanguageSwitcherComponent
+    MatButtonModule, MatIconModule, TranslateModule, LanguageSwitcherComponent,
+    ThemeSwitcherComponent
   ],
   template: `
     <div class="auth-shell">
-      <div class="auth-topbar"><app-language-switcher></app-language-switcher></div>
+      <div class="auth-topbar">
+        <app-language-switcher></app-language-switcher>
+        <app-theme-switcher></app-theme-switcher>
+      </div>
       <div class="auth-panel">
         <div class="brand-hero">
           <div class="brand-icon"><mat-icon>lock_reset</mat-icon></div>

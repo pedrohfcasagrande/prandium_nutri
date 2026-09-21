@@ -11,6 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { AdminMetricsOverview } from '../../models/models';
 import { AlertBannerComponent } from '../../components/alert-banner.component';
+import { SkeletonComponent } from '../../components/skeleton.component';
 
 @Component({
   selector: 'app-admin-metrics',
@@ -18,7 +19,7 @@ import { AlertBannerComponent } from '../../components/alert-banner.component';
   imports: [
     CommonModule,
     MatCardModule, MatIconModule, MatTableModule, MatChipsModule, MatProgressSpinnerModule,
-    BaseChartDirective, TranslateModule, AlertBannerComponent
+    BaseChartDirective, TranslateModule, AlertBannerComponent, SkeletonComponent
   ],
   template: `
     <div class="page">
@@ -32,7 +33,12 @@ import { AlertBannerComponent } from '../../components/alert-banner.component';
       <app-alert-banner scope="admin"></app-alert-banner>
 
       @if (loading()) {
-        <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+        <div class="kpi-grid">
+          @for (i of [0,1,2,3]; track i) { <app-skeleton type="kpi"></app-skeleton> }
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:24px">
+          @for (i of [0,1]; track i) { <app-skeleton type="card" height="220px"></app-skeleton> }
+        </div>
       }
       @if (!loading() && overview(); as o) {
         <div class="kpi-grid">

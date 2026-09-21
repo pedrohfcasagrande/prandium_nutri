@@ -111,8 +111,9 @@ import { ClientLink } from '../../models/models';
         </div>
       } @else {
         <div class="client-list">
-          @for (c of clients(); track c.id) {
-            <mat-card class="client-card" [class.pending]="c.status === 'PENDING'"
+          @for (c of clients(); track c.id; let i = $index) {
+            <mat-card class="client-card stagger-item" [style.--i]="i"
+                                          [class.pending]="c.status === 'PENDING'"
                                           [class.active]="c.status === 'ACTIVE'">
               <div class="avatar" [class.avatar-pending]="c.status === 'PENDING'">
                 {{ (c.clientName || '?')[0].toUpperCase() }}
