@@ -27,6 +27,7 @@ class CompanyMetricsServiceTest {
     @Autowired UserRepository userRepo;
     @Autowired PlanRepository planRepo;
     @Autowired PlanPriceRepository priceRepo;
+    @Autowired NutritionistPracticeRepository practiceRepo;
 
     @BeforeEach
     void setup() {
@@ -62,7 +63,11 @@ class CompanyMetricsServiceTest {
                 .invitedAt(LocalDateTime.now()).acceptedAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .build());
-        // 2 clientes ativos vinculados a este nutri
+        NutritionistPractice practice = practiceRepo.save(NutritionistPractice.builder()
+                .nutritionist(nutri).company(c)
+                .acceptsNewClients(true).status(PracticeStatus.ACTIVE)
+                .build());
+        // 2 clientes ativos vinculados a este nutri via practice desta empresa
         for (int i = 0; i < 2; i++) {
             User client = userRepo.save(User.builder()
                     .name("Client " + i).email("client" + i + "-" + System.nanoTime() + "@x.com")
@@ -71,7 +76,7 @@ class CompanyMetricsServiceTest {
                     .passwordHash("$2a$10$x").cpf(String.format("%011d", Math.abs(System.nanoTime() % 100000000000L)))
                 .build());
             linkRepo.save(NutritionistClientLink.builder()
-                    .nutritionist(nutri).client(client)
+                    .nutritionist(nutri).client(client).practice(practice)
                     .invitedByEmail(client.getEmail())
                     .inviteToken("tc-" + System.nanoTime() + i)
                     .status(LinkStatus.ACTIVE)

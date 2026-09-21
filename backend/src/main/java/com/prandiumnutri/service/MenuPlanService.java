@@ -110,6 +110,103 @@ public class MenuPlanService {
         repository.delete(plan);
     }
 
+    // -------- Nutritionist authoring (creates/edits menu-plans on behalf of client) --------
+
+    /**
+     * Verifica que o nutri tem vinculo ACTIVE com o cliente e retorna o link.
+     * Se practiceId != null, exige tambem que o link seja da practice indicada.
+     */
+    private NutritionistClientLink authorizeNutriForClient(Long nutriId, Long clientId, Long practiceId) {
+        return linkRepository.findByNutritionistIdOrderByInvitedAtDesc(nutriId).stream()
+                .filter(l -> l.getStatus() == LinkStatus.ACTIVE
+                          && l.getClient() != null && l.getClient().getId().equals(clientId)
+                          && (practiceId == null
+                              || (l.getPractice() != null && l.getPractice().getId().equals(practiceId))))
+                .findFirst()
+                .orElseThrow(() -> new AccessDeniedException("Voce nao atende este cliente"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuPlanDto> listForClientByNutri(Long nutriId, Long clientId, Long practiceId) {
+        authorizeNutriForClient(nutriId, clientId, practiceId);
+        return repository.findByUserIdOrderByCreatedAtDesc(clientId).stream()
+                .map(this::toDto).toList();
+    }
+
+    @Transactional
+    public MenuPlanDto createForClient(User nutri, Long clientId, Long practiceId, MenuPlanDto dto) {
+        authorizeNutriForClient(nutri.getId(), clientId, practiceId);
+        User client = userRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente nao encontrado"));
+        MenuPlan plan = MenuPlan.builder()
+                .user(client)
+                .name(dto.name())
+                .source(dto.source())
+                .content(dto.content())
+                .startDate(dto.startDate())
+                .endDate(dto.endDate())
+                .status(MenuPlanStatus.APPROVED)
+                .reviewedAt(LocalDateTime.now())
+                .reviewedById(nutri.getId())
+                .build();
+        if (dto.active()) {
+            repository.deactivateAllForUser(clientId);
+            plan.setActive(true);
+        }
+        MenuPlan saved = repository.save(plan);
+        notificationService.notify(
+                client.getId(),
+                NotificationType.GENERIC,
+                "Novo cardapio de " + nutri.getName(),
+                "Seu nutricionista " + nutri.getName() + " criou o cardapio \"" + saved.getName() + "\" para voce.",
+                "MenuPlan", saved.getId()
+        );
+        return toDto(saved);
+    }
+
+    @Transactional
+    public MenuPlanDto updateForClient(User nutri, Long planId, Long practiceId, MenuPlanDto dto) {
+        MenuPlan plan = repository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("MenuPlan not found"));
+        Long clientId = plan.getUser() != null ? plan.getUser().getId() : null;
+        if (clientId == null) throw new EntityNotFoundException("Cardapio sem dono");
+        authorizeNutriForClient(nutri.getId(), clientId, practiceId);
+
+        plan.setName(dto.name());
+        plan.setSource(dto.source());
+        plan.setContent(dto.content());
+        plan.setStartDate(dto.startDate());
+        plan.setEndDate(dto.endDate());
+        plan.setStatus(MenuPlanStatus.APPROVED);
+        plan.setReviewedAt(LocalDateTime.now());
+        plan.setReviewedById(nutri.getId());
+        if (dto.active()) {
+            repository.deactivateAllForUser(clientId);
+            plan.setActive(true);
+        } else {
+            plan.setActive(false);
+        }
+        MenuPlan saved = repository.save(plan);
+        notificationService.notify(
+                clientId,
+                NotificationType.GENERIC,
+                "Cardapio atualizado por " + nutri.getName(),
+                "Seu cardapio \"" + saved.getName() + "\" foi atualizado pelo seu nutricionista.",
+                "MenuPlan", saved.getId()
+        );
+        return toDto(saved);
+    }
+
+    @Transactional
+    public void deleteForClient(User nutri, Long planId, Long practiceId) {
+        MenuPlan plan = repository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("MenuPlan not found"));
+        Long clientId = plan.getUser() != null ? plan.getUser().getId() : null;
+        if (clientId == null) throw new EntityNotFoundException("Cardapio sem dono");
+        authorizeNutriForClient(nutri.getId(), clientId, practiceId);
+        repository.delete(plan);
+    }
+
     // -------- Approval flow --------
 
     @Transactional
@@ -186,8 +283,25 @@ public class MenuPlanService {
 
     @Transactional(readOnly = true)
     public List<MenuPlanDto> listPendingForNutri(Long nutriId) {
-        return repository.findBySubmittedToNutriIdAndStatusOrderBySubmittedAtDesc(nutriId, MenuPlanStatus.PENDING)
-                .stream().map(this::toDto).toList();
+        return listPendingForNutri(nutriId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuPlanDto> listPendingForNutri(Long nutriId, Long practiceId) {
+        var pending = repository.findBySubmittedToNutriIdAndStatusOrderBySubmittedAtDesc(nutriId, MenuPlanStatus.PENDING);
+        if (practiceId == null) {
+            return pending.stream().map(this::toDto).toList();
+        }
+        // Filtra apenas os cardapios cujos clientes estao vinculados a esta practice do nutri
+        return pending.stream().filter(plan -> {
+            Long clientId = plan.getUser() != null ? plan.getUser().getId() : null;
+            if (clientId == null) return false;
+            return linkRepository.findByClientIdOrderByInvitedAtDesc(clientId).stream()
+                    .anyMatch(l -> l.getNutritionist() != null
+                              && l.getNutritionist().getId().equals(nutriId)
+                              && l.getPractice() != null
+                              && l.getPractice().getId().equals(practiceId));
+        }).map(this::toDto).toList();
     }
 
     private MenuPlan fetchAndAuthorizeReviewer(User nutri, Long planId) {

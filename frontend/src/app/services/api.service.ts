@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
+  Appointment, AppointmentRequest,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
@@ -318,8 +319,10 @@ export class ApiService {
     return this.http.post<MenuPlan>(`${this.base}/menu-plans/${id}/submit`, null);
   }
 
-  nutriPendingMenus(): Observable<MenuPlan[]> {
-    return this.http.get<MenuPlan[]>(`${this.base}/nutritionist/menu-plans/pending`);
+  nutriPendingMenus(practiceId?: number | null): Observable<MenuPlan[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<MenuPlan[]>(`${this.base}/nutritionist/menu-plans/pending`, { params });
   }
 
   approveMenu(id: number): Observable<MenuPlan> {
@@ -328,6 +331,30 @@ export class ApiService {
 
   rejectMenu(id: number, reason: string): Observable<MenuPlan> {
     return this.http.post<MenuPlan>(`${this.base}/nutritionist/menu-plans/${id}/reject`, { reason });
+  }
+
+  nutriListClientMenus(clientId: number, practiceId?: number | null): Observable<MenuPlan[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<MenuPlan[]>(`${this.base}/nutritionist/menu-plans/client/${clientId}`, { params });
+  }
+
+  nutriCreateMenuForClient(clientId: number, dto: MenuPlan, practiceId?: number | null): Observable<MenuPlan> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.post<MenuPlan>(`${this.base}/nutritionist/menu-plans/for/${clientId}`, dto, { params });
+  }
+
+  nutriUpdateMenu(id: number, dto: MenuPlan, practiceId?: number | null): Observable<MenuPlan> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.put<MenuPlan>(`${this.base}/nutritionist/menu-plans/${id}`, dto, { params });
+  }
+
+  nutriDeleteMenu(id: number, practiceId?: number | null): Observable<void> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.delete<void>(`${this.base}/nutritionist/menu-plans/${id}`, { params });
   }
 
   // 4D — Nutri discovery
@@ -351,8 +378,10 @@ export class ApiService {
     return this.http.post<ClientLink>(`${this.base}/nutritionists/${nutriId}/request-link`, { message });
   }
 
-  clientRequests(): Observable<ClientLink[]> {
-    return this.http.get<ClientLink[]>(`${this.base}/nutritionist/client-requests`);
+  clientRequests(practiceId?: number | null): Observable<ClientLink[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<ClientLink[]>(`${this.base}/nutritionist/client-requests`, { params });
   }
 
   acceptClientRequest(linkId: number): Observable<void> {
@@ -384,5 +413,51 @@ export class ApiService {
   companyTransferClient(clientId: number, targetNutriId: number): Observable<void> {
     return this.http.put<void>(`${this.base}/company/clients/${clientId}/nutri`,
         { targetNutriId });
+  }
+
+  // ============ Appointments (Fase 8) ============
+
+  clientListAppointments(): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${this.base}/appointments`);
+  }
+  clientRequestAppointment(dto: AppointmentRequest): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/appointments`, dto);
+  }
+  clientConfirmAppointment(id: number): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/appointments/${id}/confirm`, null);
+  }
+  clientCancelAppointment(id: number, reason?: string): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/appointments/${id}/cancel`, { reason });
+  }
+  clientRescheduleAppointment(id: number, scheduledAt: string): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/appointments/${id}/reschedule`, { scheduledAt });
+  }
+
+  nutriListAppointments(practiceId?: number | null): Observable<Appointment[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<Appointment[]>(`${this.base}/nutritionist/appointments`, { params });
+  }
+  nutriSuggestAppointment(dto: AppointmentRequest): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/nutritionist/appointments`, dto);
+  }
+  nutriConfirmAppointment(id: number): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/nutritionist/appointments/${id}/confirm`, null);
+  }
+  nutriCancelAppointment(id: number, reason?: string): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/nutritionist/appointments/${id}/cancel`, { reason });
+  }
+  nutriRescheduleAppointment(id: number, scheduledAt: string): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/nutritionist/appointments/${id}/reschedule`, { scheduledAt });
+  }
+  nutriCompleteAppointment(id: number): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/nutritionist/appointments/${id}/complete`, null);
+  }
+  nutriNoShowAppointment(id: number): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.base}/nutritionist/appointments/${id}/no-show`, null);
+  }
+
+  companyListAppointments(): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${this.base}/company/appointments`);
   }
 }

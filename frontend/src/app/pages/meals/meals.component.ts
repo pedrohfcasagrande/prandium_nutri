@@ -75,7 +75,7 @@ import { DatePickerComponent } from '../../components/date-picker.component';
               <mat-autocomplete #auto="matAutocomplete"
                                 (optionSelected)="selectFood($event.option.value)"
                                 [displayWith]="displayFood">
-                @for (f of foodOptions(); track f.id ?? f.name) {
+                @for (f of foodOptions(); track (f.id || f.name)) {
                   <mat-option [value]="f">
                     <div class="food-option">
                       <span class="food-name">

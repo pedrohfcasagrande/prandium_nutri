@@ -273,7 +273,7 @@ export class NutriClientsComponent implements OnInit {
   onSearch(q: string) { this.query = q; this.pageIndex = 0; this.load(); }
   onSort(s: 'created' | 'name') { this.sort = s; this.pageIndex = 0; this.load(); }
   onPage(e: PageEvent) { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
-  loadRequests() { this.api.clientRequests().subscribe({
+  loadRequests() { this.api.clientRequests(this.practiceCtx.activePracticeId()).subscribe({
     next: r => this.requests.set(r),
     error: () => this.requests.set([])
   }); }

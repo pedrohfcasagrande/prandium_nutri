@@ -49,8 +49,8 @@ public class NutritionistController {
 
     @GetMapping("/client-requests")
     @PreAuthorize("hasRole('NUTRITIONIST')")
-    public List<ClientLinkDto> requests() {
-        return linkService.listClientRequests(currentUser.getAuthenticatedId());
+    public List<ClientLinkDto> requests(@RequestParam(required = false) Long practiceId) {
+        return linkService.listClientRequests(currentUser.getAuthenticatedId(), practiceId);
     }
 
     @PostMapping("/client-requests/{linkId}/accept")

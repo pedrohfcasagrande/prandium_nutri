@@ -256,10 +256,11 @@ export class NutriDashboardComponent implements OnInit {
 
   private load() {
     this.loading.set(true);
+    const pid = this.practiceCtx.activePracticeId();
     forkJoin({
-      metrics: this.api.nutriMetricsOverview(this.practiceCtx.activePracticeId()),
-      pending: this.api.nutriPendingMenus(),
-      requests: this.api.clientRequests(),
+      metrics: this.api.nutriMetricsOverview(pid),
+      pending: this.api.nutriPendingMenus(pid),
+      requests: this.api.clientRequests(pid),
       sub: this.api.mySubscription()
     }).subscribe({
       next: r => {

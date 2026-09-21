@@ -81,6 +81,10 @@ import { effect } from '@angular/core';
                   <mat-icon matListItemIcon>search</mat-icon>
                   <span matListItemTitle>{{ 'app.nav.findNutri' | translate }}</span>
                 </a>
+                <a mat-list-item routerLink="/appointments" routerLinkActive="active" (click)="onNavClick(drawer)">
+                  <mat-icon matListItemIcon>event</mat-icon>
+                  <span matListItemTitle>{{ 'app.nav.appointments' | translate }}</span>
+                </a>
               }
             }
             @if (auth.isNutritionist()) {
@@ -97,9 +101,13 @@ import { effect } from '@angular/core';
                 <mat-icon matListItemIcon>insights</mat-icon>
                 <span matListItemTitle>{{ 'app.nav.nutriMetrics' | translate }}</span>
               </a>
-              <a mat-list-item routerLink="/nutritionist/pending-menus" routerLinkActive="active" (click)="onNavClick(drawer)">
-                <mat-icon matListItemIcon>assignment</mat-icon>
-                <span matListItemTitle>{{ 'app.nav.pendingMenus' | translate }}</span>
+              <a mat-list-item routerLink="/nutritionist/menu-plans" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>restaurant_menu</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.nutriMenus' | translate }}</span>
+              </a>
+              <a mat-list-item routerLink="/nutritionist/appointments" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>event</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.appointments' | translate }}</span>
               </a>
               <a mat-list-item routerLink="/nutritionist/public-profile" routerLinkActive="active" (click)="onNavClick(drawer)">
                 <mat-icon matListItemIcon>badge</mat-icon>
@@ -135,6 +143,10 @@ import { effect } from '@angular/core';
               <a mat-list-item routerLink="/company/members" routerLinkActive="active" (click)="onNavClick(drawer)">
                 <mat-icon matListItemIcon>group</mat-icon>
                 <span matListItemTitle>{{ 'app.nav.companyMembers' | translate }}</span>
+              </a>
+              <a mat-list-item routerLink="/company/appointments" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>event</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.appointments' | translate }}</span>
               </a>
             }
             @if (auth.isAdmin()) {
@@ -340,13 +352,13 @@ export class AppComponent {
     effect(() => {
       if (this.auth.isAuthenticated()) this.notif.start();
       else this.notif.stop();
-    });
+    }, { allowSignalWrites: true });
     // carrega practices quando o efetivo e nutri
     effect(() => {
       const user = this.auth.currentUser();
       if (user?.role === 'NUTRITIONIST') this.practices.loadForCurrentNutri();
       else this.practices.clear();
-    });
+    }, { allowSignalWrites: true });
   }
 
   isHandset = toSignal(
@@ -381,11 +393,14 @@ export class AppComponent {
       if (url.startsWith('/admin/users')) return 'app.pageTitle.admin';
       if (url.startsWith('/nutritionist/clients')) return 'app.pageTitle.nutriClients';
       if (url.startsWith('/nutritionist/metrics')) return 'app.pageTitle.nutriMetrics';
-      if (url.startsWith('/nutritionist/pending-menus')) return 'app.pageTitle.pendingMenus';
+      if (url.startsWith('/nutritionist/menu-plans') || url.startsWith('/nutritionist/pending-menus')) return 'app.pageTitle.nutriMenus';
       if (url.startsWith('/nutritionist/public-profile')) return 'app.pageTitle.nutriPublicProfile';
       if (url.startsWith('/nutritionist/company-invitations')) return 'app.pageTitle.nutriCompanyInvites';
       if (url.startsWith('/nutritionist/practices')) return 'app.pageTitle.nutriPractices';
       if (url.startsWith('/nutritionist/dashboard')) return 'app.pageTitle.nutriDashboard';
+      if (url.startsWith('/appointments')
+       || url.startsWith('/nutritionist/appointments')
+       || url.startsWith('/company/appointments')) return 'app.pageTitle.appointments';
       if (url.startsWith('/notifications')) return 'app.pageTitle.notifications';
       if (url.startsWith('/find-nutritionist')) return 'app.pageTitle.findNutri';
       if (url.startsWith('/company/dashboard')) return 'app.pageTitle.companyDashboard';

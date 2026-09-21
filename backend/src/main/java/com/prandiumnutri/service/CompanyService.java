@@ -197,6 +197,17 @@ public class CompanyService {
 
         if (nutri == null) return;
 
+        // Fase 8 fix: captura vinculos DESTA empresa ANTES de mudar a practice.
+        // `endLinkWithCompany` pode converter a practice em particular (company=null)
+        // quando o nutri nao tem particular; se filtrassemos depois, nenhum vinculo
+        // seria encontrado. Clientes particulares do nutri nao entram nessa lista.
+        var activeClientLinks = nclRepository.findByNutritionistIdOrderByInvitedAtDesc(nutri.getId()).stream()
+                .filter(l -> l.getStatus() == LinkStatus.ACTIVE)
+                .filter(l -> l.getPractice() != null
+                          && l.getPractice().getCompany() != null
+                          && l.getPractice().getCompany().getId().equals(company.getId()))
+                .toList();
+
         // Fase 5E: se o nutri nao tem particular, esta practice vira particular;
         // caso contrario, apenas suspende.
         boolean converted = practiceService.endLinkWithCompany(nutri.getId(), company.getId());
@@ -210,10 +221,6 @@ public class CompanyService {
                        + "criamos um automaticamente com base nesta atuacao — seus clientes continuam com voce.")
                     : ("Seu vinculo com " + company.getName() + " foi encerrado."),
                 "CompanyNutritionist", cn.getId());
-
-        var activeClientLinks = nclRepository.findByNutritionistIdOrderByInvitedAtDesc(nutri.getId()).stream()
-                .filter(l -> l.getStatus() == LinkStatus.ACTIVE)
-                .toList();
 
         if ("REVOKE_CLIENTS".equalsIgnoreCase(action)) {
             for (var l : activeClientLinks) {
@@ -289,10 +296,15 @@ public class CompanyService {
 
         List<Long> companyNutris = cnRepository.activeNutritionistIds(company.getId());
         for (Long nId : companyNutris) {
+            // Fase 8 fix: so revoga vinculos via practice desta empresa; preserva
+            // vinculo particular do cliente com o mesmo nutri se existir.
             var links = nclRepository.findByNutritionistIdOrderByInvitedAtDesc(nId).stream()
                     .filter(l -> l.getStatus() == LinkStatus.ACTIVE
                               && l.getClient() != null
                               && l.getClient().getId().equals(clientId))
+                    .filter(l -> l.getPractice() != null
+                              && l.getPractice().getCompany() != null
+                              && l.getPractice().getCompany().getId().equals(company.getId()))
                     .toList();
             for (var l : links) {
                 l.setStatus(LinkStatus.REVOKED_BY_NUTRI);
@@ -335,8 +347,14 @@ public class CompanyService {
         for (Long nId : nutriIds) {
             User nutri = userRepository.findById(nId).orElse(null);
             String nutriName = nutri != null ? nutri.getName() : ("Nutri #" + nId);
+            // Fase 8 fix: mostra apenas clientes vinculados via practice DESTA empresa.
+            // Sem esse filtro, clientes particulares do nutri (practice sem company)
+            // vazariam para a listagem da empresa.
             var links = nclRepository.findByNutritionistIdOrderByInvitedAtDesc(nId).stream()
                     .filter(l -> l.getStatus() == LinkStatus.ACTIVE && l.getClient() != null)
+                    .filter(l -> l.getPractice() != null
+                              && l.getPractice().getCompany() != null
+                              && l.getPractice().getCompany().getId().equals(companyId))
                     .toList();
             for (var l : links) {
                 User client = l.getClient();
@@ -435,9 +453,11 @@ public class CompanyService {
         List<CompanyNutritionist> all = cnRepository.findByCompanyIdOrderByInvitedAtDesc(companyId);
         long active = all.stream().filter(c -> c.getStatus() == LinkStatus.ACTIVE).count();
         long pending = all.stream().filter(c -> c.getStatus() == LinkStatus.PENDING).count();
+        // Fase 8 fix: conta apenas clientes vinculados via practice DESTA empresa
         long clients = all.stream()
                 .filter(c -> c.getStatus() == LinkStatus.ACTIVE && c.getNutritionist() != null)
-                .mapToLong(c -> nclRepository.countActiveOrPending(c.getNutritionist().getId()))
+                .mapToLong(c -> nclRepository.countActiveOrPendingForCompany(
+                        c.getNutritionist().getId(), companyId))
                 .sum();
         return new CompanyOverviewDto(active, pending, clients);
     }
@@ -449,9 +469,17 @@ public class CompanyService {
     }
 
     public boolean companyHasClientViaNutri(Long companyId, Long clientId) {
+        // Fase 8 fix: so retorna true se o cliente esta vinculado ao nutri VIA
+        // uma practice desta empresa. Clientes da practice particular do nutri
+        // nao devem ser visiveis/impersonavel pela empresa.
         List<Long> nutriIds = cnRepository.activeNutritionistIds(companyId);
         for (Long nId : nutriIds) {
-            if (nclRepository.existsActiveLink(nId, clientId)) return true;
+            boolean linkedViaCompany = nclRepository.findByNutritionistIdOrderByInvitedAtDesc(nId).stream()
+                    .anyMatch(l -> l.getStatus() == LinkStatus.ACTIVE
+                              && l.getClient() != null && l.getClient().getId().equals(clientId)
+                              && l.getPractice() != null && l.getPractice().getCompany() != null
+                              && l.getPractice().getCompany().getId().equals(companyId));
+            if (linkedViaCompany) return true;
         }
         return false;
     }

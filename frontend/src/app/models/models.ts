@@ -343,6 +343,48 @@ export interface MenuPlan {
   ownerEmail?: string | null;
 }
 
+// Appointments (Fase 8)
+export type AppointmentStatus = 'REQUESTED' | 'CONFIRMED' | 'RESCHEDULE_REQUESTED' | 'CANCELED' | 'COMPLETED' | 'NO_SHOW';
+export type AppointmentLocation = 'ONLINE' | 'IN_PERSON';
+export type AppointmentActor = 'CLIENT' | 'NUTRITIONIST';
+
+export interface Appointment {
+  id: number;
+  clientId: number;
+  clientName: string;
+  clientEmail: string;
+  nutritionistId: number;
+  nutritionistName: string;
+  practiceId?: number | null;
+  companyId?: number | null;
+  companyName?: string | null;
+  scheduledAt: string;
+  durationMinutes: number;
+  location: AppointmentLocation;
+  locationDetails?: string | null;
+  notes?: string | null;
+  status: AppointmentStatus;
+  requestedBy: AppointmentActor;
+  lastActionBy: AppointmentActor;
+  proposedScheduledAt?: string | null;
+  proposedBy?: AppointmentActor | null;
+  cancelReason?: string | null;
+  canceledAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AppointmentRequest {
+  nutritionistId?: number | null;
+  clientId?: number | null;
+  practiceId?: number | null;
+  scheduledAt: string;
+  durationMinutes?: number | null;
+  location?: AppointmentLocation;
+  locationDetails?: string | null;
+  notes?: string | null;
+}
+
 export type NotificationType = 'MENU_SUBMITTED' | 'MENU_APPROVED' | 'MENU_REJECTED' | 'GENERIC';
 
 export interface AppNotification {

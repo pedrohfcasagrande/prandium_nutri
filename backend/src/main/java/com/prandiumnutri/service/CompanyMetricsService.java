@@ -44,7 +44,7 @@ public class CompanyMetricsService {
                 .filter(cn -> cn.getStatus() == LinkStatus.PENDING).count();
 
         long totalClients = 0;
-        for (Long nid : nutriIds) totalClients += countActiveClients(nid);
+        for (Long nid : nutriIds) totalClients += countActiveClients(nid, companyId);
 
         LocalDateTime monthStart = YearMonth.now().atDay(1).atStartOfDay();
         LocalDateTime day30Ago = LocalDateTime.now().minusDays(30);
@@ -67,11 +67,15 @@ public class CompanyMetricsService {
         long subCents = optSub.map(s -> (long) s.getAmountCents()).orElse(0L);
         String currency = optSub.map(Subscription::getCurrency).orElse("BRL");
 
-        // Meals dos clientes dos nutris ultimos 30d
+        // Meals dos clientes dos nutris ultimos 30d — apenas clientes vinculados
+        // via practice DESTA empresa (Fase 8 fix: nao contar clientes particulares do nutri).
         long meals30d = 0;
         for (Long nid : nutriIds) {
             var clientIds = clientLinkRepository.findByNutritionistIdOrderByInvitedAtDesc(nid).stream()
                     .filter(l -> l.getStatus() == LinkStatus.ACTIVE)
+                    .filter(l -> l.getPractice() != null
+                              && l.getPractice().getCompany() != null
+                              && l.getPractice().getCompany().getId().equals(companyId))
                     .map(l -> l.getClient() != null ? l.getClient().getId() : null)
                     .filter(java.util.Objects::nonNull)
                     .toList();
@@ -85,7 +89,7 @@ public class CompanyMetricsService {
         }
 
         List<NutriRow> rows = nutriIds.stream()
-                .map(nid -> buildNutriRow(nid, aiByNutri.getOrDefault(nid, 0L)))
+                .map(nid -> buildNutriRow(nid, aiByNutri.getOrDefault(nid, 0L), companyId))
                 .toList();
 
         return new Overview(
@@ -93,18 +97,23 @@ public class CompanyMetricsService {
                 aiThisMonth, meals30d, subCents, currency, rows);
     }
 
-    private long countActiveClients(Long nutriId) {
+    /** Conta clientes ativos do nutri vinculados via practice desta empresa (Fase 8 fix). */
+    private long countActiveClients(Long nutriId, Long companyId) {
         return clientLinkRepository.findByNutritionistIdOrderByInvitedAtDesc(nutriId).stream()
-                .filter(l -> l.getStatus() == LinkStatus.ACTIVE).count();
+                .filter(l -> l.getStatus() == LinkStatus.ACTIVE)
+                .filter(l -> l.getPractice() != null
+                          && l.getPractice().getCompany() != null
+                          && l.getPractice().getCompany().getId().equals(companyId))
+                .count();
     }
 
-    private NutriRow buildNutriRow(Long nutriId, long aiUsage) {
+    private NutriRow buildNutriRow(Long nutriId, long aiUsage, Long companyId) {
         User nutri = userRepository.findById(nutriId).orElse(null);
         String name = nutri != null ? nutri.getName() : ("Nutri #" + nutriId);
         String email = nutri != null ? nutri.getEmail() : "";
         LocalDate lastSeen = nutri != null && nutri.getLastSeenAt() != null
                 ? nutri.getLastSeenAt().toLocalDate() : null;
-        return new NutriRow(nutriId, name, email, countActiveClients(nutriId),
+        return new NutriRow(nutriId, name, email, countActiveClients(nutriId, companyId),
                 aiUsage, lastSeen != null ? lastSeen.toString() : null);
     }
 }

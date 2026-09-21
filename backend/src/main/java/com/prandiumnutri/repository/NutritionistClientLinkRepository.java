@@ -34,6 +34,21 @@ public interface NutritionistClientLinkRepository extends JpaRepository<Nutritio
            """)
     long countActiveOrPending(@Param("nutriId") Long nutritionistId);
 
+    /**
+     * Fase 8: conta vinculos ACTIVE/PENDING de um nutri restritos a uma company
+     * (via practice.company_id). Usado por CompanyService.overview para nao vazar
+     * clientes particulares do nutri na contagem da empresa.
+     */
+    @Query("""
+           select count(l) from NutritionistClientLink l
+           where l.nutritionist.id = :nutriId
+             and l.status in ('PENDING', 'ACTIVE')
+             and l.practice is not null
+             and l.practice.company.id = :companyId
+           """)
+    long countActiveOrPendingForCompany(@Param("nutriId") Long nutritionistId,
+                                         @Param("companyId") Long companyId);
+
     @Query("""
            select l.nutritionist.id as nutriId, count(l) as total
            from NutritionistClientLink l

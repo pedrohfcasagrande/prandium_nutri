@@ -29,6 +29,7 @@ class CompanyClientTransferTest {
     @Autowired PlanRepository planRepo;
     @Autowired PlanPriceRepository priceRepo;
     @Autowired NotificationRepository notifRepo;
+    @Autowired NutritionistPracticeRepository practiceRepo;
 
     @BeforeEach
     void setup() {
@@ -119,6 +120,40 @@ class CompanyClientTransferTest {
                 .containsExactlyInAnyOrder(ctx.client1.getId(), ctx.client2.getId(), ctx.client3.getId());
     }
 
+    /** Fase 8: cliente do nutri via practice PARTICULAR nao pode aparecer para a empresa. */
+    @Test
+    void listClients_doesNotLeakParticularClientsToCompany() {
+        var ctx = seedCompanyWithTwoNutrisAndClients();
+        // Cria practice particular para nutriA e vincula um cliente particular
+        var particular = practiceRepo.save(NutritionistPractice.builder()
+                .nutritionist(ctx.nutriA).company(null)
+                .acceptsNewClients(true).status(PracticeStatus.ACTIVE).build());
+        User particularClient = createUser(Role.USER);
+        linkNutriClient(ctx.nutriA, particularClient, particular);
+
+        var list = companyService.listClients(ctx.company.getId());
+        assertThat(list).hasSize(3); // apenas os 3 vinculados via practice da empresa
+        assertThat(list.stream().map(x -> x.clientId()))
+                .doesNotContain(particularClient.getId());
+    }
+
+    /** Fase 8: revogar nutri via empresa nao pode encerrar vinculos particulares desse nutri. */
+    @Test
+    void revokeWithAction_revokeClients_doesNotTouchParticularLinks() {
+        var ctx = seedCompanyWithTwoNutrisAndClients();
+        var particular = practiceRepo.save(NutritionistPractice.builder()
+                .nutritionist(ctx.nutriA).company(null)
+                .acceptsNewClients(true).status(PracticeStatus.ACTIVE).build());
+        User particularClient = createUser(Role.USER);
+        linkNutriClient(ctx.nutriA, particularClient, particular);
+
+        companyService.revokeWithAction(ctx.company, ctx.cnA.getId(), "REVOKE_CLIENTS", null);
+
+        assertThat(nclRepo.existsActiveLink(ctx.nutriA.getId(), particularClient.getId()))
+                .as("cliente particular nao deve ser afetado por acao da empresa")
+                .isTrue();
+    }
+
     // ---- helpers ----
 
     private record Ctx(Company company, User nutriA, User nutriB,
@@ -133,12 +168,14 @@ class CompanyClientTransferTest {
         User nutriB = createUser(Role.NUTRITIONIST);
         var cnA = linkCompanyNutri(c, nutriA);
         var cnB = linkCompanyNutri(c, nutriB);
+        var practiceA = practiceForCompany(nutriA, c);
+        var practiceB = practiceForCompany(nutriB, c);
         User client1 = createUser(Role.USER);
         User client2 = createUser(Role.USER);
         User client3 = createUser(Role.USER);
-        linkNutriClient(nutriA, client1);
-        linkNutriClient(nutriA, client2);
-        linkNutriClient(nutriB, client3);
+        linkNutriClient(nutriA, client1, practiceA);
+        linkNutriClient(nutriA, client2, practiceA);
+        linkNutriClient(nutriB, client3, practiceB);
         return new Ctx(c, nutriA, nutriB, client1, client2, client3, cnA, cnB);
     }
 
@@ -161,14 +198,22 @@ class CompanyClientTransferTest {
                 .build());
     }
 
-    private void linkNutriClient(User nutri, User client) {
+    private void linkNutriClient(User nutri, User client, NutritionistPractice practice) {
         nclRepo.save(NutritionistClientLink.builder()
-                .nutritionist(nutri).client(client)
+                .nutritionist(nutri).client(client).practice(practice)
                 .invitedByEmail(client.getEmail()).inviteToken("nc-" + System.nanoTime())
                 .status(LinkStatus.ACTIVE)
                 .invitedAt(LocalDateTime.now()).acceptedAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .initiatedByClient(false)
+                .build());
+    }
+
+    private NutritionistPractice practiceForCompany(User nutri, Company company) {
+        return practiceRepo.save(NutritionistPractice.builder()
+                .nutritionist(nutri).company(company)
+                .acceptsNewClients(true)
+                .status(PracticeStatus.ACTIVE)
                 .build());
     }
 }

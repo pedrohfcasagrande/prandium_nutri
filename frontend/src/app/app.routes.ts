@@ -86,8 +86,12 @@ export const routes: Routes = [
   },
   {
     path: 'nutritionist/pending-menus',
+    redirectTo: 'nutritionist/menu-plans'
+  },
+  {
+    path: 'nutritionist/menu-plans',
     canActivate: [nutritionistGuard],
-    loadComponent: () => import('./pages/nutri-pending-menus/nutri-pending-menus.component').then(m => m.NutriPendingMenusComponent)
+    loadComponent: () => import('./pages/nutri-menu-plans/nutri-menu-plans.component').then(m => m.NutriMenuPlansComponent)
   },
   {
     path: 'notifications',
@@ -157,5 +161,23 @@ export const routes: Routes = [
     path: 'admin/companies',
     canActivate: [adminGuard],
     loadComponent: () => import('./pages/admin-companies/admin-companies.component').then(m => m.AdminCompaniesComponent)
+  },
+  {
+    path: 'appointments',
+    canActivate: [authGuard],
+    data: { mode: 'CLIENT' },
+    loadComponent: () => import('./pages/appointments/appointments.component').then(m => m.AppointmentsComponent)
+  },
+  {
+    path: 'nutritionist/appointments',
+    canActivate: [nutritionistGuard],
+    data: { mode: 'NUTRI' },
+    loadComponent: () => import('./pages/appointments/appointments.component').then(m => m.AppointmentsComponent)
+  },
+  {
+    path: 'company/appointments',
+    canActivate: [companyGuard],
+    data: { mode: 'COMPANY' },
+    loadComponent: () => import('./pages/appointments/appointments.component').then(m => m.AppointmentsComponent)
   }
 ];

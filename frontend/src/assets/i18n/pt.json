@@ -21,12 +21,14 @@
       "companyMetrics": "Métricas da empresa",
       "nutriMetrics": "Minhas métricas",
       "pendingMenus": "Cardápios pendentes",
+      "nutriMenus": "Cardápios",
       "pricing": "Planos",
       "findNutri": "Encontrar nutricionista",
       "nutriPublicProfile": "Meu perfil público",
       "nutriCompanyInvites": "Convites de empresas",
       "nutriDashboard": "Painel",
-      "nutriPractices": "Meus perfis"
+      "nutriPractices": "Meus perfis",
+      "appointments": "Consultas"
     },
     "user": { "settings": "Configurações", "billing": "Meu plano", "logout": "Sair" },
     "theme": {
@@ -70,12 +72,14 @@
       "pricing": "Planos",
       "billing": "Assinatura",
       "pendingMenus": "Aprovações pendentes",
+      "nutriMenus": "Cardápios",
       "notifications": "Notificações",
       "findNutri": "Encontrar nutricionista",
       "nutriPublicProfile": "Perfil público",
       "nutriCompanyInvites": "Convites de empresas",
       "nutriDashboard": "Painel do nutricionista",
-      "nutriPractices": "Meus perfis de trabalho"
+      "nutriPractices": "Meus perfis de trabalho",
+      "appointments": "Consultas"
     }
   },
   "findNutri": {
@@ -174,6 +178,51 @@
     "approved": "Cardápio aprovado — cliente notificado",
     "rejected": "Cardápio recusado — cliente notificado",
     "error": "Falha ao processar. Tente novamente."
+  },
+  "nutriMenus": {
+    "title": "Cardápios",
+    "subtitle": "Aprove submissões dos clientes e crie cardápios para eles",
+    "tabPending": "Pendentes de aprovação",
+    "tabAuthor": "Cardápios dos clientes",
+    "pendingEmpty": "Nenhum cardápio pendente",
+    "clientEmpty": "Este cliente ainda não tem cardápios",
+    "pickClient": "Selecione um cliente",
+    "pickClientHint": "Selecione um cliente para ver e criar cardápios",
+    "new": "Novo cardápio",
+    "newing": "Novo cardápio",
+    "editing": "Editando cardápio",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir cardápio \"{{name}}\"?",
+    "deleted": "Cardápio excluído",
+    "from": "De",
+    "submittedAt": "Enviado em",
+    "createdAt": "Criado em",
+    "period": "Período",
+    "name": "Nome do cardápio",
+    "startDate": "Data inicial",
+    "endDate": "Data final",
+    "content": "Conteúdo do cardápio",
+    "contentHint": "Cole aqui o cardápio em JSON, YAML ou texto livre",
+    "setActive": "Ativar como cardápio atual",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "saved": "Cardápio salvo — cliente notificado",
+    "saveErr": "Falha ao salvar. Tente novamente.",
+    "approve": "Aprovar",
+    "reject": "Recusar",
+    "rejectReason": "Motivo",
+    "confirm": "Confirmar",
+    "approved": "Cardápio aprovado",
+    "rejected": "Cardápio recusado",
+    "error": "Falha ao processar",
+    "chipActive": "Ativo",
+    "status": {
+      "DRAFT": "Rascunho",
+      "PENDING": "Pendente",
+      "APPROVED": "Aprovado",
+      "REJECTED": "Recusado"
+    }
   },
   "adminMetrics": {
     "title": "Métricas da plataforma",
@@ -465,10 +514,78 @@
     "emptyOther": "Nenhum outro cardápio salvo.",
     "activate": "Ativar cardápio",
     "edit": "Editar",
+    "editTitle": "Editar cardápio",
     "removeConfirm": "Excluir o cardápio \"{{name}}\"?",
+    "addItemTitle": "Adicionar alimento",
+    "addItem": "Adicionar",
+    "meal": "Refeição",
+    "food": "Alimento",
+    "foodHint": "Digite para buscar",
+    "grams": "Gramas",
+    "mealTypes": {
+      "BREAKFAST": "Café da manhã",
+      "LUNCH": "Almoço",
+      "SNACK": "Lanche",
+      "DINNER": "Jantar"
+    },
     "source": {
       "manual": "Manual",
       "ai": "IA"
+    }
+  },
+  "appointments": {
+    "title": "Consultas",
+    "subtitle": {
+      "CLIENT": "Solicite consultas com seu nutricionista e acompanhe o status",
+      "NUTRI": "Gerencie as consultas com seus clientes",
+      "COMPANY": "Consultas agendadas pelos nutris vinculados à empresa"
+    },
+    "empty": "Nenhuma consulta ainda",
+    "request": "Solicitar consulta",
+    "suggest": "Sugerir consulta",
+    "requestTitle": "Solicitar consulta",
+    "suggestTitle": "Sugerir consulta ao cliente",
+    "rescheduleTitle": "Reagendar consulta",
+    "pickNutri": "Selecione o nutricionista",
+    "pickClient": "Selecione o cliente",
+    "date": "Data",
+    "time": "Hora",
+    "duration": "Duração",
+    "location": {
+      "label": "Modalidade",
+      "ONLINE": "Online",
+      "IN_PERSON": "Presencial"
+    },
+    "locationDetails": "Detalhes (link, endereço...)",
+    "notesLabel": "Observações",
+    "notesHint": "Assuntos a tratar, exames, dúvidas...",
+    "save": "Enviar",
+    "saved": "Consulta registrada",
+    "saveErr": "Falha ao salvar",
+    "confirm": "Aceitar",
+    "confirmed": "Consulta confirmada",
+    "reschedule": "Reagendar",
+    "rescheduled": "Reagendamento enviado",
+    "cancel": "Cancelar",
+    "canceled": "Consulta cancelada",
+    "cancelReasonPrompt": "Motivo do cancelamento (opcional):",
+    "complete": "Marcar como realizada",
+    "completed": "Consulta marcada como realizada",
+    "noShow": "Cliente não compareceu",
+    "markedNoShow": "Consulta marcada como não comparecimento",
+    "proposedTo": "Nova data proposta: {{date}}",
+    "by": "por",
+    "actor": {
+      "CLIENT": "Cliente",
+      "NUTRITIONIST": "Nutricionista"
+    },
+    "status": {
+      "REQUESTED": "Aguardando",
+      "CONFIRMED": "Confirmada",
+      "RESCHEDULE_REQUESTED": "Reagendamento",
+      "CANCELED": "Cancelada",
+      "COMPLETED": "Realizada",
+      "NO_SHOW": "Não compareceu"
     }
   },
   "progress": {

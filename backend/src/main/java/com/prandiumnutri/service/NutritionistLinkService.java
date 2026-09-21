@@ -349,12 +349,26 @@ public class NutritionistLinkService {
 
     @Transactional(readOnly = true)
     public List<ClientLinkDto> listClientRequests(Long nutritionistId) {
+        return listClientRequests(nutritionistId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientLinkDto> listClientRequests(Long nutritionistId, Long practiceId) {
         return linkRepository.findByNutritionistIdOrderByInvitedAtDesc(nutritionistId).stream()
                 .filter(l -> l.isInitiatedByClient() && l.getStatus() == LinkStatus.PENDING)
+                .filter(l -> practiceId == null
+                          || (l.getPractice() != null && l.getPractice().getId().equals(practiceId)))
                 .map(this::toClientLinkDto).toList();
     }
 
     // --- Helper pra verificar vinculo (usado por CurrentUser em impersonation) ---
+    public java.util.Optional<NutritionistClientLink> findActiveLinkBetween(Long nutritionistId, Long clientId) {
+        return linkRepository.findByNutritionistIdOrderByInvitedAtDesc(nutritionistId).stream()
+                .filter(l -> l.getStatus() == LinkStatus.ACTIVE
+                          && l.getClient() != null && l.getClient().getId().equals(clientId))
+                .findFirst();
+    }
+
     public boolean hasActiveLink(Long nutritionistId, Long clientId) {
         return linkRepository.existsActiveLink(nutritionistId, clientId);
     }
