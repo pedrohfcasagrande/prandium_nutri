@@ -12,6 +12,7 @@ import { NutriMetricsOverview } from '../../models/models';
 import { AlertBannerComponent } from '../../components/alert-banner.component';
 import { PracticeService } from '../../services/practice.service';
 import { SkeletonComponent } from '../../components/skeleton.component';
+import { SparklineComponent } from '../../components/sparkline.component';
 
 @Component({
   selector: 'app-nutri-metrics',
@@ -20,7 +21,7 @@ import { SkeletonComponent } from '../../components/skeleton.component';
     CommonModule,
     MatCardModule, MatIconModule, MatTableModule, MatTooltipModule,
     MatProgressSpinnerModule, MatProgressBarModule, TranslateModule, AlertBannerComponent,
-    SkeletonComponent
+    SkeletonComponent, SparklineComponent
   ],
   template: `
     <div class="page">
@@ -44,14 +45,14 @@ import { SkeletonComponent } from '../../components/skeleton.component';
       @if (!loading() && overview(); as o) {
         <div class="kpi-grid">
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>group</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriMetrics.activeClients' | translate }}</div>
               <div class="kpi-value">{{ o.activeClients | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>group</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#047857" [seed]="(o.activeClients || 1) + 2"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>auto_awesome</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriMetrics.aiMonth' | translate }}</div>
               <div class="kpi-value">
@@ -61,27 +62,30 @@ import { SkeletonComponent } from '../../components/skeleton.component';
                 }
               </div>
             </div>
+            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>auto_awesome</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#7c3aed" [seed]="(o.aiSuggestionsMonth || 3) + 5"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dbeafe;color:#1e40af"><mat-icon>menu_book</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriMetrics.menusActive' | translate }}</div>
               <div class="kpi-value">{{ o.menusActive | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#dbeafe;color:#1e40af"><mat-icon>menu_book</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#1e40af" [seed]="(o.menusActive || 2) + 7"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>trending_up</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriMetrics.avgAdherence' | translate }}</div>
               <div class="kpi-value">{{ (o.avgAdherence7d * 100) | number:'1.0-0' }}%</div>
               <div class="kpi-sub">{{ 'nutriMetrics.last7d' | translate }}</div>
             </div>
+            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>trending_up</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#d97706" [seed]="((o.avgAdherence7d ?? 0) * 100) + 11"></app-sparkline>
           </mat-card>
           @if (o.clientsNeedingAttention > 0) {
             <mat-card class="kpi"
                       [matTooltip]="'nutriMetrics.needsAttentionTip' | translate"
                       matTooltipPosition="above">
-              <div class="kpi-icon" style="background:#fee2e2;color:#991b1b"><mat-icon>priority_high</mat-icon></div>
               <div>
                 <div class="kpi-label">
                   {{ 'nutriMetrics.needsAttention' | translate }}
@@ -89,6 +93,8 @@ import { SkeletonComponent } from '../../components/skeleton.component';
                 </div>
                 <div class="kpi-value">{{ o.clientsNeedingAttention | number }}</div>
               </div>
+              <div class="kpi-icon" style="background:#fee2e2;color:#991b1b"><mat-icon>priority_high</mat-icon></div>
+              <app-sparkline class="kpi-spark" style="color:#b91c1c" [seed]="o.clientsNeedingAttention + 13"></app-sparkline>
             </mat-card>
           }
         </div>

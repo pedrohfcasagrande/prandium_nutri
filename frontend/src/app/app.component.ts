@@ -279,8 +279,9 @@ import { effect } from '@angular/core';
   styles: [`
     .app-container { height: 100vh; background: var(--nt-bg); }
 
+    /* Sidebar refinada estilo Linear/Stripe: 240px, itens compactos 40px */
     .sidenav {
-      width: 260px;
+      width: 240px;
       border-right: 1px solid var(--nt-border);
       background: var(--nt-surface);
       display: flex;
@@ -288,34 +289,97 @@ import { effect } from '@angular/core';
     }
 
     .sidenav-header {
-      padding: 20px;
+      padding: 18px 16px;
       border-bottom: 1px solid var(--nt-border);
-      .brand { color: var(--nt-primary-dark); font-size: 1.1rem; }
+      .brand {
+        color: var(--nt-text-strong);
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        display: flex; align-items: center; gap: 10px;
+      }
       .brand-icon {
-        background: var(--nt-primary);
+        background: linear-gradient(135deg, var(--nt-primary), var(--nt-primary-dark));
         color: #fff;
-        border-radius: 10px;
-        padding: 6px;
+        border-radius: 8px;
+        padding: 5px;
         display: flex;
+        box-shadow: 0 2px 6px -1px rgba(14, 143, 131, 0.35);
+        mat-icon { font-size: 20px; width: 20px; height: 20px; }
       }
     }
 
-    .sidenav-list { padding: 12px 8px !important; flex: 1; }
-    .sidenav-list a { border-radius: 10px !important; margin-bottom: 4px; }
+    .sidenav-list { padding: 10px 8px !important; flex: 1; overflow-y: auto; }
+    .sidenav-list ::ng-deep .mat-mdc-list-item {
+      height: 40px !important;
+      margin-bottom: 2px;
+      border-radius: var(--nt-radius-sm) !important;
+      transition: background 150ms ease;
+    }
+    .sidenav-list ::ng-deep .mat-mdc-list-item .mdc-list-item__primary-text {
+      color: var(--nt-text-muted) !important;
+      font-size: 0.875rem !important;
+      font-weight: 500 !important;
+      letter-spacing: -0.005em !important;
+    }
+    .sidenav-list ::ng-deep .mat-mdc-list-item mat-icon {
+      color: var(--nt-text-muted) !important;
+      font-size: 20px !important;
+      width: 20px !important; height: 20px !important;
+      margin-right: 10px !important;
+    }
+    .sidenav-list ::ng-deep .mat-mdc-list-item:hover {
+      background: var(--nt-surface-2) !important;
+      .mdc-list-item__primary-text { color: var(--nt-text) !important; }
+      mat-icon { color: var(--nt-text) !important; }
+    }
+    .sidenav-list ::ng-deep .mat-mdc-list-item.active {
+      background: var(--nt-primary-soft) !important;
+      .mdc-list-item__primary-text {
+        color: var(--nt-primary-dark) !important;
+        font-weight: 600 !important;
+      }
+      mat-icon { color: var(--nt-primary) !important; }
+    }
+    .sidenav-list ::ng-deep mat-divider {
+      margin: 12px 8px !important;
+      border-color: var(--nt-border) !important;
+    }
 
-    .sidenav-footer { padding: 16px; border-top: 1px solid var(--nt-border); }
-    .logout-btn { width: 100%; }
+    .sidenav-footer {
+      padding: 12px 16px 16px;
+      padding-bottom: max(16px, var(--nt-safe-bottom));
+      border-top: 1px solid var(--nt-border);
+    }
+    .logout-btn { width: 100%; justify-content: flex-start !important; }
 
     .app-content { display: flex; flex-direction: column; }
 
+    /* Toolbar mais alta e refinada */
     .app-toolbar {
       position: sticky; top: 0; z-index: 10;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      min-height: 60px;
+      padding: 0 20px !important;
+      border-bottom: 1px solid var(--nt-border);
+      background: var(--nt-surface) !important;
+      backdrop-filter: blur(12px);
     }
-    .toolbar-title { font-weight: 600; font-size: 1.05rem; margin-left: 8px; }
-    .user-btn { display: flex; align-items: center; gap: 6px; }
+    .toolbar-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+      margin-left: 8px;
+      color: var(--nt-text-strong);
+    }
+    .user-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 10px 4px 6px !important;
+      border-radius: var(--nt-radius-sm) !important;
+    }
+    .user-btn:hover { background: var(--nt-surface-2) !important; }
     .user-name {
       max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size: 0.875rem; font-weight: 500;
       @media (max-width: 600px) { display: none; }
     }
     .page-outlet { flex: 1; overflow: auto; }

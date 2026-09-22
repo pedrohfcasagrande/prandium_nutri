@@ -18,6 +18,7 @@ import { PracticeService } from '../../services/practice.service';
 import { NotificationPollService } from '../../services/notification-poll.service';
 import { Appointment, AppointmentLocation, AppointmentRequest, ClientLink, NutriPublic } from '../../models/models';
 import { AppointmentDialogComponent, AppointmentDialogData } from './appointment-dialog.component';
+import { EmptyStateComponent } from '../../components/empty-state.component';
 
 type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
 
@@ -29,7 +30,7 @@ type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
     MatCardModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatSnackBarModule, MatDialogModule, MatTooltipModule,
-    TranslateModule
+    TranslateModule, EmptyStateComponent
   ],
   template: `
     <div class="page">
@@ -47,10 +48,9 @@ type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
       </div>
 
       @if (appointments().length === 0) {
-        <div class="empty card-surface">
-          <mat-icon>event_available</mat-icon>
-          <p>{{ 'appointments.empty' | translate }}</p>
-        </div>
+        <app-empty-state type="appointments"
+                         [title]="'appointments.empty' | translate"
+                         [description]="('appointments.subtitle.' + mode) | translate"></app-empty-state>
       } @else {
         <div class="list">
           @for (a of appointments(); track a.id; let i = $index) {

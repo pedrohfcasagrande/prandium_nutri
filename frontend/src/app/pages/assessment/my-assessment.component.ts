@@ -5,11 +5,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { ClientAssessment } from '../../models/models';
+import { EmptyStateComponent } from '../../components/empty-state.component';
 
 @Component({
   selector: 'app-my-assessment',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, TranslateModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, TranslateModule, EmptyStateComponent],
   template: `
     <div class="page">
       <div class="page-header">
@@ -20,10 +21,8 @@ import { ClientAssessment } from '../../models/models';
       </div>
 
       @if (!assessment()) {
-        <div class="empty card-surface">
-          <mat-icon>assignment</mat-icon>
-          <p>{{ 'myAssessment.empty' | translate }}</p>
-        </div>
+        <app-empty-state type="assessment"
+                         [description]="'myAssessment.empty' | translate"></app-empty-state>
       } @else {
         @let a = assessment()!;
 

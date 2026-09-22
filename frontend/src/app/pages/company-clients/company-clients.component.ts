@@ -13,6 +13,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { CompanyClient, CompanyNutriLink } from '../../models/models';
 import { SearchSortBarComponent } from '../../components/search-sort-bar.component';
+import { EmptyStateComponent } from '../../components/empty-state.component';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 @Component({
@@ -23,7 +24,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
     MatCardModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatTableModule,
     MatSnackBarModule, TranslateModule,
-    SearchSortBarComponent, MatPaginatorModule
+    SearchSortBarComponent, MatPaginatorModule, EmptyStateComponent
   ],
   template: `
     <div class="page">
@@ -37,10 +38,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
       <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (clients().length === 0) {
-        <div class="empty card-surface">
-          <mat-icon>groups</mat-icon>
-          <p>{{ 'companyClients.empty' | translate }}</p>
-        </div>
+        <app-empty-state type="clients"
+                         [description]="'companyClients.empty' | translate"></app-empty-state>
       } @else {
         <div class="list">
           @for (r of clients(); track r.linkId; let i = $index) {

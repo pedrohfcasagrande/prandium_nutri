@@ -805,6 +805,7 @@
       "inviteSent": "Invite sent!",
       "inviteFail": "Failed to send invite",
       "listTitle": "Links",
+      "emptyTitle": "No clients yet",
       "empty": "No clients linked yet. Send an invite above!",
       "invitedOn": "invited on",
       "acceptedOn": "accepted on",

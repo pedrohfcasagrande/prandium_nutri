@@ -12,6 +12,7 @@ import { AuthService } from '../../services/auth.service';
 import { PracticeService } from '../../services/practice.service';
 import { ClientLink, MenuPlan, NutriMetricsOverview, Subscription } from '../../models/models';
 import { SkeletonComponent } from '../../components/skeleton.component';
+import { SparklineComponent } from '../../components/sparkline.component';
 
 @Component({
   selector: 'app-nutri-dashboard',
@@ -20,7 +21,7 @@ import { SkeletonComponent } from '../../components/skeleton.component';
     CommonModule, RouterLink,
     MatCardModule, MatIconModule, MatButtonModule,
     MatProgressSpinnerModule, TranslateModule,
-    SkeletonComponent
+    SkeletonComponent, SparklineComponent
   ],
   template: `
     <div class="page">
@@ -41,29 +42,31 @@ import { SkeletonComponent } from '../../components/skeleton.component';
       } @else {
         <div class="kpi-grid">
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>group</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriDashboard.activeClients' | translate }}</div>
               <div class="kpi-value">{{ metrics()?.activeClients ?? 0 }}</div>
             </div>
+            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>group</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#0e8f83" [seed]="metrics()?.activeClients || 1"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dbeafe;color:#1e40af"><mat-icon>menu_book</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriDashboard.menusActive' | translate }}</div>
               <div class="kpi-value">{{ metrics()?.menusActive ?? 0 }}</div>
             </div>
+            <div class="kpi-icon" style="background:#dbeafe;color:#1e40af"><mat-icon>menu_book</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#1e40af" [seed]="(metrics()?.menusActive || 2) + 3"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>trending_up</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriDashboard.adherence' | translate }}</div>
               <div class="kpi-value">{{ ((metrics()?.avgAdherence7d ?? 0) * 100) | number:'1.0-0' }}%</div>
               <div class="kpi-sub">{{ 'nutriDashboard.last7d' | translate }}</div>
             </div>
+            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>trending_up</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#d97706" [seed]="((metrics()?.avgAdherence7d ?? 0) * 100) || 5"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>auto_awesome</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'nutriDashboard.aiMonth' | translate }}</div>
               <div class="kpi-value">
@@ -73,6 +76,8 @@ import { SkeletonComponent } from '../../components/skeleton.component';
                 }
               </div>
             </div>
+            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>auto_awesome</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#7c3aed" [seed]="(metrics()?.aiSuggestionsMonth || 4) + 7"></app-sparkline>
           </mat-card>
         </div>
 

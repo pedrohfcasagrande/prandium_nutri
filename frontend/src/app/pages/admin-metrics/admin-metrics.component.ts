@@ -12,6 +12,7 @@ import { ApiService } from '../../services/api.service';
 import { AdminMetricsOverview } from '../../models/models';
 import { AlertBannerComponent } from '../../components/alert-banner.component';
 import { SkeletonComponent } from '../../components/skeleton.component';
+import { SparklineComponent } from '../../components/sparkline.component';
 
 @Component({
   selector: 'app-admin-metrics',
@@ -19,7 +20,8 @@ import { SkeletonComponent } from '../../components/skeleton.component';
   imports: [
     CommonModule,
     MatCardModule, MatIconModule, MatTableModule, MatChipsModule, MatProgressSpinnerModule,
-    BaseChartDirective, TranslateModule, AlertBannerComponent, SkeletonComponent
+    BaseChartDirective, TranslateModule, AlertBannerComponent, SkeletonComponent,
+    SparklineComponent
   ],
   template: `
     <div class="page">
@@ -43,48 +45,54 @@ import { SkeletonComponent } from '../../components/skeleton.component';
       @if (!loading() && overview(); as o) {
         <div class="kpi-grid">
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dbeafe;color:#1d4ed8"><mat-icon>attach_money</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'adminMetrics.mrr' | translate }}</div>
               <div class="kpi-value">R$ {{ (o.mrrBrlCents / 100) | number:'1.2-2' }}</div>
             </div>
+            <div class="kpi-icon" style="background:#dbeafe;color:#1d4ed8"><mat-icon>attach_money</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#1d4ed8" [seed]="o.mrrBrlCents || 1"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>subscriptions</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'adminMetrics.activeSubs' | translate }}</div>
               <div class="kpi-value">{{ o.activeSubscriptions | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>subscriptions</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#047857" [seed]="(o.activeSubscriptions || 2) + 3"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>groups</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'adminMetrics.mau' | translate }}</div>
               <div class="kpi-value">{{ o.mau | number }}</div>
               <div class="kpi-sub">DAU {{ o.dau }} · WAU {{ o.wau }}</div>
             </div>
+            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>groups</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#d97706" [seed]="(o.mau || 5) + 7"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>person_add</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'adminMetrics.newUsers30d' | translate }}</div>
               <div class="kpi-value">{{ o.newUsers30d | number }}</div>
               <div class="kpi-sub">{{ o.totalUsers }} {{ 'adminMetrics.totalUsers' | translate }}</div>
             </div>
+            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>person_add</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#7c3aed" [seed]="(o.newUsers30d || 4) + 11"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#fce7f3;color:#be185d"><mat-icon>medical_services</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'adminMetrics.nutris' | translate }}</div>
               <div class="kpi-value">{{ o.totalNutritionists | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#fce7f3;color:#be185d"><mat-icon>medical_services</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#be185d" [seed]="(o.totalNutritionists || 3) + 5"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#e0f2fe;color:#075985"><mat-icon>corporate_fare</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'adminMetrics.companies' | translate }}</div>
               <div class="kpi-value">{{ o.totalCompanies | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#e0f2fe;color:#075985"><mat-icon>corporate_fare</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#0369a1" [seed]="(o.totalCompanies || 6) + 13"></app-sparkline>
           </mat-card>
         </div>
 

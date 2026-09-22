@@ -7,13 +7,14 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { PendingInvite } from '../../models/models';
+import { EmptyStateComponent } from '../../components/empty-state.component';
 
 @Component({
   selector: 'app-invitations',
   standalone: true,
   imports: [
     CommonModule, MatCardModule, MatButtonModule, MatIconModule,
-    MatSnackBarModule, TranslateModule
+    MatSnackBarModule, TranslateModule, EmptyStateComponent
   ],
   template: `
     <div class="page">
@@ -25,10 +26,8 @@ import { PendingInvite } from '../../models/models';
       </div>
 
       @if (!invites().length) {
-        <div class="empty card-surface">
-          <mat-icon>mail_outline</mat-icon>
-          <p>{{ 'invitations.empty' | translate }}</p>
-        </div>
+        <app-empty-state type="mail"
+                         [description]="'invitations.empty' | translate"></app-empty-state>
       } @else {
         <div class="invite-list">
           @for (inv of invites(); track inv.linkId; let i = $index) {

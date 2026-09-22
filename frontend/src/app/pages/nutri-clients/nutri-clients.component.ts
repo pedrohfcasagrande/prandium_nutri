@@ -13,6 +13,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { ImpersonationService } from '../../services/impersonation.service';
+import { EmptyStateComponent } from '../../components/empty-state.component';
 import { PracticeService } from '../../services/practice.service';
 import { SearchSortBarComponent } from '../../components/search-sort-bar.component';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -26,7 +27,7 @@ import { ClientLink } from '../../models/models';
     MatCardModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatTooltipModule,
     MatDividerModule, MatSnackBarModule, TranslateModule,
-    SearchSortBarComponent, MatPaginatorModule
+    SearchSortBarComponent, MatPaginatorModule, EmptyStateComponent
   ],
   template: `
     <div class="page">
@@ -105,10 +106,9 @@ import { ClientLink } from '../../models/models';
       <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (!clients().length) {
-        <div class="empty card-surface">
-          <mat-icon>group_add</mat-icon>
-          <p>{{ 'nutri.clients.empty' | translate }}</p>
-        </div>
+        <app-empty-state type="clients"
+                         [title]="'nutri.clients.emptyTitle' | translate"
+                         [description]="'nutri.clients.empty' | translate"></app-empty-state>
       } @else {
         <div class="client-list">
           @for (c of clients(); track c.id; let i = $index) {

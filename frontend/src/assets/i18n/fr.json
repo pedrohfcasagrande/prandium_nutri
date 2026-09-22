@@ -805,6 +805,7 @@
       "inviteSent": "Invitation envoyée !",
       "inviteFail": "Impossible d'envoyer l'invitation",
       "listTitle": "Liens",
+      "emptyTitle": "Aucun client pour l'instant",
       "empty": "Aucun client lié pour le moment. Envoyez une invitation ci-dessus !",
       "invitedOn": "invité le",
       "acceptedOn": "accepté le",

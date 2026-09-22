@@ -805,6 +805,7 @@
       "inviteSent": "Convite enviado!",
       "inviteFail": "Não foi possível enviar o convite",
       "listTitle": "Vínculos",
+      "emptyTitle": "Nenhum cliente ainda",
       "empty": "Nenhum cliente vinculado ainda. Envie um convite acima!",
       "invitedOn": "convidado em",
       "acceptedOn": "aceito em",

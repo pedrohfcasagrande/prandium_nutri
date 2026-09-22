@@ -550,8 +550,12 @@ export class NutriMenuPlansComponent implements OnInit {
       this.practiceCtx.activePracticeId();
       if (this.firstLoad) { this.firstLoad = false; return; }
       this.load();
-      if (this.selectedClientId) this.loadClientMenus();
       this.loadClients();
+      // Fix: cliente selecionado pode pertencer a outra practice — resetar tudo
+      // que depende dele pra evitar vazamento de cardapio entre practices.
+      this.selectedClientId = null;
+      this.clientMenus.set([]);
+      this.draft.set(null);
     }, { allowSignalWrites: true });
   }
 

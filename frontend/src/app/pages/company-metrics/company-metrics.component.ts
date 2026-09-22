@@ -10,6 +10,7 @@ import { ApiService } from '../../services/api.service';
 import { CompanyMetricsOverview } from '../../models/models';
 import { AlertBannerComponent } from '../../components/alert-banner.component';
 import { SkeletonComponent } from '../../components/skeleton.component';
+import { SparklineComponent } from '../../components/sparkline.component';
 
 @Component({
   selector: 'app-company-metrics',
@@ -17,7 +18,7 @@ import { SkeletonComponent } from '../../components/skeleton.component';
   imports: [
     CommonModule,
     MatCardModule, MatIconModule, MatTableModule, MatChipsModule, MatProgressSpinnerModule,
-    TranslateModule, AlertBannerComponent, SkeletonComponent
+    TranslateModule, AlertBannerComponent, SkeletonComponent, SparklineComponent
   ],
   template: `
     <div class="page">
@@ -41,7 +42,6 @@ import { SkeletonComponent } from '../../components/skeleton.component';
       @if (!loading() && overview(); as o) {
         <div class="kpi-grid">
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>medical_services</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'companyMetrics.nutrisActive' | translate }}</div>
               <div class="kpi-value">{{ o.nutritionistsActive | number }}</div>
@@ -51,27 +51,32 @@ import { SkeletonComponent } from '../../components/skeleton.component';
                 </div>
               }
             </div>
+            <div class="kpi-icon" style="background:#dcfce7;color:#166534"><mat-icon>medical_services</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#047857" [seed]="(o.nutritionistsActive || 2) + 3"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#dbeafe;color:#1e40af"><mat-icon>group</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'companyMetrics.clients' | translate }}</div>
               <div class="kpi-value">{{ o.clientsTotal | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#dbeafe;color:#1e40af"><mat-icon>group</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#1e40af" [seed]="(o.clientsTotal || 4) + 7"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>auto_awesome</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'companyMetrics.aiMonth' | translate }}</div>
               <div class="kpi-value">{{ o.aiSuggestionsMonth | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#ede9fe;color:#6d28d9"><mat-icon>auto_awesome</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#7c3aed" [seed]="(o.aiSuggestionsMonth || 5) + 11"></app-sparkline>
           </mat-card>
           <mat-card class="kpi">
-            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>restaurant</mat-icon></div>
             <div>
               <div class="kpi-label">{{ 'companyMetrics.meals30d' | translate }}</div>
               <div class="kpi-value">{{ o.mealsLoggedLast30d | number }}</div>
             </div>
+            <div class="kpi-icon" style="background:#fef3c7;color:#92400e"><mat-icon>restaurant</mat-icon></div>
+            <app-sparkline class="kpi-spark" style="color:#d97706" [seed]="(o.mealsLoggedLast30d || 3) + 13"></app-sparkline>
           </mat-card>
         </div>
 
