@@ -37,7 +37,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
         </div>
       </div>
 
-      <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
+      <app-search-sort-bar [placeholder]="'search.placeholderAdminUsers' | translate"
+                           (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (users().length === 0) {
         <div class="empty card-surface">

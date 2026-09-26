@@ -62,9 +62,10 @@ import { Subscription } from '../../models/models';
           </mat-card-header>
           <mat-card-content class="limits-list">
             @for (feature of listFeatures(sub()!.features); track feature.key) {
-              <div class="limit-row">
+              <div class="limit-row" [class.not-included]="feature.value === false">
                 <div class="limit-info">
-                  <mat-icon>{{ featureIcon(feature.key) }}</mat-icon>
+                  <mat-icon [style.color]="feature.value === false ? 'var(--nt-text-muted)' : null"
+                            [style.opacity]="feature.value === false ? 0.6 : null">{{ feature.value === false ? 'cancel' : featureIcon(feature.key) }}</mat-icon>
                   <div>
                     <div class="limit-label">{{ 'billing.features.' + feature.key | translate }}</div>
                     <div class="limit-value">
@@ -98,14 +99,16 @@ import { Subscription } from '../../models/models';
             </mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <div class="info-row">
-              <span class="text-muted">{{ 'billing.currency' | translate }}</span>
-              <strong>{{ sub()!.currency }}</strong>
-            </div>
-            <div class="info-row">
-              <span class="text-muted">{{ 'billing.provider' | translate }}</span>
-              <strong>{{ sub()!.provider }}</strong>
-            </div>
+            @if (sub()!.provider !== 'MANUAL') {
+              <div class="info-row">
+                <span class="text-muted">{{ 'billing.currency' | translate }}</span>
+                <strong>{{ sub()!.currency }}</strong>
+              </div>
+              <div class="info-row">
+                <span class="text-muted">{{ 'billing.provider' | translate }}</span>
+                <strong>{{ sub()!.provider }}</strong>
+              </div>
+            }
             <div class="info-row">
               <span class="text-muted">{{ 'billing.periodStart' | translate }}</span>
               <strong>{{ sub()!.currentPeriodStart | date:'short' }}</strong>
@@ -187,6 +190,8 @@ import { Subscription } from '../../models/models';
     .limit-info { display: flex; align-items: center; gap: 12px;
       mat-icon { color: var(--nt-primary-dark); }
     }
+    // Feature nao incluida no plano — icone (inline style no template) + label sem destaque
+    .limit-row.not-included .limit-label { color: var(--nt-text-muted); }
     .limit-label { font-weight: 600; }
     .limit-value { color: var(--nt-text-muted); font-size: 0.9rem;
       .unlimited { color: var(--nt-primary-dark); font-weight: 600; }

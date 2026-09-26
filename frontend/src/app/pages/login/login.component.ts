@@ -56,7 +56,8 @@ import { ThemeSwitcherComponent } from '../../components/theme-switcher.componen
                      [(ngModel)]="password" autocomplete="current-password"
                      (keydown.enter)="login()">
               <mat-icon matPrefix>lock</mat-icon>
-              <button mat-icon-button matSuffix type="button" (click)="showPwd = !showPwd" tabindex="-1">
+              <button mat-icon-button matSuffix type="button" (click)="showPwd = !showPwd" tabindex="-1"
+                      [attr.aria-label]="(showPwd ? 'login.hidePassword' : 'login.showPassword') | translate">
                 <mat-icon>{{ showPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </mat-form-field>

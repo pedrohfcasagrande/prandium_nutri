@@ -35,7 +35,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
         </div>
       </div>
 
-      <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
+      <app-search-sort-bar [placeholder]="'search.placeholderClients' | translate"
+                           (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (clients().length === 0) {
         <app-empty-state type="clients"

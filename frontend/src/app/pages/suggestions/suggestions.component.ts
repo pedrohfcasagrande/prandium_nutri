@@ -45,14 +45,6 @@ interface DayGroup {
       </div>
 
       <mat-card class="input-card">
-        <div class="input-hero">
-          <div class="hero-icon"><mat-icon>auto_awesome</mat-icon></div>
-          <div>
-            <div class="hero-title">{{ 'suggestions.title' | translate }}</div>
-            <div class="hero-sub">{{ 'suggestions.subtitle' | translate }}</div>
-          </div>
-        </div>
-
         <div class="input-body">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'suggestions.notes' | translate }}</mat-label>

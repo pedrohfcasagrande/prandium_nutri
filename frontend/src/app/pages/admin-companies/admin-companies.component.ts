@@ -42,7 +42,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
         </button>
       </div>
 
-      <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
+      <app-search-sort-bar [placeholder]="'search.placeholderCompanies' | translate"
+                           (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (!companies().length) {
         <div class="empty card-surface">
@@ -84,9 +85,9 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
                 <th mat-header-cell *matHeaderCellDef>{{ 'adminCompanies.col.stats' | translate }}</th>
                 <td mat-cell *matCellDef="let c">
                   <div class="mini-stats">
-                    <span title="Admins ativos"><mat-icon>badge</mat-icon> {{ c.activeMembersCount }}</span>
-                    <span title="Convites pendentes"><mat-icon>schedule</mat-icon> {{ c.pendingInvitesCount }}</span>
-                    <span title="Nutricionistas"><mat-icon>medical_services</mat-icon> {{ c.nutritionistsCount }}</span>
+                    <span [matTooltip]="'adminCompanies.stats.admins' | translate"><mat-icon>badge</mat-icon> {{ c.activeMembersCount }}</span>
+                    <span [matTooltip]="'adminCompanies.stats.pending' | translate"><mat-icon>schedule</mat-icon> {{ c.pendingInvitesCount }}</span>
+                    <span [matTooltip]="'adminCompanies.stats.nutris' | translate"><mat-icon>medical_services</mat-icon> {{ c.nutritionistsCount }}</span>
                   </div>
                 </td>
               </ng-container>
@@ -95,7 +96,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
                 <th mat-header-cell *matHeaderCellDef>{{ 'adminCompanies.col.active' | translate }}</th>
                 <td mat-cell *matCellDef="let c">
                   <mat-slide-toggle color="primary" [checked]="c.active"
-                                    (change)="toggle(c, $event.checked)"></mat-slide-toggle>
+                                    (change)="toggle(c, $event.checked)"
+                                    [matTooltip]="'adminCompanies.col.active' | translate"></mat-slide-toggle>
                 </td>
               </ng-container>
 

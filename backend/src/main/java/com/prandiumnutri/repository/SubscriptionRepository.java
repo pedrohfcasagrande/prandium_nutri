@@ -14,6 +14,8 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 
     List<Subscription> findByPayerTypeAndPayerIdOrderByStartedAtDesc(PlanTarget payerType, Long payerId);
 
+    Optional<Subscription> findByProviderSubscriptionId(String providerSubscriptionId);
+
     Optional<Subscription> findFirstByPayerTypeAndPayerIdAndStatusInOrderByStartedAtDesc(
             PlanTarget payerType, Long payerId, List<SubscriptionStatus> statuses);
 

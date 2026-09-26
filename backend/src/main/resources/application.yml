@@ -50,6 +50,9 @@ prandiumnutri:
   checkout:
     success-url: ${CHECKOUT_SUCCESS_URL:http://localhost:4200/billing?checkout=success}
     cancel-url: ${CHECKOUT_CANCEL_URL:http://localhost:4200/pricing?checkout=canceled}
+  http:
+    connect-timeout-seconds: ${HTTP_CONNECT_TIMEOUT_SECONDS:10}
+    read-timeout-seconds: ${HTTP_READ_TIMEOUT_SECONDS:30}
 
 ---
 # --------------------------------------------------------------------

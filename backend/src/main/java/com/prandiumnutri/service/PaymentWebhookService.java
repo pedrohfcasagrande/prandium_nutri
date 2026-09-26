@@ -56,6 +56,7 @@ public class PaymentWebhookService {
                      "customer.subscription.created" -> upsertFromStripeSubscription(obj);
                 case "customer.subscription.deleted" -> markCanceled(obj);
                 case "invoice.payment_failed" -> markPastDue(obj);
+                case "invoice.payment_succeeded" -> markInvoicePaid(obj);
                 default -> log.info("Evento Stripe ignorado: {}", type);
             }
             recordWebhook(PaymentProvider.STRIPE, eventId, type, rawPayload);
@@ -65,83 +66,139 @@ public class PaymentWebhookService {
         }
     }
 
+    /**
+     * checkout.session.completed: tenta criar a subscription (se ainda nao existir).
+     * Como o subscription.created pode chegar antes ou depois, ambos os handlers
+     * fazem upsert idempotente pelo providerSubscriptionId.
+     */
     private void handleCheckoutCompleted(JsonNode session) {
         String subscriptionId = session.path("subscription").asText(null);
-        String clientReferenceId = session.path("client_reference_id").asText(null);
         String planCode = session.path("metadata").path("planCode").asText(null);
-        if (subscriptionId == null || clientReferenceId == null || planCode == null) return;
+        String clientReferenceId = session.path("client_reference_id").asText(null);
+        if (subscriptionId == null || planCode == null || clientReferenceId == null) return;
+        if (subscriptionRepo.findByProviderSubscriptionId(subscriptionId).isPresent()) return;
 
-        // Cria subscription ACTIVE (dados basicos; detalhes vao ser refinados pelo subscription.updated)
-        Long userId = Long.parseLong(clientReferenceId);
-        User user = userRepo.findById(userId).orElse(null);
-        if (user == null) return;
-
-        Plan plan = pricingService.getPlanOrThrow(planCode);
-        PlanTarget target = plan.getTarget();
-        Long payerId = resolvePayerId(user, target);
-        if (payerId == null) return;
-
-        cancelExistingSubscriptions(target, payerId);
+        Long userId = parseLong(clientReferenceId);
+        if (userId == null) return;
 
         String currency = session.path("currency").asText("BRL").toUpperCase();
-        int amountTotal = session.path("amount_total").asInt(0);
+        int amount = session.path("amount_total").asInt(0);
 
-        Subscription sub = Subscription.builder()
-                .payerType(target)
-                .payerId(payerId)
-                .plan(plan)
-                .currency(currency)
-                .amountCents(amountTotal)
-                .provider(PaymentProvider.STRIPE)
-                .providerSubscriptionId(subscriptionId)
-                .status(SubscriptionStatus.ACTIVE)
-                .currentPeriodStart(LocalDateTime.now())
-                .currentPeriodEnd(LocalDateTime.now().plusMonths(1))
-                .build();
-        subscriptionRepo.save(sub);
-        log.info("Subscription Stripe criada: {} (user {})", subscriptionId, userId);
+        createStripeSubscription(subscriptionId, userId, planCode, currency, amount,
+                LocalDateTime.now(), LocalDateTime.now().plusMonths(1),
+                SubscriptionStatus.ACTIVE, false);
     }
 
+    /**
+     * customer.subscription.created / updated: upsert baseado no proprio payload da subscription.
+     * Se ainda nao existe em banco, cria (cobre o caso em que este evento chega antes do
+     * checkout.session.completed, sem ordem garantida).
+     */
     private void upsertFromStripeSubscription(JsonNode obj) {
         String stripeSubId = obj.path("id").asText(null);
         if (stripeSubId == null) return;
 
-        Subscription sub = findByProviderId(stripeSubId);
-        if (sub == null) return;
+        SubscriptionStatus status = mapStripeStatus(obj.path("status").asText(""));
+        boolean cancelAtPeriodEnd = obj.path("cancel_at_period_end").asBoolean(false);
+        LocalDateTime periodStart = epochToLocal(obj.path("current_period_start").asLong(0));
+        LocalDateTime periodEnd = epochToLocal(obj.path("current_period_end").asLong(0));
 
-        String stripeStatus = obj.path("status").asText("");
-        sub.setStatus(mapStripeStatus(stripeStatus));
-        sub.setCancelAtPeriodEnd(obj.path("cancel_at_period_end").asBoolean(false));
+        var existing = subscriptionRepo.findByProviderSubscriptionId(stripeSubId);
+        if (existing.isPresent()) {
+            Subscription sub = existing.get();
+            sub.setStatus(status);
+            sub.setCancelAtPeriodEnd(cancelAtPeriodEnd);
+            if (periodStart != null) sub.setCurrentPeriodStart(periodStart);
+            if (periodEnd != null) sub.setCurrentPeriodEnd(periodEnd);
+            subscriptionRepo.save(sub);
+            return;
+        }
 
-        long periodEnd = obj.path("current_period_end").asLong(0);
-        if (periodEnd > 0) {
-            sub.setCurrentPeriodEnd(LocalDateTime.ofInstant(
-                    Instant.ofEpochSecond(periodEnd), ZoneId.systemDefault()));
+        // Ainda nao existe: reconstroi a partir do metadata da propria subscription.
+        String planCode = obj.path("metadata").path("planCode").asText(null);
+        Long userId = parseLong(obj.path("metadata").path("payerUserId").asText(null));
+        if (planCode == null || userId == null) {
+            log.warn("Stripe subscription {} sem metadata planCode/payerUserId; nao foi possivel criar", stripeSubId);
+            return;
         }
-        long periodStart = obj.path("current_period_start").asLong(0);
-        if (periodStart > 0) {
-            sub.setCurrentPeriodStart(LocalDateTime.ofInstant(
-                    Instant.ofEpochSecond(periodStart), ZoneId.systemDefault()));
+
+        JsonNode firstItemPrice = obj.path("items").path("data").path(0).path("price");
+        String currency = firstItemPrice.path("currency").asText("brl").toUpperCase();
+        int amount = firstItemPrice.path("unit_amount").asInt(0);
+
+        LocalDateTime effectiveStart = periodStart != null ? periodStart : LocalDateTime.now();
+        LocalDateTime effectiveEnd = periodEnd != null ? periodEnd : LocalDateTime.now().plusMonths(1);
+
+        createStripeSubscription(stripeSubId, userId, planCode, currency, amount,
+                effectiveStart, effectiveEnd, status, cancelAtPeriodEnd);
+    }
+
+    private void createStripeSubscription(String providerSubId, Long userId, String planCode,
+                                          String currency, int amountCents,
+                                          LocalDateTime periodStart, LocalDateTime periodEnd,
+                                          SubscriptionStatus status, boolean cancelAtPeriodEnd) {
+        User user = userRepo.findById(userId).orElse(null);
+        if (user == null) {
+            log.warn("Stripe: usuario {} nao encontrado ao criar subscription {}", userId, providerSubId);
+            return;
         }
+        Plan plan = pricingService.getPlanOrThrow(planCode);
+        Long payerId = resolvePayerId(user, plan.getTarget());
+        if (payerId == null) return;
+
+        cancelExistingSubscriptions(plan.getTarget(), payerId);
+
+        Subscription sub = Subscription.builder()
+                .payerType(plan.getTarget())
+                .payerId(payerId)
+                .plan(plan)
+                .currency(currency)
+                .amountCents(amountCents)
+                .provider(PaymentProvider.STRIPE)
+                .providerSubscriptionId(providerSubId)
+                .status(status)
+                .cancelAtPeriodEnd(cancelAtPeriodEnd)
+                .currentPeriodStart(periodStart)
+                .currentPeriodEnd(periodEnd)
+                .build();
         subscriptionRepo.save(sub);
+        log.info("Subscription Stripe criada: {} (user {}, plan {})", providerSubId, userId, planCode);
     }
 
     private void markCanceled(JsonNode obj) {
         String id = obj.path("id").asText(null);
-        Subscription sub = findByProviderId(id);
-        if (sub == null) return;
-        sub.setStatus(SubscriptionStatus.CANCELED);
-        sub.setCanceledAt(LocalDateTime.now());
-        subscriptionRepo.save(sub);
+        subscriptionRepo.findByProviderSubscriptionId(id).ifPresent(sub -> {
+            sub.setStatus(SubscriptionStatus.CANCELED);
+            sub.setCanceledAt(LocalDateTime.now());
+            subscriptionRepo.save(sub);
+        });
     }
 
-    private void markPastDue(JsonNode obj) {
-        String subId = obj.path("subscription").asText(null);
+    private void markPastDue(JsonNode invoiceObj) {
+        String subId = invoiceObj.path("subscription").asText(null);
         if (subId == null) return;
-        Subscription sub = findByProviderId(subId);
-        if (sub == null) return;
-        sub.setStatus(SubscriptionStatus.PAST_DUE);
-        subscriptionRepo.save(sub);
+        subscriptionRepo.findByProviderSubscriptionId(subId).ifPresent(sub -> {
+            sub.setStatus(SubscriptionStatus.PAST_DUE);
+            subscriptionRepo.save(sub);
+        });
+    }
+
+    /**
+     * invoice.payment_succeeded: pagamento (inicial ou renovacao) confirmado.
+     * Garante que a sub volte pra ACTIVE (caso estivesse PAST_DUE) e avanca o period_end
+     * conforme o period da invoice, se disponivel.
+     */
+    private void markInvoicePaid(JsonNode invoiceObj) {
+        String subId = invoiceObj.path("subscription").asText(null);
+        if (subId == null) return;
+        subscriptionRepo.findByProviderSubscriptionId(subId).ifPresent(sub -> {
+            sub.setStatus(SubscriptionStatus.ACTIVE);
+            LocalDateTime periodEnd = epochToLocal(invoiceObj.path("period_end").asLong(0));
+            LocalDateTime periodStart = epochToLocal(invoiceObj.path("period_start").asLong(0));
+            if (periodEnd != null) sub.setCurrentPeriodEnd(periodEnd);
+            if (periodStart != null) sub.setCurrentPeriodStart(periodStart);
+            subscriptionRepo.save(sub);
+        });
     }
 
     private SubscriptionStatus mapStripeStatus(String s) {
@@ -207,7 +264,7 @@ public class PaymentWebhookService {
             Long payerId = resolvePayerId(user, target);
             if (payerId == null) return;
 
-            Subscription sub = findByProviderId(preapprovalId);
+            Subscription sub = subscriptionRepo.findByProviderSubscriptionId(preapprovalId).orElse(null);
             if (sub == null) {
                 // Cria caso ainda nao exista
                 cancelExistingSubscriptions(target, payerId);
@@ -264,14 +321,6 @@ public class PaymentWebhookService {
                 .build());
     }
 
-    private Subscription findByProviderId(String providerSubId) {
-        if (providerSubId == null) return null;
-        return subscriptionRepo.findAll().stream()
-                .filter(s -> providerSubId.equals(s.getProviderSubscriptionId()))
-                .findFirst()
-                .orElse(null);
-    }
-
     private Long resolvePayerId(User user, PlanTarget target) {
         return switch (target) {
             case COMPANY -> companyRepo.findByOwnerId(user.getId())
@@ -290,5 +339,15 @@ public class PaymentWebhookService {
                 subscriptionRepo.save(s);
             }
         }
+    }
+
+    private static LocalDateTime epochToLocal(long epochSeconds) {
+        if (epochSeconds <= 0) return null;
+        return LocalDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault());
+    }
+
+    private static Long parseLong(String s) {
+        if (s == null || s.isBlank()) return null;
+        try { return Long.parseLong(s); } catch (NumberFormatException e) { return null; }
     }
 }

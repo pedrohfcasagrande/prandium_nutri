@@ -15,9 +15,9 @@
       "companyNutris": "Nutritionists",
       "companyMembers": "Administrators",
       "companyClients": "Company clients",
-      "adminCompanies": "Companies (admin)",
-      "admin": "Users (admin)",
-      "adminMetrics": "Metrics (admin)",
+      "adminCompanies": "Companies",
+      "admin": "Users",
+      "adminMetrics": "Metrics",
       "companyMetrics": "Company metrics",
       "nutriMetrics": "My metrics",
       "pendingMenus": "Pending menus",
@@ -93,6 +93,7 @@
     "searchLabel": "Search",
     "searchHint": "Name, specialty, keyword...",
     "empty": "No available nutritionist found",
+    "practicesCount": "{{n}} practices",
     "requestBtn": "Request follow-up",
     "dialogTitle": "Request follow-up — {{name}}",
     "dialogHint": "Optionally write a short message.",
@@ -282,6 +283,8 @@
     "subtitle": "Sign in to your account to continue",
     "email": "Email",
     "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "submit": "Sign in",
     "or": "or",
     "noAccount": "Don't have an account yet?",
@@ -316,7 +319,10 @@
     }
   },
   "search": {
-    "placeholder": "Search by name, email, CPF, CNPJ or CRN...",
+    "placeholder": "Search...",
+    "placeholderAdminUsers": "Search by name, email, CPF, CNPJ or CRN...",
+    "placeholderCompanies": "Search by name, CNPJ or owner...",
+    "placeholderClients": "Search by name or email...",
     "clear": "Clear search",
     "sortTooltip": "Sort: recent first / alphabetical"
   },
@@ -429,6 +435,9 @@
     "protein": "Protein",
     "macros": "Other macros",
     "remaining": "Remaining",
+    "goalsNotSetTitle": "Set your goals to track your progress",
+    "goalsNotSetHint": "Without goals defined, the calorie and protein cards only show intake.",
+    "setGoals": "Set goals",
     "carbs": "Carbs",
     "fat": "Fat",
     "mealsCount": "Meals",
@@ -453,6 +462,8 @@
     "newMealSubtitle": "Pick a type, add foods and save",
     "history": "History",
     "date": "Date",
+    "mealDate": "Meal date",
+    "historyDate": "View history for",
     "time": "Time",
     "type": "Type",
     "types": {
@@ -545,6 +556,9 @@
     "activate": "Activate menu",
     "edit": "Edit",
     "editTitle": "Edit menu",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "remove": "Delete menu",
     "removeConfirm": "Delete menu \"{{name}}\"?",
     "addItemTitle": "Add food",
     "addItem": "Add",
@@ -815,6 +829,8 @@
       "assessmentTooltip": "Open assessment form for this client",
       "revokeTooltip": "Revoke link",
       "revokeConfirm": "Revoke link with {{name}}?",
+      "showHistory": "Show previous links",
+      "hideHistory": "Hide previous links",
       "subRenews": "next charge {{date}}",
       "subStatus": {
         "TRIALING": "Trial",
@@ -858,6 +874,11 @@
       "stats": "Stats",
       "active": "Active",
       "actions": "Actions"
+    },
+    "stats": {
+      "admins": "Active admins",
+      "pending": "Pending invites",
+      "nutris": "Linked nutritionists"
     },
     "dialog": {
       "title": "Register new company",

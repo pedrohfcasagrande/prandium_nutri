@@ -38,6 +38,19 @@ import { DatePickerComponent } from '../../components/date-picker.component';
       </div>
 
       @if (summary()) {
+        @if (!hasGoals()) {
+          <mat-card class="goals-cta card-surface">
+            <mat-icon>flag</mat-icon>
+            <div class="cta-text">
+              <div class="cta-title">{{ 'dashboard.goalsNotSetTitle' | translate }}</div>
+              <div class="text-muted">{{ 'dashboard.goalsNotSetHint' | translate }}</div>
+            </div>
+            <a mat-flat-button color="primary" routerLink="/profile">
+              <mat-icon>tune</mat-icon>
+              {{ 'dashboard.setGoals' | translate }}
+            </a>
+          </mat-card>
+        }
         <div class="grid-cards">
           <mat-card class="stat-card">
             <div class="stat-header">
@@ -46,15 +59,21 @@ import { DatePickerComponent } from '../../components/date-picker.component';
                 <div class="stat-label">{{ 'dashboard.calories' | translate }}</div>
                 <div class="stat-value">
                   {{ summary()!.caloriesConsumed | number:'1.0-0' }}
-                  <span class="stat-goal">/ {{ summary()!.calorieGoal | number:'1.0-0' }} kcal</span>
+                  @if (summary()!.calorieGoal > 0) {
+                    <span class="stat-goal">/ {{ summary()!.calorieGoal | number:'1.0-0' }} kcal</span>
+                  } @else {
+                    <span class="stat-goal">kcal</span>
+                  }
                 </div>
               </div>
             </div>
-            <mat-progress-bar mode="determinate" [value]="pct(summary()!.caloriesConsumed, summary()!.calorieGoal)" class="thick-bar"></mat-progress-bar>
-            <div class="stat-footer">
-              <span class="text-muted">{{ 'dashboard.remaining' | translate }}</span>
-              <strong>{{ summary()!.calorieRemaining | number:'1.0-0' }} kcal</strong>
-            </div>
+            @if (summary()!.calorieGoal > 0) {
+              <mat-progress-bar mode="determinate" [value]="pct(summary()!.caloriesConsumed, summary()!.calorieGoal)" class="thick-bar"></mat-progress-bar>
+              <div class="stat-footer">
+                <span class="text-muted">{{ 'dashboard.remaining' | translate }}</span>
+                <strong>{{ summary()!.calorieRemaining | number:'1.0-0' }} kcal</strong>
+              </div>
+            }
           </mat-card>
 
           <mat-card class="stat-card">
@@ -64,15 +83,21 @@ import { DatePickerComponent } from '../../components/date-picker.component';
                 <div class="stat-label">{{ 'dashboard.protein' | translate }}</div>
                 <div class="stat-value">
                   {{ summary()!.proteinConsumed | number:'1.0-1' }}
-                  <span class="stat-goal">/ {{ summary()!.proteinGoal | number:'1.0-0' }} g</span>
+                  @if (summary()!.proteinGoal > 0) {
+                    <span class="stat-goal">/ {{ summary()!.proteinGoal | number:'1.0-0' }} g</span>
+                  } @else {
+                    <span class="stat-goal">g</span>
+                  }
                 </div>
               </div>
             </div>
-            <mat-progress-bar mode="determinate" color="accent" [value]="pct(summary()!.proteinConsumed, summary()!.proteinGoal)" class="thick-bar"></mat-progress-bar>
-            <div class="stat-footer">
-              <span class="text-muted">{{ 'dashboard.remaining' | translate }}</span>
-              <strong>{{ summary()!.proteinRemaining | number:'1.0-1' }} g</strong>
-            </div>
+            @if (summary()!.proteinGoal > 0) {
+              <mat-progress-bar mode="determinate" color="accent" [value]="pct(summary()!.proteinConsumed, summary()!.proteinGoal)" class="thick-bar"></mat-progress-bar>
+              <div class="stat-footer">
+                <span class="text-muted">{{ 'dashboard.remaining' | translate }}</span>
+                <strong>{{ summary()!.proteinRemaining | number:'1.0-1' }} g</strong>
+              </div>
+            }
           </mat-card>
 
           <mat-card class="stat-card">
@@ -90,8 +115,11 @@ import { DatePickerComponent } from '../../components/date-picker.component';
               <span class="text-muted">{{ 'dashboard.fat' | translate }}</span>
               <strong>{{ summary()!.fatConsumed | number:'1.0-1' }} g</strong>
             </div>
-            <div class="macro-row">
-              <span class="text-muted">{{ 'dashboard.mealsCount' | translate }}</span>
+            <div class="macro-row meals-count">
+              <span class="text-muted">
+                <mat-icon>restaurant</mat-icon>
+                {{ 'dashboard.mealsCount' | translate }}
+              </span>
               <strong>{{ summary()!.meals.length }}</strong>
             </div>
           </mat-card>
@@ -194,6 +222,16 @@ import { DatePickerComponent } from '../../components/date-picker.component';
     .date-picker { width: 200px; }
     @media (max-width: 600px) { .date-picker { width: 100%; } }
 
+    .goals-cta {
+      padding: 16px 20px !important;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 16px;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 1px solid #f59e0b;
+      mat-icon { color: #92400e; font-size: 28px; width: 28px; height: 28px; flex-shrink: 0; }
+      .cta-text { flex: 1; min-width: 0; }
+      .cta-title { font-weight: 600; color: #78350f; }
+    }
     .stat-card { padding: 20px !important; display: flex; flex-direction: column; gap: 16px; }
     .stat-header { display: flex; gap: 14px; align-items: center; }
     .stat-icon {
@@ -212,6 +250,18 @@ import { DatePickerComponent } from '../../components/date-picker.component';
       display: flex; justify-content: space-between; padding: 6px 0;
       border-bottom: 1px solid var(--nt-border);
       &:last-child { border-bottom: none; }
+    }
+    // "Refeicoes" nao e um macro — separacao visual + ícone pra reforcar
+    .macro-row.meals-count {
+      margin-top: 8px; padding-top: 12px;
+      border-top: 1px solid var(--nt-border);
+      border-bottom: none;
+    }
+    .macro-row.meals-count .text-muted {
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .macro-row.meals-count mat-icon {
+      font-size: 16px; width: 16px; height: 16px;
     }
 
     .progress-card { padding: 0 !important; overflow: hidden; }
@@ -328,6 +378,11 @@ export class DashboardComponent implements OnInit {
   }
 
   pct(v: number, goal: number): number { return goal ? Math.min(100, Math.round((v / goal) * 100)) : 0; }
+
+  hasGoals(): boolean {
+    const s = this.summary();
+    return !!s && (s.calorieGoal > 0 || s.proteinGoal > 0);
+  }
 
   /**
    * Tenta extrair a secao do cardapio referente ao dia de hoje.

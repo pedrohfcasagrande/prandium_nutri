@@ -15,9 +15,9 @@
       "companyNutris": "Nutritionnistes",
       "companyMembers": "Administrateurs",
       "companyClients": "Clients de l'entreprise",
-      "adminCompanies": "Entreprises (admin)",
-      "admin": "Utilisateurs (admin)",
-      "adminMetrics": "Métriques (admin)",
+      "adminCompanies": "Entreprises",
+      "admin": "Utilisateurs",
+      "adminMetrics": "Métriques",
       "companyMetrics": "Métriques de l'entreprise",
       "nutriMetrics": "Mes métriques",
       "pendingMenus": "Menus en attente",
@@ -93,6 +93,7 @@
     "searchLabel": "Rechercher",
     "searchHint": "Nom, spécialité, mot-clé...",
     "empty": "Aucun nutritionniste disponible",
+    "practicesCount": "{{n}} cabinets",
     "requestBtn": "Demander un suivi",
     "dialogTitle": "Demander un suivi — {{name}}",
     "dialogHint": "Écrivez un court message (optionnel).",
@@ -282,6 +283,8 @@
     "subtitle": "Connectez-vous à votre compte pour continuer",
     "email": "E-mail",
     "password": "Mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "submit": "Se connecter",
     "or": "ou",
     "noAccount": "Vous n'avez pas encore de compte ?",
@@ -316,7 +319,10 @@
     }
   },
   "search": {
-    "placeholder": "Rechercher par nom, e-mail, CPF, CNPJ ou CRN...",
+    "placeholder": "Rechercher...",
+    "placeholderAdminUsers": "Rechercher par nom, e-mail, CPF, CNPJ ou CRN...",
+    "placeholderCompanies": "Rechercher par nom, CNPJ ou responsable...",
+    "placeholderClients": "Rechercher par nom ou e-mail...",
     "clear": "Effacer la recherche",
     "sortTooltip": "Tri : récent en premier / alphabétique"
   },
@@ -429,6 +435,9 @@
     "protein": "Protéines",
     "macros": "Autres macros",
     "remaining": "Restant",
+    "goalsNotSetTitle": "Configurez vos objectifs pour suivre votre progression",
+    "goalsNotSetHint": "Sans objectifs définis, les cartes de calories et protéines n'affichent que la consommation.",
+    "setGoals": "Configurer les objectifs",
     "carbs": "Glucides",
     "fat": "Lipides",
     "mealsCount": "Repas",
@@ -453,6 +462,8 @@
     "newMealSubtitle": "Choisissez un type, ajoutez des aliments et enregistrez",
     "history": "Historique",
     "date": "Date",
+    "mealDate": "Date du repas",
+    "historyDate": "Voir l'historique du",
     "time": "Heure",
     "type": "Type",
     "types": {
@@ -545,6 +556,9 @@
     "activate": "Activer le menu",
     "edit": "Modifier",
     "editTitle": "Modifier le menu",
+    "expand": "Développer",
+    "collapse": "Réduire",
+    "remove": "Supprimer le menu",
     "removeConfirm": "Supprimer le menu « {{name}} » ?",
     "addItemTitle": "Ajouter un aliment",
     "addItem": "Ajouter",
@@ -815,6 +829,8 @@
       "assessmentTooltip": "Ouvrir la fiche d'analyse de ce client",
       "revokeTooltip": "Révoquer le lien",
       "revokeConfirm": "Révoquer le lien avec {{name}} ?",
+      "showHistory": "Afficher les liens précédents",
+      "hideHistory": "Masquer les liens précédents",
       "subRenews": "prochain prélèvement {{date}}",
       "subStatus": {
         "TRIALING": "Essai",
@@ -858,6 +874,11 @@
       "stats": "Statistiques",
       "active": "Active",
       "actions": "Actions"
+    },
+    "stats": {
+      "admins": "Admins actifs",
+      "pending": "Invitations en attente",
+      "nutris": "Nutritionnistes liés"
     },
     "dialog": {
       "title": "Enregistrer une nouvelle entreprise",

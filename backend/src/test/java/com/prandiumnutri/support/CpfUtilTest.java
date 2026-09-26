@@ -8,12 +8,12 @@ class CpfUtilTest {
 
     @Test
     void mask_normalDigits_hidesMiddle() {
-        assertThat(CpfUtil.mask("12345678901")).isEqualTo("123.***.***-01");
+        assertThat(CpfUtil.mask("12345678901")).isEqualTo("***.***.***-01");
     }
 
     @Test
     void mask_withFormatting_stripsAndMasks() {
-        assertThat(CpfUtil.mask("123.456.789-01")).isEqualTo("123.***.***-01");
+        assertThat(CpfUtil.mask("123.456.789-01")).isEqualTo("***.***.***-01");
     }
 
     @Test

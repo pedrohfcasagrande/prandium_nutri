@@ -113,7 +113,8 @@ import { MenuFormDialogComponent } from './menu-form-dialog.component';
                     </div>
                   </div>
                 </div>
-                <button mat-icon-button (click)="toggleExpand(p.id!)">
+                <button mat-icon-button (click)="toggleExpand(p.id!)"
+                        [matTooltip]="(expanded() === p.id ? 'menus.collapse' : 'menus.expand') | translate">
                   <mat-icon>{{ expanded() === p.id ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
               </div>
@@ -159,10 +160,12 @@ import { MenuFormDialogComponent } from './menu-form-dialog.component';
                           [matTooltip]="'menus.edit' | translate">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button (click)="toggleExpand(p.id!)">
+                  <button mat-icon-button (click)="toggleExpand(p.id!)"
+                          [matTooltip]="(expanded() === p.id ? 'menus.collapse' : 'menus.expand') | translate">
                     <mat-icon>{{ expanded() === p.id ? 'expand_less' : 'expand_more' }}</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="remove(p)">
+                  <button mat-icon-button color="warn" (click)="remove(p)"
+                          [matTooltip]="'menus.remove' | translate">
                     <mat-icon>delete_outline</mat-icon>
                   </button>
                 </div>
@@ -228,10 +231,12 @@ import { MenuFormDialogComponent } from './menu-form-dialog.component';
                           [matTooltip]="'menus.edit' | translate">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button (click)="toggleExpand(p.id!)">
+                  <button mat-icon-button (click)="toggleExpand(p.id!)"
+                          [matTooltip]="(expanded() === p.id ? 'menus.collapse' : 'menus.expand') | translate">
                     <mat-icon>{{ expanded() === p.id ? 'expand_less' : 'expand_more' }}</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="remove(p)">
+                  <button mat-icon-button color="warn" (click)="remove(p)"
+                          [matTooltip]="'menus.remove' | translate">
                     <mat-icon>delete_outline</mat-icon>
                   </button>
                 </div>

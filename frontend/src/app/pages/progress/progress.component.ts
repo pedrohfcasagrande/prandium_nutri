@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartConfiguration } from 'chart.js';
@@ -20,7 +21,7 @@ import { DatePickerComponent } from '../../components/date-picker.component';
   imports: [
     CommonModule, FormsModule,
     MatCardModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatSnackBarModule,
+    MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule,
     BaseChartDirective, TranslateModule, DatePickerComponent
   ],
   template: `
@@ -158,7 +159,8 @@ import { DatePickerComponent } from '../../components/date-picker.component';
                 @if (e.chestCm) { <span class="metric">peito {{ e.chestCm }}cm</span> }
               </div>
               @if (e.note) { <div class="entry-note">{{ e.note }}</div> }
-              <button mat-icon-button color="warn" (click)="remove(e)" class="entry-remove">
+              <button mat-icon-button color="warn" (click)="remove(e)" class="entry-remove"
+                      [matTooltip]="'app.actions.remove' | translate">
                 <mat-icon>delete_outline</mat-icon>
               </button>
             </mat-card>

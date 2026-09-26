@@ -102,12 +102,22 @@ export class RequestNutriDialogComponent {
         </div>
       } @else {
         <div class="grid">
-          @for (n of filtered(); track n.id) {
+          @for (g of grouped(); track g.nutritionistId) {
             <mat-card class="nutri-card">
               <div class="head">
-                <div class="avatar">{{ n.name?.[0]?.toUpperCase() }}</div>
+                <div class="avatar">{{ g.name?.[0]?.toUpperCase() }}</div>
                 <div class="info">
-                  <div class="name">{{ n.name }}</div>
+                  <div class="name">{{ g.name }}</div>
+                  @if (g.practices.length > 1) {
+                    <div class="text-muted small">
+                      {{ 'findNutri.practicesCount' | translate:{ n: g.practices.length } }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @for (n of g.practices; track n.id) {
+                <div class="practice-section" [class.multi]="g.practices.length > 1">
                   <div class="link-badge" [class.private]="!n.companyName">
                     <mat-icon>{{ n.companyName ? 'corporate_fare' : 'person' }}</mat-icon>
                     {{ n.companyName ?? ('findNutri.private' | translate) }}
@@ -119,20 +129,20 @@ export class RequestNutriDialogComponent {
                       }
                     </div>
                   }
+                  @if (n.bio) { <p class="bio">{{ n.bio }}</p> }
+                  <div class="actions">
+                    @if (canFind()) {
+                      <button mat-flat-button color="primary" (click)="open(n)">
+                        <mat-icon>send</mat-icon> {{ 'findNutri.requestBtn' | translate }}
+                      </button>
+                    } @else {
+                      <button mat-flat-button color="primary" (click)="goPricing()">
+                        <mat-icon>workspace_premium</mat-icon> {{ 'findNutri.upgradeCta' | translate }}
+                      </button>
+                    }
+                  </div>
                 </div>
-              </div>
-              @if (n.bio) { <p class="bio">{{ n.bio }}</p> }
-              <div class="actions">
-                @if (canFind()) {
-                  <button mat-flat-button color="primary" (click)="open(n)">
-                    <mat-icon>send</mat-icon> {{ 'findNutri.requestBtn' | translate }}
-                  </button>
-                } @else {
-                  <button mat-flat-button color="primary" (click)="goPricing()">
-                    <mat-icon>workspace_premium</mat-icon> {{ 'findNutri.upgradeCta' | translate }}
-                  </button>
-                }
-              </div>
+              }
             </mat-card>
           }
         </div>
@@ -166,6 +176,13 @@ export class RequestNutriDialogComponent {
     }
     .bio { margin: 0; color: var(--nt-text); font-size: 0.9rem; line-height: 1.5; }
     .actions { display: flex; justify-content: flex-end; }
+
+    .practice-section { display: flex; flex-direction: column; gap: 12px; }
+    .practice-section.multi {
+      padding-top: 12px;
+      border-top: 1px dashed var(--nt-border);
+    }
+    .practice-section.multi:first-of-type { border-top: none; padding-top: 0; }
 
     .plus-badge {
       background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
@@ -203,6 +220,27 @@ export class FindNutritionistComponent implements OnInit {
       || (n.bio ?? '').toLowerCase().includes(q)
       || (n.specialties ?? '').toLowerCase().includes(q)
       || (n.companyName ?? '').toLowerCase().includes(q));
+  });
+
+  /**
+   * Agrupa practices pelo mesmo nutritionistId. Cada nutri vira 1 card com N sub-secoes,
+   * evitando que a mesma Dra. X apareca 2 vezes na lista (particular + empresa).
+   */
+  grouped = computed<{ nutritionistId: number; name: string; practices: NutriPublic[] }[]>(() => {
+    const groups = new Map<number, { nutritionistId: number; name: string; practices: NutriPublic[] }>();
+    for (const p of this.filtered()) {
+      const g = groups.get(p.nutritionistId);
+      if (g) {
+        g.practices.push(p);
+      } else {
+        groups.set(p.nutritionistId, { nutritionistId: p.nutritionistId, name: p.name, practices: [p] });
+      }
+    }
+    // Particulares primeiro dentro de cada grupo
+    for (const g of groups.values()) {
+      g.practices.sort((a, b) => (a.companyName ? 1 : 0) - (b.companyName ? 1 : 0));
+    }
+    return Array.from(groups.values());
   });
 
   ngOnInit() {

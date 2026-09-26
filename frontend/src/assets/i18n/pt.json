@@ -15,9 +15,9 @@
       "companyNutris": "Nutricionistas",
       "companyMembers": "Administradores",
       "companyClients": "Clientes da empresa",
-      "adminCompanies": "Empresas (admin)",
-      "admin": "Usuários (admin)",
-      "adminMetrics": "Métricas (admin)",
+      "adminCompanies": "Empresas",
+      "admin": "Usuários",
+      "adminMetrics": "Métricas",
       "companyMetrics": "Métricas da empresa",
       "nutriMetrics": "Minhas métricas",
       "pendingMenus": "Cardápios pendentes",
@@ -93,6 +93,7 @@
     "searchLabel": "Buscar",
     "searchHint": "Nome, especialidade, palavra-chave...",
     "empty": "Nenhum nutricionista disponível encontrado",
+    "practicesCount": "{{n}} consultórios",
     "requestBtn": "Pedir acompanhamento",
     "dialogTitle": "Pedir acompanhamento — {{name}}",
     "dialogHint": "Escreva uma breve mensagem se quiser (opcional).",
@@ -282,6 +283,8 @@
     "subtitle": "Entre com sua conta para continuar",
     "email": "E-mail",
     "password": "Senha",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Esconder senha",
     "submit": "Entrar",
     "or": "ou",
     "noAccount": "Ainda não tem conta?",
@@ -316,7 +319,10 @@
     }
   },
   "search": {
-    "placeholder": "Buscar por nome, e-mail, CPF, CNPJ ou CRN...",
+    "placeholder": "Buscar...",
+    "placeholderAdminUsers": "Buscar por nome, e-mail, CPF, CNPJ ou CRN...",
+    "placeholderCompanies": "Buscar por nome, CNPJ ou responsável...",
+    "placeholderClients": "Buscar por nome ou e-mail...",
     "clear": "Limpar busca",
     "sortTooltip": "Ordenação: recentes primeiro / alfabética"
   },
@@ -429,6 +435,9 @@
     "protein": "Proteínas",
     "macros": "Outros macros",
     "remaining": "Restante",
+    "goalsNotSetTitle": "Configure suas metas para acompanhar seu progresso",
+    "goalsNotSetHint": "Sem metas definidas, os cards de calorias e proteínas mostram só o consumo.",
+    "setGoals": "Configurar metas",
     "carbs": "Carboidratos",
     "fat": "Gorduras",
     "mealsCount": "Refeições",
@@ -453,6 +462,8 @@
     "newMealSubtitle": "Escolha o tipo, adicione alimentos e salve",
     "history": "Histórico",
     "date": "Data",
+    "mealDate": "Data da refeição",
+    "historyDate": "Ver histórico de",
     "time": "Hora",
     "type": "Tipo",
     "types": {
@@ -545,6 +556,9 @@
     "activate": "Ativar cardápio",
     "edit": "Editar",
     "editTitle": "Editar cardápio",
+    "expand": "Expandir",
+    "collapse": "Recolher",
+    "remove": "Excluir cardápio",
     "removeConfirm": "Excluir o cardápio \"{{name}}\"?",
     "addItemTitle": "Adicionar alimento",
     "addItem": "Adicionar",
@@ -815,6 +829,8 @@
       "assessmentTooltip": "Abrir ficha de análise deste cliente",
       "revokeTooltip": "Revogar vínculo",
       "revokeConfirm": "Revogar vínculo com {{name}}?",
+      "showHistory": "Mostrar vínculos anteriores",
+      "hideHistory": "Esconder vínculos anteriores",
       "subRenews": "próxima cobrança {{date}}",
       "subStatus": {
         "TRIALING": "Em teste",
@@ -854,10 +870,15 @@
     "deleteConfirm": "Excluir a empresa {{name}}? Esta ação não pode ser desfeita.",
     "col": {
       "company": "Empresa",
-      "owner": "Owner",
+      "owner": "Responsável",
       "stats": "Estatísticas",
       "active": "Ativa",
       "actions": "Ações"
+    },
+    "stats": {
+      "admins": "Administradores ativos",
+      "pending": "Convites pendentes",
+      "nutris": "Nutricionistas vinculados"
     },
     "dialog": {
       "title": "Cadastrar nova empresa",

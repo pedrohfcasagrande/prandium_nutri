@@ -56,7 +56,7 @@ import { DatePickerComponent } from '../../components/date-picker.component';
           </div>
 
           <div class="datetime-row">
-            <app-date-picker [(ngModel)]="draft.date" [label]="'meals.date' | translate"></app-date-picker>
+            <app-date-picker [(ngModel)]="draft.date" [label]="'meals.mealDate' | translate"></app-date-picker>
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>{{ 'meals.time' | translate }}</mat-label>
               <input matInput type="time" [(ngModel)]="draft.time">
@@ -157,7 +157,7 @@ import { DatePickerComponent } from '../../components/date-picker.component';
       <div class="page-header history-header">
         <div><h2>{{ 'meals.history' | translate }}</h2></div>
         <app-date-picker class="date-picker" [(ngModel)]="filterDate"
-                         (ngModelChange)="load()" [label]="'meals.date' | translate"></app-date-picker>
+                         (ngModelChange)="load()" [label]="'meals.historyDate' | translate"></app-date-picker>
       </div>
 
       @if (!meals().length) {

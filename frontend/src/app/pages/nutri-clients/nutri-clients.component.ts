@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -103,76 +103,101 @@ import { ClientLink } from '../../models/models';
       <div class="page-header history-header">
         <h2>{{ 'nutri.clients.listTitle' | translate }} ({{ total() }})</h2>
       </div>
-      <app-search-sort-bar (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
+      <app-search-sort-bar [placeholder]="'search.placeholderClients' | translate"
+                           (search)="onSearch($event)" (sortChange)="onSort($event)"></app-search-sort-bar>
 
       @if (!clients().length) {
         <app-empty-state type="clients"
                          [title]="'nutri.clients.emptyTitle' | translate"
                          [description]="'nutri.clients.empty' | translate"></app-empty-state>
       } @else {
-        <div class="client-list">
-          @for (c of clients(); track c.id; let i = $index) {
-            <mat-card class="client-card stagger-item" [style.--i]="i"
-                                          [class.pending]="c.status === 'PENDING'"
-                                          [class.active]="c.status === 'ACTIVE'">
-              <div class="avatar" [class.avatar-pending]="c.status === 'PENDING'">
-                {{ (c.clientName || '?')[0].toUpperCase() }}
-              </div>
-              <div class="client-text">
-                <div class="client-name">{{ c.clientName }}</div>
-                <div class="client-email">
-                  {{ c.clientEmail }}
-                  @if (c.clientCpf) { <span class="cpf-inline">· {{ c.clientCpf }}</span> }
-                </div>
-                <div class="client-meta">
-                  <span class="status-pill" [class]="'pill-' + c.status.toLowerCase()">
-                    {{ ('nutri.status.' + c.status) | translate }}
-                  </span>
-                  @if (c.subscriptionStatus) {
-                    <span class="status-pill sub-pill" [class]="'subpill-' + c.subscriptionStatus.toLowerCase()"
-                          [matTooltip]="subTooltip(c)">
-                      <mat-icon class="sub-icon">{{ subIcon(c.subscriptionStatus) }}</mat-icon>
-                      {{ (c.subscriptionPlanName || c.subscriptionPlanCode) }}
-                    </span>
-                  }
-                  @if (c.acceptedAt) {
-                    <span class="text-muted small">
-                      {{ 'nutri.clients.acceptedOn' | translate }} {{ c.acceptedAt | date:'shortDate' }}
-                    </span>
-                  } @else {
-                    <span class="text-muted small">
-                      {{ 'nutri.clients.invitedOn' | translate }} {{ c.invitedAt | date:'shortDate' }}
-                    </span>
-                  }
-                </div>
-              </div>
-              <div class="client-actions">
-                @if (c.status === 'ACTIVE' && c.clientId) {
-                  <button mat-stroked-button (click)="openAssessment(c)"
-                          [matTooltip]="'nutri.clients.assessmentTooltip' | translate">
-                    <mat-icon>assignment</mat-icon>
-                    {{ 'nutri.clients.assessment' | translate }}
-                  </button>
-                  <button mat-flat-button color="primary" (click)="manage(c)"
-                          [matTooltip]="'nutri.clients.manageTooltip' | translate">
-                    <mat-icon>manage_accounts</mat-icon>
-                    {{ 'nutri.clients.manage' | translate }}
-                  </button>
-                }
-                @if (canRevoke(c.status)) {
-                  <button mat-icon-button color="warn" (click)="revoke(c)"
-                          [matTooltip]="'nutri.clients.revokeTooltip' | translate">
-                    <mat-icon>link_off</mat-icon>
-                  </button>
-                }
-              </div>
-            </mat-card>
+        @if (activeSection().length > 0) {
+          <div class="client-list">
+            @for (c of activeSection(); track c.id; let i = $index) {
+              <ng-container *ngTemplateOutlet="clientCard; context: { $implicit: c, i: i }"></ng-container>
+            }
+          </div>
+        }
+
+        @if (historySection().length > 0) {
+          <div class="history-toggle">
+            <button mat-stroked-button (click)="showHistory.set(!showHistory())">
+              <mat-icon>{{ showHistory() ? 'expand_less' : 'expand_more' }}</mat-icon>
+              {{ (showHistory() ? 'nutri.clients.hideHistory' : 'nutri.clients.showHistory') | translate }}
+              ({{ historySection().length }})
+            </button>
+          </div>
+          @if (showHistory()) {
+            <div class="client-list history-list">
+              @for (c of historySection(); track c.id; let i = $index) {
+                <ng-container *ngTemplateOutlet="clientCard; context: { $implicit: c, i: i }"></ng-container>
+              }
+            </div>
           }
-        </div>
+        }
+
         <mat-paginator [length]="total()" [pageSize]="pageSize" [pageIndex]="pageIndex"
                        [pageSizeOptions]="[10, 25, 50]" (page)="onPage($event)"
                        showFirstLastButtons></mat-paginator>
       }
+
+      <ng-template #clientCard let-c let-i="i">
+        <mat-card class="client-card stagger-item" [style.--i]="i"
+                                      [class.pending]="c.status === 'PENDING'"
+                                      [class.active]="c.status === 'ACTIVE'">
+          <div class="avatar" [class.avatar-pending]="c.status === 'PENDING'">
+            {{ (c.clientName || '?')[0].toUpperCase() }}
+          </div>
+          <div class="client-text">
+            <div class="client-name">{{ c.clientName }}</div>
+            <div class="client-email">
+              {{ c.clientEmail }}
+              @if (c.clientCpf) { <span class="cpf-inline">· {{ c.clientCpf }}</span> }
+            </div>
+            <div class="client-meta">
+              <span class="status-pill" [class]="'pill-' + c.status.toLowerCase()">
+                {{ ('nutri.status.' + c.status) | translate }}
+              </span>
+              @if (c.subscriptionStatus) {
+                <span class="status-pill sub-pill" [class]="'subpill-' + c.subscriptionStatus.toLowerCase()"
+                      [matTooltip]="subTooltip(c)">
+                  <mat-icon class="sub-icon">{{ subIcon(c.subscriptionStatus) }}</mat-icon>
+                  {{ (c.subscriptionPlanName || c.subscriptionPlanCode) }}
+                </span>
+              }
+              @if (c.acceptedAt) {
+                <span class="text-muted small">
+                  {{ 'nutri.clients.acceptedOn' | translate }} {{ c.acceptedAt | date:'shortDate' }}
+                </span>
+              } @else {
+                <span class="text-muted small">
+                  {{ 'nutri.clients.invitedOn' | translate }} {{ c.invitedAt | date:'shortDate' }}
+                </span>
+              }
+            </div>
+          </div>
+          <div class="client-actions">
+            @if (c.status === 'ACTIVE' && c.clientId) {
+              <button mat-stroked-button (click)="openAssessment(c)"
+                      [matTooltip]="'nutri.clients.assessmentTooltip' | translate">
+                <mat-icon>assignment</mat-icon>
+                {{ 'nutri.clients.assessment' | translate }}
+              </button>
+              <button mat-flat-button color="primary" (click)="manage(c)"
+                      [matTooltip]="'nutri.clients.manageTooltip' | translate">
+                <mat-icon>manage_accounts</mat-icon>
+                {{ 'nutri.clients.manage' | translate }}
+              </button>
+            }
+            @if (canRevoke(c.status)) {
+              <button mat-icon-button color="warn" (click)="revoke(c)"
+                      [matTooltip]="'nutri.clients.revokeTooltip' | translate">
+                <mat-icon>link_off</mat-icon>
+              </button>
+            }
+          </div>
+        </mat-card>
+      </ng-template>
     </div>
   `,
   styles: [`
@@ -196,6 +221,12 @@ import { ClientLink } from '../../models/models';
     }
     .client-card.pending { border-left: 4px solid var(--nt-accent) !important; }
     .client-card.active { border-left: 4px solid var(--nt-primary) !important; }
+
+    .history-toggle {
+      margin: 20px 0 12px;
+      display: flex; justify-content: center;
+    }
+    .history-list .client-card { opacity: 0.75; }
     .request-card { border-left: 4px solid #f59e0b !important; }
 
     .avatar {
@@ -251,6 +282,13 @@ export class NutriClientsComponent implements OnInit {
   requests = signal<ClientLink[]>([]);
   email = '';
   loading = signal(false);
+  showHistory = signal(false);
+
+  // Separa vinculos ativos/pendentes dos historicos (revogados/rejeitados/expirados)
+  // pra evitar mesmo cliente aparecer duplicado quando cliente foi revogado e re-vinculado.
+  private isActiveOrPending = (c: ClientLink) => c.status === 'ACTIVE' || c.status === 'PENDING';
+  activeSection = computed(() => this.clients().filter(this.isActiveOrPending));
+  historySection = computed(() => this.clients().filter(c => !this.isActiveOrPending(c)));
 
   private firstLoad = true;
   constructor() {

@@ -19,15 +19,19 @@ public final class CpfUtil {
     }
 
     /**
-     * Mascara CPF para exibicao. Preserva os 3 primeiros e 2 ultimos digitos.
+     * Mascara CPF para exibicao. Preserva apenas os 2 ultimos digitos.
      * Entrada com formatacao (123.456.789-00) ou sem — sao normalizadas.
      * Retorna "***" quando input invalido ou vazio.
      *
-     * Exemplo: "12345678901" -> "123.***.***-01"
+     * Exemplo: "12345678901" -> "***.***.***-01"
+     *
+     * Nota: versoes anteriores mantinham os 3 primeiros digitos, mas isso gerava
+     * confusao em CPFs de seed sequenciais (todos comecavam com "000") e vazava
+     * mais bits do que o necessario. 2 digitos finais bastam pra desambiguacao visual.
      */
     public static String mask(String cpf) {
         String d = normalize(cpf);
         if (d == null || d.length() != 11) return "***";
-        return d.substring(0, 3) + ".***.***-" + d.substring(9);
+        return "***.***.***-" + d.substring(9);
     }
 }

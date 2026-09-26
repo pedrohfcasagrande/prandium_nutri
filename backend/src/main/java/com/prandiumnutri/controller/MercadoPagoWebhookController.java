@@ -1,12 +1,11 @@
 package com.prandiumnutri.controller;
 
+import com.prandiumnutri.payment.MercadoPagoSignatureVerifier;
 import com.prandiumnutri.service.PaymentWebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * Webhook do Mercado Pago. Formato de notificacao:
@@ -19,12 +18,23 @@ import java.util.Map;
 public class MercadoPagoWebhookController {
 
     private final PaymentWebhookService webhookService;
+    private final MercadoPagoSignatureVerifier signatureVerifier;
 
     @PostMapping
-    public ResponseEntity<String> receive(@RequestBody String payload,
-                                          @RequestHeader java.util.Map<String, String> headers) {
-        // MP usa id/action nas queries e no body. Usamos payload como raw json.
+    public ResponseEntity<String> receive(
+            @RequestBody String payload,
+            @RequestParam(value = "data.id", required = false) String dataIdQuery,
+            @RequestHeader(value = "x-signature", required = false) String xSignature,
+            @RequestHeader(value = "x-request-id", required = false) String xRequestId) {
+
         String eventId = extractId(payload);
+        String dataId = dataIdQuery != null ? dataIdQuery : eventId;
+
+        if (!signatureVerifier.verify(xSignature, xRequestId, dataId)) {
+            log.warn("Assinatura MP invalida (dataId={}, requestId={})", dataId, xRequestId);
+            return ResponseEntity.badRequest().body("invalid_signature");
+        }
+
         try {
             webhookService.processMercadoPagoEvent(eventId, payload);
         } catch (Exception e) {

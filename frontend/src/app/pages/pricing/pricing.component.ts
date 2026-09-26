@@ -286,8 +286,10 @@ export class AllPlansDialogComponent {
           @if (!auth.isAdmin()) {
             <button mat-flat-button color="primary" class="cta"
                     (click)="upgrade(p)"
-                    [disabled]="p.amountCents === 0 || loading()">
-              {{ (p.amountCents === 0 ? 'pricing.freeCta' : 'pricing.upgradeCta') | translate }}
+                    [disabled]="isCurrentPlan(p) || p.amountCents === 0 || loading()">
+              {{ (isCurrentPlan(p) ? 'pricing.currentPlan'
+                   : p.amountCents === 0 ? 'pricing.freeCta'
+                   : 'pricing.upgradeCta') | translate }}
             </button>
           }
         </mat-card>
@@ -381,7 +383,12 @@ export class PricingComponent implements OnInit {
   loading = signal(false);
   limitReached = signal(false);
   limitFeature = signal<string | null>(null);
+  currentPlanCode = signal<string | null>(null);
   private reqSeq = 0;
+
+  isCurrentPlan(p: Plan): boolean {
+    return this.currentPlanCode() === p.code;
+  }
 
   /** Grupos ordenados exibidos quando `target === null` (admin). */
   readonly targetGroups: { target: PlanTarget; icon: string }[] = [
@@ -410,6 +417,14 @@ export class PricingComponent implements OnInit {
       this.currency = r.currency || 'BRL';
       this.reload();
     });
+
+    // Se logado, busca sub atual pra destacar "Plano atual" na CTA
+    if (this.auth.isAuthenticated()) {
+      this.api.mySubscription().subscribe({
+        next: sub => this.currentPlanCode.set(sub?.planCode ?? null),
+        error: () => {}
+      });
+    }
   }
 
   onTargetChange(value: PlanTarget | null) {
@@ -463,7 +478,8 @@ export class PricingComponent implements OnInit {
     if (typeof f.value === 'boolean') {
       return f.value ? label : `${label} (${this.translate.instant('billing.notIncluded')})`;
     }
-    return `${f.value} · ${label}`;
+    // "1 cardapio salvo" em vez de "1 · Cardapios salvos" — mais legivel
+    return `${f.value} ${label.toLowerCase()}`;
   }
 
   formatPrice(cents: number, currency: string): string {

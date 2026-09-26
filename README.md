@@ -119,6 +119,9 @@ export SPRING_MAIL_HOST=smtp.provider.com SPRING_MAIL_USERNAME=... SPRING_MAIL_P
 export GEMINI_API_KEY=...
 export GOOGLE_CLIENT_ID=...
 export JWT_SECRET=... # >= 32 chars, valor forte
+# opcional: timeouts das chamadas HTTP outbound (defaults 10s/30s)
+export HTTP_CONNECT_TIMEOUT_SECONDS=10
+export HTTP_READ_TIMEOUT_SECONDS=30
 mvn spring-boot:run
 ```
 
@@ -126,15 +129,27 @@ Webhooks locais (test):
 - Stripe: `stripe listen --forward-to localhost:8080/api/webhooks/stripe`
 - MP: `ngrok http 8080` + configurar a URL publica no dashboard MP
 
+Guias detalhados de setup e teste dos providers:
+- [`docs/PAGAMENTOS-SETUP.md`](docs/PAGAMENTOS-SETUP.md) — env vars, eventos a assinar, troubleshooting
+- [`docs/STRIPE-DRY-RUN.md`](docs/STRIPE-DRY-RUN.md) — runbook E2E via `stripe-cli` cobrindo golden path, race condition, PAST_DUE→ACTIVE, cancel, idempotência
+
+## CI/CD
+
+GitHub Actions em `.github/workflows/ci.yml`. Roda em push/PR nas branches `main`/`master`/`develop`, com concurrency cancel:
+- **Backend**: `setup-java 21 (temurin)` → `mvn test` → `mvn -DskipTests package` (sanity build) → upload de surefire-reports em failure
+- **Frontend**: `setup-node 20` (cache npm) → `npm ci` → `npm test -- --ci` → `npm run build --configuration production` (valida budgets 1MB/2MB)
+
+Os dois jobs rodam em paralelo, sem depender um do outro.
+
 ## Testes
 
-Backend (81 testes atualmente):
+Backend (94 testes atualmente):
 ```bash
 cd backend
 mvn test
 ```
 
-Frontend (Jest + jest-preset-angular; 43 testes atualmente):
+Frontend (Jest + jest-preset-angular; 60 testes atualmente):
 ```bash
 cd frontend
 npm test
@@ -152,6 +167,11 @@ Cobertura frontend:
 - `pages/meals/meals.component.spec.ts` — fallback IA dispara so quando busca local retorna vazio (debounce 500ms); addItem persiste alimento IA antes de anexar ao meal
 - `pages/nutri-dashboard/nutri-dashboard.component.spec.ts` — forkJoin de metrics + pending menus + client requests + subscription; loading vai a false mesmo em erro parcial
 - `pages/nutri-practices/nutri-practices.component.spec.ts` — carrega listagem de practices; save envia PUT com bio/specialties/acceptsNewClients
+- `pages/billing/billing.component.spec.ts` — estado vazio, plan card com nome/preço/tier class, feature rows, cancel button flow com timers, cancel button oculto quando provider MANUAL
+- `pages/admin-metrics/admin-metrics.component.spec.ts` — skeletons enquanto carrega, cards KPI com valores formatados, tabelas top companies/nutris, resiliência a erro da API (usa `overrideComponent` + `NO_ERRORS_SCHEMA` pra evitar crash de Chart.js em jsdom)
+- `pages/nutri-menu-plans/nutri-menu-plans.component.spec.ts` — ngOnInit dispara pending + clients GET, estado vazio, cards de menus pendentes, approve() → POST /approve + reload
+- `pages/pricing/pricing.component.spec.ts` — (+) renderiza um `.plan-card` por plano, plano free mostra "billing.free" e pago mostra amount formatado
+- `pages/meals/meals.component.spec.ts` — (+) estado vazio com `.empty`, um `.meal-card` por refeição com tier class + totais
 
 Cobertura backend:
 - `PrandiumNutriApplicationTests` — context load smoke test
@@ -175,6 +195,8 @@ Cobertura backend:
 - `service/NutritionistPracticeServiceTest` — ensureParticular e idempotente e copia bio; ensureForCompany cria/reativa practice; suspendForCompany muda status; nutri pode ter particular + varias vinculadas (particular primeiro na listagem); availablePractices filtra por ACTIVE + opt-in; endLinkWithCompany converte em particular quando nao ha; apenas suspende quando ha
 - `service/SponsorshipTest` — aceitar convite ativa CLIENT_PLUS patrocinado; revogar ultimo vinculo volta a CLIENT_FREE; revogar com outro vinculo ativo transfere sponsor pra outra practice
 - `service/FoodAiLookupServiceTest` — parser aceita JSON valido, remove cercas markdown, filtra valores fora de faixa (kcal 0-900, macros 0-100), retorna vazio em lixo/nome vazio
+- `service/PaymentWebhookServiceTest` — dedup por eventId (mesmo evento 2x = 1 linha), checkout.session.completed cria ACTIVE sub com plan/currency/amount, race (customer.subscription.created ANTES de checkout também cria via metadata), invoice.payment_succeeded flip PAST_DUE→ACTIVE avança period_end, customer.subscription.deleted marca CANCELED
+- `payment/MercadoPagoSignatureVerifierTest` — fail-open sem secret configurado, rejeita sem header/dataId, rejeita assinatura errada, aceita HMAC-SHA256 válida (com e sem x-request-id)
 
 Fixtures: `test/support/PlanTestFixtures.java` popula os planos manualmente porque o perfil `test` usa H2 sem Flyway.
 
@@ -384,7 +406,11 @@ Ver `.env.example`. Principais:
 - Novo servico → criar `<Servico>Test` em `backend/src/test/java/com/prandiumnutri/service/` usando `PlanTestFixtures.seedAll()` no `@BeforeEach`.
 - i18n: qualquer string exibida no frontend deve ter chave em `frontend/src/assets/i18n/{pt,en,fr}.json`.
 
-## Observabilidade (Fases 4A + 4B)
+## Observabilidade (Fases 4A + 4B + 8)
+
+**Trace ID por request (Fase 8)**: `TraceIdFilter` (`Ordered.HIGHEST_PRECEDENCE`) gera UUID de 16 chars por request (ou honra `X-Trace-Id` do cliente), coloca em MDC (`traceId`), devolve como header `X-Trace-Id` na response. Pattern do `logback-spring.xml` inclui `[tid=%X{traceId:-none}]` em toda linha de log — dá pra correlacionar 1:1 log ↔ response HTTP. Fora de request (jobs @Scheduled, tests) aparece `[tid=none]`.
+
+**Global error handler** (`config/GlobalExceptionHandler`): `@RestControllerAdvice` com handlers específicos (`EntityNotFoundException`, `BadCredentials`, `AccessDenied`, `IllegalArgument/State`, `PlanLimitExceeded`, `MethodArgumentNotValid`) + fallback para `Exception.class`. Todas as respostas incluem `traceId` no body. Fallback loga stack completo mas retorna `{error: "internal_error", traceId}` — nunca vaza detalhes internos pro cliente.
 
 **Audit log** (`audit_log`): trilha de acoes escrita de forma assincrona via `AuditService.record(...)` (thread pool `audit-*`, `@Async`).
 Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGESTION_GENERATED`, `CLIENT_INVITED`, `CLIENT_ACCEPTED`, `SUBSCRIPTION_CREATED`. Novos endpoints devem adicionar `auditService.record(...)` na acao relevante e teste em `AuditServiceTest`.
@@ -422,4 +448,19 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
 - **Fase 7A (DevDataSeeder — popula 2 empresas + 4 nutris + 10 clientes se banco vazio; senha unificada `admin@123` em dev): OK**
 - **Fase 7B (paginacao — `PageDto` no backend, `Page<T>` no TS, `mat-paginator` nas 5 listagens; 10 por pagina default): OK**
 - **Fase 7C (padrao visual unificado nas listagens — `.row-card` grid `auto 1fr auto` com avatar circular + info + actions substitui `<mat-table>` em `/admin/users` e `/company/clients`, alinhando com `/company/nutritionists`): OK**
+- **Fase 8 (hardening — Setembro 2026): OK**
+  - CI GitHub Actions (backend + frontend em paralelo, cache maven/npm, sanity build)
+  - Trace ID via MDC filter + logback pattern + fallback error handler com `traceId` na response
+  - Payment webhook: `findByProviderSubscriptionId` (fim do `findAll()` N+1), upsert idempotente em `customer.subscription.created` corrige race condition Stripe, handler `invoice.payment_succeeded` recupera PAST_DUE→ACTIVE
+  - HMAC-SHA256 validation dos webhooks Mercado Pago (`MercadoPagoSignatureVerifier`) — fail-open em dev, obrigatório em prod
+  - `RestClient` com `connectTimeout=10s` + `readTimeout=30s` (override via `HTTP_*_TIMEOUT_SECONDS`) — evita webhook travar se provider externo ficar lento
+  - Testes: +11 backend (`PaymentWebhookServiceTest`, `MercadoPagoSignatureVerifierTest`), +17 frontend (novos specs `billing`/`admin-metrics`/`nutri-menu-plans` + renderização real em `pricing`/`meals`)
+  - Docs operacionais: `docs/PAGAMENTOS-SETUP.md`, `docs/STRIPE-DRY-RUN.md`, `docs/UX-AUDIT-2026-09.md`
+  - UX audit ao vivo via Playwright cobrindo admin/nutri/cliente; 2 regressões P0 fixadas (sparklines dos KPI cards + Chart.js `bar` controller registrado globalmente em `main.ts`)
+- **Fase 8 wave-2 (UX audit fixes — 2026-09-26): OK**
+  - Bugs P0: billing "não incluído" com ✅ (fix via `[style.color]` inline contornando view encapsulation em `mat-icon`)
+  - Fricções P1: `NutriClientsComponent` separa ativos de histórico (toggle `showHistory`), placeholders de busca contextuais por tela (`search.placeholderAdminUsers/Companies/Clients`), `DashboardComponent` mostra banner "Configure suas metas" + CTA quando `!hasGoals()`, ícones-ação ganham `matTooltip` + `aria-label`, contador de refeições separado dos macros no dashboard, campos "Data" com labels distintos em `/meals`
+  - Polish P2: `adminCompanies.owner` traduzido, header duplicado do `/suggestions` removido, `CpfUtil.mask` agora mascara todos os primeiros dígitos (`***.***.***-45`), `FindNutritionistComponent` agrupa nutri por `nutritionistId` com practices internas, `PricingComponent` mostra "Plano atual" quando `isCurrentPlan(p)` e `formatFeature` retorna texto natural, linha "Provedor: MANUAL" oculta no billing
+  - i18n: novas chaves em pt/en/fr para `search.placeholder*`, `nutri.clients.showHistory/hideHistory`, `dashboard.goalsNotSetTitle/Hint/setGoals`, `meals.mealDate/historyDate`, `adminCompanies.stats.admins/pending/nutris`, `findNutri.practicesCount`, `login.showPassword/hidePassword`
+  - Verificação: `mvn test` 94/94 + `npm test` 60/60 + validação visual Playwright
 - Fase 8 (geolocalizacao restaurantes): backlog
