@@ -278,6 +278,13 @@
     "count": "Occurrences",
     "empty": "No data for the period"
   },
+  "auth": {
+    "trust": {
+      "ssl": "SSL secured",
+      "lgpd": "GDPR",
+      "encrypted": "Encrypted"
+    }
+  },
   "login": {
     "welcome": "Welcome back",
     "subtitle": "Sign in to your account to continue",

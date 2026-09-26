@@ -17,7 +17,7 @@ export class ThemeService {
 
   constructor() {
     this.mediaQuery.addEventListener('change', e => this.systemPrefersDark.set(e.matches));
-    effect(() => this.apply(this.effectiveDark()));
+    effect(() => this.apply());
   }
 
   setMode(m: ThemeMode) {
@@ -25,9 +25,12 @@ export class ThemeService {
     this.mode.set(m);
   }
 
-  private apply(dark: boolean) {
+  // Em 'auto', remove data-theme e deixa o CSS decidir via @media prefers-color-scheme.
+  // Em 'light'/'dark', seta explicitamente para sobrepor o @media.
+  private apply() {
     const root = document.documentElement;
-    if (dark) root.setAttribute('data-theme', 'dark');
-    else root.removeAttribute('data-theme');
+    const m = this.mode();
+    if (m === 'auto') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', m);
   }
 }

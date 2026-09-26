@@ -93,52 +93,16 @@ import { ThemeSwitcherComponent } from '../../components/theme-switcher.componen
             <a routerLink="/register">{{ 'login.registerLink' | translate }}</a>
           </div>
         </mat-card>
+
+        <div class="auth-trust">
+          <span><mat-icon>lock</mat-icon> {{ 'auth.trust.ssl' | translate }}</span>
+          <span><mat-icon>shield</mat-icon> {{ 'auth.trust.lgpd' | translate }}</span>
+          <span><mat-icon>verified</mat-icon> {{ 'auth.trust.encrypted' | translate }}</span>
+        </div>
       </div>
     </div>
   `,
   styles: [`
-    .auth-shell {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: var(--nt-hero-bg);
-      padding: 24px;
-      position: relative;
-    }
-    .auth-topbar {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      display: flex;
-      gap: 8px;
-    }
-    .auth-panel { width: 100%; max-width: 440px; }
-
-    .brand-hero {
-      text-align: center;
-      margin-bottom: 28px;
-      h1 { font-size: 2rem; margin: 12px 0 4px; font-weight: 700; letter-spacing: -0.02em; color: var(--nt-text); }
-      p { margin: 0; color: var(--nt-text-muted); }
-    }
-    .brand-icon {
-      width: 56px; height: 56px;
-      background: var(--nt-primary);
-      color: #fff;
-      border-radius: 16px;
-      display: inline-flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 20px rgba(13, 148, 136, 0.35);
-      mat-icon { font-size: 28px; width: 28px; height: 28px; }
-    }
-
-    .auth-card {
-      padding: 32px !important;
-      box-shadow: var(--nt-shadow-lg) !important;
-      border: none !important;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
     .card-title-block {
       text-align: center;
       h2 { margin: 0 0 6px; font-size: 1.4rem; font-weight: 600; color: var(--nt-text); }
