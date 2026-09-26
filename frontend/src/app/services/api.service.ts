@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
-  Appointment, AppointmentRequest, ClientAssessment,
+  Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
@@ -491,5 +491,30 @@ export class ApiService {
 
   myAssessment(): Observable<ClientAssessment | null> {
     return this.http.get<ClientAssessment | null>(`${this.base}/me/assessment`);
+  }
+
+  // Snapshots (Fase 9A) — timeline imutavel de "consultas"
+  nutriCreateAssessmentSnapshot(clientId: number, label: string | null,
+                                 practiceId?: number | null): Observable<AssessmentSnapshot> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.post<AssessmentSnapshot>(
+      `${this.base}/nutritionist/assessments/client/${clientId}/snapshots`,
+      { label }, { params });
+  }
+  nutriListAssessmentSnapshots(clientId: number,
+                                practiceId?: number | null): Observable<AssessmentSnapshot[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<AssessmentSnapshot[]>(
+      `${this.base}/nutritionist/assessments/client/${clientId}/snapshots`, { params });
+  }
+  myAssessmentSnapshots(): Observable<AssessmentSnapshot[]> {
+    return this.http.get<AssessmentSnapshot[]>(`${this.base}/me/assessment/snapshots`);
+  }
+
+  // Self-fill (Fase 9A) — cliente atualiza campos safe da propria ficha
+  myAssessmentSelfFill(dto: AssessmentSelfFill): Observable<ClientAssessment> {
+    return this.http.put<ClientAssessment>(`${this.base}/me/assessment/self-fill`, dto);
   }
 }

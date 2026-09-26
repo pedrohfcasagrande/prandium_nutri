@@ -229,6 +229,10 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V019      | backfill retroativo de sponsorship — clientes com NCL ACTIVE viram CLIENT_PLUS |
 | V020      | rebalanceia sponsorship: cliente so fica PLUS se pagador (empresa/nutri) tem tier pago |
 | V021      | users.cpf NOT NULL UNIQUE + users.crn UNIQUE (Fase 6A) — backfill sequencial `LPAD(id,11,'0')` |
+| V022      | refresh_tokens                                                        |
+| V023      | appointments (agenda de consultas)                                    |
+| V024      | client_assessments (ficha clinica base — 1 por par nutri↔cliente)     |
+| V025      | client_assessments.labs (exames) + assessment_snapshots (historico versionado — Fase 9A) |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -463,4 +467,15 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Polish P2: `adminCompanies.owner` traduzido, header duplicado do `/suggestions` removido, `CpfUtil.mask` agora mascara todos os primeiros dígitos (`***.***.***-45`), `FindNutritionistComponent` agrupa nutri por `nutritionistId` com practices internas, `PricingComponent` mostra "Plano atual" quando `isCurrentPlan(p)` e `formatFeature` retorna texto natural, linha "Provedor: MANUAL" oculta no billing
   - i18n: novas chaves em pt/en/fr para `search.placeholder*`, `nutri.clients.showHistory/hideHistory`, `dashboard.goalsNotSetTitle/Hint/setGoals`, `meals.mealDate/historyDate`, `adminCompanies.stats.admins/pending/nutris`, `findNutri.practicesCount`, `login.showPassword/hidePassword`
   - Verificação: `mvn test` 94/94 + `npm test` 60/60 + validação visual Playwright
+- **Fase 9A (consulta clínica — labs + snapshots + self-fill — 2026-09-26): OK**
+  - Migração V025: 18 colunas de exames laboratoriais em `client_assessments` (glicêmicos: glucose_fasting/hba1c/insulin_fasting; lipídios: total_cholesterol/ldl/hdl/triglycerides; tireoide: tsh/t4_free; vitaminas: vitamin_d/vitamin_b12/iron/ferritin; outros: crp/urea/creatinine/uric_acid + lab_date/lab_notes) + tabela `assessment_snapshots` (payload JSON versionado, `uq(assessment_id, version)`)
+  - Backend: nova entity `AssessmentSnapshot` (JDBC type JSON via Hibernate 6) + `AssessmentSnapshotRepository` + service estende `ClientAssessmentService` (`createSnapshot`/`listSnapshots`/`listSnapshotsForClient`/`selfFillForClient`) + novo DTO `AssessmentSelfFillDto` restrito a campos safe (habitos/preferencias/objetivo)
+  - Endpoints:
+    - `POST /api/nutritionist/assessments/client/{id}/snapshots` `{label}` — cria snapshot da ficha corrente (nutri)
+    - `GET  /api/nutritionist/assessments/client/{id}/snapshots` — lista timeline (nutri)
+    - `PUT  /api/me/assessment/self-fill` — cliente atualiza preferências/hábitos/objetivo (rejeita antropometria/labs/clínico)
+    - `GET  /api/me/assessment/snapshots` — cliente vê seus próprios snapshots
+  - Frontend: `NutriAssessmentComponent` ganha seção "Exames laboratoriais" (5 sub-grupos) + botão "Nova consulta" (cria snapshot) + card timeline com `v1..vN` + peso do momento; `MyAssessmentComponent` ganha render read-only dos labs + `<mat-expansion-panel>` "Atualizar minhas informações" (self-fill form) + timeline "Minhas consultas anteriores"
+  - Testes: `ClientAssessmentServiceTest` cobre upsert com labs, snapshot com incremento de versão, snapshot falha sem ficha, self-fill atualiza só campos safe e falha sem ficha inicial, ownership (nutri sem link é bloqueado)
+  - Verificação: `mvn test` 100/100 (94 + 6 novos) + `npm test` 60/60
 - Fase 8 (geolocalizacao restaurantes): backlog

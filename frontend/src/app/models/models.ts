@@ -393,10 +393,60 @@ export interface ClientAssessment {
   targetWeightKg?: number | null;
   targetDate?: string | null;
 
+  // Exames laboratoriais (Fase 9A)
+  labDate?: string | null;
+  glucoseFasting?: number | null;
+  hba1c?: number | null;
+  insulinFasting?: number | null;
+  totalCholesterol?: number | null;
+  ldl?: number | null;
+  hdl?: number | null;
+  triglycerides?: number | null;
+  tsh?: number | null;
+  t4Free?: number | null;
+  vitaminD?: number | null;
+  vitaminB12?: number | null;
+  iron?: number | null;
+  ferritin?: number | null;
+  crp?: number | null;
+  urea?: number | null;
+  creatinine?: number | null;
+  uricAcid?: number | null;
+  labNotes?: string | null;
+
   // Meta
   notes?: string | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Snapshot imutavel de assessment (Fase 9A)
+export interface AssessmentSnapshot {
+  id: number;
+  assessmentId: number;
+  version: number;
+  label?: string | null;
+  createdById: number;
+  createdByName: string;
+  createdAt: string;
+  payload: ClientAssessment;
+}
+
+// Campos que o cliente pode preencher sozinho (Fase 9A)
+export interface AssessmentSelfFill {
+  dietaryRecall24h?: string | null;
+  mealFrequency?: string | null;
+  waterIntakeLiters?: number | null;
+  alcoholFrequency?: string | null;
+  foodPreferences?: string | null;
+  foodAversions?: string | null;
+  physicalActivityDetails?: string | null;
+  sleepHours?: number | null;
+  smoker?: boolean | null;
+  smokingDetails?: string | null;
+  goalNotes?: string | null;
+  targetWeightKg?: number | null;
+  targetDate?: string | null;
 }
 
 // Appointments (Fase 8)

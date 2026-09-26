@@ -604,7 +604,28 @@
       "lifestyle": "Mode de vie",
       "lifestyleHint": "Activité physique, sommeil, stress",
       "goals": "Objectifs",
-      "goalsHint": "Poids cible, échéance, notes"
+      "goalsHint": "Poids cible, échéance, notes",
+      "labs": "Résultats de laboratoire",
+      "labsHint": "Analyses de sang et autres marqueurs"
+    },
+    "labs": {
+      "glycemic": "Profil glycémique",
+      "lipids": "Profil lipidique",
+      "thyroid": "Thyroïde",
+      "vitamins": "Vitamines et minéraux",
+      "others": "Autres marqueurs"
+    },
+    "snapshots": {
+      "title": "Historique des consultations",
+      "count": "{{n}} enregistrement(s)",
+      "new": "Nouvelle consultation",
+      "saving": "Enregistrement...",
+      "saved": "Snapshot créé — historique mis à jour",
+      "err": "Échec de la création du snapshot",
+      "tooltip": "Fige l'état actuel de la fiche comme un enregistrement immuable de consultation",
+      "labelPrompt": "Comment souhaitez-vous nommer ce snapshot ?",
+      "defaultLabel": "Consultation",
+      "untitled": "(sans nom)"
     },
     "stress": {
       "LOW": "Bas",
@@ -641,6 +662,25 @@
       "goalNotes": "Description de l'objectif",
       "targetWeightKg": "Poids cible",
       "targetDate": "Date cible",
+      "labDate": "Date des analyses",
+      "glucoseFasting": "Glycémie à jeun",
+      "hba1c": "Hémoglobine glyquée (HbA1c)",
+      "insulinFasting": "Insuline à jeun",
+      "totalCholesterol": "Cholestérol total",
+      "ldl": "LDL",
+      "hdl": "HDL",
+      "triglycerides": "Triglycérides",
+      "tsh": "TSH",
+      "t4Free": "T4 libre",
+      "vitaminD": "Vitamine D",
+      "vitaminB12": "Vitamine B12",
+      "iron": "Fer sérique",
+      "ferritin": "Ferritine",
+      "crp": "Protéine C réactive (CRP)",
+      "urea": "Urée",
+      "creatinine": "Créatinine",
+      "uricAcid": "Acide urique",
+      "labNotes": "Notes sur les analyses",
       "notes": "Notes générales",
       "notesHint": "Conclusions, plan, conseils..."
     }
@@ -649,7 +689,18 @@
     "title": "Ma fiche",
     "subtitle": "Remplie par votre nutritionniste",
     "empty": "Votre nutritionniste n'a pas encore rempli votre fiche",
-    "updatedAt": "Mise à jour le"
+    "updatedAt": "Mise à jour le",
+    "selfFill": {
+      "title": "Mettre à jour mes infos",
+      "hint": "Complétez préférences, habitudes et objectifs — votre nutritionniste voit en direct",
+      "save": "Enregistrer",
+      "saving": "Enregistrement...",
+      "saved": "Infos mises à jour",
+      "err": "Échec de l'enregistrement"
+    },
+    "history": {
+      "title": "Mes consultations passées"
+    }
   },
   "appointments": {
     "title": "Consultations",

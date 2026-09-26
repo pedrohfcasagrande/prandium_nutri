@@ -604,7 +604,28 @@
       "lifestyle": "Lifestyle",
       "lifestyleHint": "Physical activity, sleep, stress",
       "goals": "Goals and targets",
-      "goalsHint": "Target weight, deadline, notes"
+      "goalsHint": "Target weight, deadline, notes",
+      "labs": "Lab results",
+      "labsHint": "Blood tests and other markers"
+    },
+    "labs": {
+      "glycemic": "Glycemic profile",
+      "lipids": "Lipid profile",
+      "thyroid": "Thyroid",
+      "vitamins": "Vitamins & minerals",
+      "others": "Other markers"
+    },
+    "snapshots": {
+      "title": "Consultation history",
+      "count": "{{n}} record(s)",
+      "new": "New consultation",
+      "saving": "Saving snapshot...",
+      "saved": "Snapshot saved — timeline updated",
+      "err": "Failed to create snapshot",
+      "tooltip": "Freeze the current assessment state as an immutable consultation record",
+      "labelPrompt": "How do you want to label this snapshot?",
+      "defaultLabel": "Consultation",
+      "untitled": "(untitled)"
     },
     "stress": {
       "LOW": "Low",
@@ -641,6 +662,25 @@
       "goalNotes": "Goal description",
       "targetWeightKg": "Target weight",
       "targetDate": "Target date",
+      "labDate": "Lab results date",
+      "glucoseFasting": "Fasting glucose",
+      "hba1c": "Glycated hemoglobin (HbA1c)",
+      "insulinFasting": "Fasting insulin",
+      "totalCholesterol": "Total cholesterol",
+      "ldl": "LDL",
+      "hdl": "HDL",
+      "triglycerides": "Triglycerides",
+      "tsh": "TSH",
+      "t4Free": "Free T4",
+      "vitaminD": "Vitamin D",
+      "vitaminB12": "Vitamin B12",
+      "iron": "Serum iron",
+      "ferritin": "Ferritin",
+      "crp": "C-reactive protein (CRP)",
+      "urea": "Urea",
+      "creatinine": "Creatinine",
+      "uricAcid": "Uric acid",
+      "labNotes": "Lab notes",
       "notes": "General notes",
       "notesHint": "Conclusions, plan, guidance..."
     }
@@ -649,7 +689,18 @@
     "title": "My assessment",
     "subtitle": "Filled in by your nutritionist",
     "empty": "Your nutritionist hasn't filled your assessment yet",
-    "updatedAt": "Updated at"
+    "updatedAt": "Updated at",
+    "selfFill": {
+      "title": "Update my info",
+      "hint": "Complete preferences, habits and goals — your nutritionist sees it live",
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Info updated",
+      "err": "Failed to save"
+    },
+    "history": {
+      "title": "My past consultations"
+    }
   },
   "appointments": {
     "title": "Appointments",

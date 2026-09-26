@@ -102,7 +102,8 @@ html[data-theme="light"] {
 
 // Bloco de tokens dark reutilizado em: opt-in explicito (data-theme="dark")
 // e fallback automatico (prefers-color-scheme: dark quando nao ha data-theme).
-%dark-tokens {
+// SCSS %placeholder + @extend nao funciona cruzando @media, entao usamos @mixin.
+@mixin dark-tokens {
   --nt-bg: #0b0e14;
   --nt-surface: #131720;
   --nt-surface-2: #1a1f2b;
@@ -136,10 +137,10 @@ html[data-theme="light"] {
                   0 20px 40px -12px rgba(0, 0, 0, 0.6);
 }
 
-html[data-theme="dark"] { @extend %dark-tokens; }
+html[data-theme="dark"] { @include dark-tokens; }
 
 @media (prefers-color-scheme: dark) {
-  html:not([data-theme]) { @extend %dark-tokens; }
+  html:not([data-theme]) { @include dark-tokens; }
 }
 
 // --- Base ---

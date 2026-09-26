@@ -81,6 +81,27 @@ public class ClientAssessment {
     private Double targetWeightKg;
     private LocalDate targetDate;
 
+    // ----- Exames laboratoriais -----
+    private LocalDate labDate;
+    private Double glucoseFasting;
+    private Double hba1c;
+    private Double insulinFasting;
+    private Double totalCholesterol;
+    private Double ldl;
+    private Double hdl;
+    private Double triglycerides;
+    private Double tsh;
+    @Column(name = "t4_free") private Double t4Free;
+    private Double vitaminD;
+    private Double vitaminB12;
+    private Double iron;
+    private Double ferritin;
+    private Double crp;
+    private Double urea;
+    private Double creatinine;
+    private Double uricAcid;
+    @Column(columnDefinition = "TEXT") private String labNotes;
+
     // ----- Meta -----
     @Column(columnDefinition = "TEXT") private String notes;
 

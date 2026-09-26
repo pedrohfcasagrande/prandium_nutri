@@ -1,10 +1,16 @@
 package com.prandiumnutri.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prandiumnutri.domain.AssessmentSnapshot;
 import com.prandiumnutri.domain.ClientAssessment;
 import com.prandiumnutri.domain.LinkStatus;
 import com.prandiumnutri.domain.NutritionistClientLink;
 import com.prandiumnutri.domain.User;
+import com.prandiumnutri.dto.AssessmentSelfFillDto;
+import com.prandiumnutri.dto.AssessmentSnapshotDto;
 import com.prandiumnutri.dto.ClientAssessmentDto;
+import com.prandiumnutri.repository.AssessmentSnapshotRepository;
 import com.prandiumnutri.repository.ClientAssessmentRepository;
 import com.prandiumnutri.repository.NutritionistClientLinkRepository;
 import com.prandiumnutri.repository.UserRepository;
@@ -15,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,8 +29,10 @@ import java.util.Optional;
 public class ClientAssessmentService {
 
     private final ClientAssessmentRepository repository;
+    private final AssessmentSnapshotRepository snapshotRepository;
     private final NutritionistClientLinkRepository linkRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     // -------------------- Leituras --------------------
 
@@ -106,6 +115,27 @@ public class ClientAssessmentService {
         ent.setTargetWeightKg(dto.targetWeightKg());
         ent.setTargetDate(dto.targetDate());
 
+        // Exames laboratoriais
+        ent.setLabDate(dto.labDate());
+        ent.setGlucoseFasting(dto.glucoseFasting());
+        ent.setHba1c(dto.hba1c());
+        ent.setInsulinFasting(dto.insulinFasting());
+        ent.setTotalCholesterol(dto.totalCholesterol());
+        ent.setLdl(dto.ldl());
+        ent.setHdl(dto.hdl());
+        ent.setTriglycerides(dto.triglycerides());
+        ent.setTsh(dto.tsh());
+        ent.setT4Free(dto.t4Free());
+        ent.setVitaminD(dto.vitaminD());
+        ent.setVitaminB12(dto.vitaminB12());
+        ent.setIron(dto.iron());
+        ent.setFerritin(dto.ferritin());
+        ent.setCrp(dto.crp());
+        ent.setUrea(dto.urea());
+        ent.setCreatinine(dto.creatinine());
+        ent.setUricAcid(dto.uricAcid());
+        ent.setLabNotes(dto.labNotes());
+
         // Meta
         ent.setNotes(dto.notes());
 
@@ -144,7 +174,117 @@ public class ClientAssessmentService {
                 .orElseThrow(() -> new AccessDeniedException("Voce nao atende este cliente"));
     }
 
-    private ClientAssessmentDto toDto(ClientAssessment a) {
+    // -------------------- Self-service do cliente --------------------
+
+    /**
+     * Cliente atualiza a propria ficha em campos "safe" (habitos, preferencias, objetivos).
+     * Exige que ao menos um nutri ja tenha iniciado a ficha — o cliente nao cria ficha do zero,
+     * mas pode complementar/atualizar a mais recente. Nada de antropometria/labs/prescricao.
+     */
+    @Transactional
+    public ClientAssessmentDto selfFillForClient(Long clientId, AssessmentSelfFillDto dto) {
+        ClientAssessment ent = repository.findByClientIdOrderByUpdatedAtDesc(clientId).stream()
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Ainda nao ha ficha criada — aguarde o nutricionista iniciar."));
+
+        if (dto.dietaryRecall24h() != null) ent.setDietaryRecall24h(dto.dietaryRecall24h());
+        if (dto.mealFrequency() != null) ent.setMealFrequency(dto.mealFrequency());
+        if (dto.waterIntakeLiters() != null) ent.setWaterIntakeLiters(dto.waterIntakeLiters());
+        if (dto.alcoholFrequency() != null) ent.setAlcoholFrequency(dto.alcoholFrequency());
+        if (dto.foodPreferences() != null) ent.setFoodPreferences(dto.foodPreferences());
+        if (dto.foodAversions() != null) ent.setFoodAversions(dto.foodAversions());
+        if (dto.physicalActivityDetails() != null) ent.setPhysicalActivityDetails(dto.physicalActivityDetails());
+        if (dto.sleepHours() != null) ent.setSleepHours(dto.sleepHours());
+        if (dto.smoker() != null) ent.setSmoker(dto.smoker());
+        if (dto.smokingDetails() != null) ent.setSmokingDetails(dto.smokingDetails());
+        if (dto.goalNotes() != null) ent.setGoalNotes(dto.goalNotes());
+        if (dto.targetWeightKg() != null) ent.setTargetWeightKg(dto.targetWeightKg());
+        if (dto.targetDate() != null) ent.setTargetDate(dto.targetDate());
+
+        ent = repository.save(ent);
+
+        // Sync com o cadastro do usuario para o que faz sentido
+        User client = ent.getClient();
+        if (dto.foodPreferences() != null && !dto.foodPreferences().isBlank()) {
+            client.setPreferences(dto.foodPreferences());
+            userRepository.save(client);
+        }
+        return toDto(ent);
+    }
+
+    // -------------------- Snapshots --------------------
+
+    /**
+     * Cria snapshot imutavel da ficha corrente do par (nutri, cliente).
+     * Versao e auto-incrementada por assessment. Nao ha ficha? Nada a snapshotar.
+     */
+    @Transactional
+    public AssessmentSnapshotDto createSnapshot(User nutri, Long clientId, Long practiceId, String label) {
+        authorizeNutriForClient(nutri.getId(), clientId, practiceId);
+        ClientAssessment assessment = repository.findByNutritionistIdAndClientId(nutri.getId(), clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Nao ha ficha para snapshot"));
+
+        int nextVersion = snapshotRepository.findFirstByAssessmentIdOrderByVersionDesc(assessment.getId())
+                .map(s -> s.getVersion() + 1)
+                .orElse(1);
+
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(toDto(assessment));
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Falha ao serializar snapshot", e);
+        }
+
+        AssessmentSnapshot snap = AssessmentSnapshot.builder()
+                .assessment(assessment)
+                .version(nextVersion)
+                .label(label != null && !label.isBlank() ? label : null)
+                .payload(json)
+                .createdBy(nutri)
+                .build();
+        snap = snapshotRepository.save(snap);
+        return toSnapshotDto(snap);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AssessmentSnapshotDto> listSnapshots(Long nutriId, Long clientId, Long practiceId) {
+        authorizeNutriForClient(nutriId, clientId, practiceId);
+        return repository.findByNutritionistIdAndClientId(nutriId, clientId)
+                .map(a -> snapshotRepository.findByAssessmentIdOrderByVersionDesc(a.getId()).stream()
+                        .map(this::toSnapshotDto).toList())
+                .orElseGet(List::of);
+    }
+
+    /** Cliente le seus proprios snapshots (independente do nutri que criou). */
+    @Transactional(readOnly = true)
+    public List<AssessmentSnapshotDto> listSnapshotsForClient(Long clientId) {
+        return repository.findByClientIdOrderByUpdatedAtDesc(clientId).stream()
+                .flatMap(a -> snapshotRepository.findByAssessmentIdOrderByVersionDesc(a.getId()).stream())
+                .map(this::toSnapshotDto)
+                .toList();
+    }
+
+    private AssessmentSnapshotDto toSnapshotDto(AssessmentSnapshot s) {
+        ClientAssessmentDto payload = null;
+        try {
+            payload = objectMapper.readValue(s.getPayload(), ClientAssessmentDto.class);
+        } catch (JsonProcessingException e) {
+            // payload corrompido — devolve null e loga; caller decide o que fazer
+        }
+        return new AssessmentSnapshotDto(
+                s.getId(),
+                s.getAssessment() != null ? s.getAssessment().getId() : null,
+                s.getVersion(),
+                s.getLabel(),
+                s.getCreatedBy() != null ? s.getCreatedBy().getId() : null,
+                s.getCreatedBy() != null ? s.getCreatedBy().getName() : null,
+                s.getCreatedAt(),
+                payload
+        );
+    }
+
+    ClientAssessmentDto toDto(ClientAssessment a) {
         return new ClientAssessmentDto(
                 a.getId(),
                 a.getClient() != null ? a.getClient().getId() : null,
@@ -163,6 +303,11 @@ public class ClientAssessmentService {
                 a.getPhysicalActivityDetails(), a.getSleepHours(), a.getStressLevel(),
                 a.isSmoker(), a.getSmokingDetails(),
                 a.getGoalNotes(), a.getTargetWeightKg(), a.getTargetDate(),
+                a.getLabDate(), a.getGlucoseFasting(), a.getHba1c(), a.getInsulinFasting(),
+                a.getTotalCholesterol(), a.getLdl(), a.getHdl(), a.getTriglycerides(),
+                a.getTsh(), a.getT4Free(), a.getVitaminD(), a.getVitaminB12(),
+                a.getIron(), a.getFerritin(), a.getCrp(),
+                a.getUrea(), a.getCreatinine(), a.getUricAcid(), a.getLabNotes(),
                 a.getNotes(), a.getCreatedAt(), a.getUpdatedAt()
         );
     }

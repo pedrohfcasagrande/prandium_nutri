@@ -604,7 +604,28 @@
       "lifestyle": "Estilo de vida",
       "lifestyleHint": "Atividade física, sono, estresse",
       "goals": "Objetivos e metas",
-      "goalsHint": "Meta de peso, prazo, anotações"
+      "goalsHint": "Meta de peso, prazo, anotações",
+      "labs": "Exames laboratoriais",
+      "labsHint": "Resultados de exames de sangue e afins"
+    },
+    "labs": {
+      "glycemic": "Perfil glicêmico",
+      "lipids": "Perfil lipídico",
+      "thyroid": "Tireoide",
+      "vitamins": "Vitaminas e minerais",
+      "others": "Outros marcadores"
+    },
+    "snapshots": {
+      "title": "Histórico de consultas",
+      "count": "{{n}} registro(s)",
+      "new": "Nova consulta",
+      "saving": "Salvando snapshot...",
+      "saved": "Snapshot criado — timeline atualizada",
+      "err": "Falha ao criar snapshot",
+      "tooltip": "Congela o estado atual da ficha como um registro imutável de consulta",
+      "labelPrompt": "Como você quer nomear este snapshot?",
+      "defaultLabel": "Consulta",
+      "untitled": "(sem nome)"
     },
     "stress": {
       "LOW": "Baixo",
@@ -641,6 +662,25 @@
       "goalNotes": "Descrição do objetivo",
       "targetWeightKg": "Peso alvo",
       "targetDate": "Data alvo",
+      "labDate": "Data dos exames",
+      "glucoseFasting": "Glicemia de jejum",
+      "hba1c": "Hemoglobina glicada (HbA1c)",
+      "insulinFasting": "Insulina de jejum",
+      "totalCholesterol": "Colesterol total",
+      "ldl": "LDL",
+      "hdl": "HDL",
+      "triglycerides": "Triglicerídeos",
+      "tsh": "TSH",
+      "t4Free": "T4 livre",
+      "vitaminD": "Vitamina D",
+      "vitaminB12": "Vitamina B12",
+      "iron": "Ferro sérico",
+      "ferritin": "Ferritina",
+      "crp": "Proteína C reativa (PCR)",
+      "urea": "Ureia",
+      "creatinine": "Creatinina",
+      "uricAcid": "Ácido úrico",
+      "labNotes": "Observações sobre os exames",
       "notes": "Observações gerais",
       "notesHint": "Conclusões, plano de conduta, orientações..."
     }
@@ -649,7 +689,18 @@
     "title": "Minha ficha",
     "subtitle": "Ficha preenchida pelo seu nutricionista",
     "empty": "Sua nutricionista ainda não preencheu sua ficha",
-    "updatedAt": "Atualizada em"
+    "updatedAt": "Atualizada em",
+    "selfFill": {
+      "title": "Atualizar minhas informações",
+      "hint": "Complemente preferências, hábitos e objetivos — seu nutricionista vê ao vivo",
+      "save": "Salvar",
+      "saving": "Salvando...",
+      "saved": "Informações atualizadas",
+      "err": "Falha ao salvar"
+    },
+    "history": {
+      "title": "Minhas consultas anteriores"
+    }
   },
   "appointments": {
     "title": "Consultas",

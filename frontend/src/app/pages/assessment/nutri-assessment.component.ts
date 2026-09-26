@@ -11,10 +11,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { PracticeService } from '../../services/practice.service';
-import { ClientAssessment, ClientLink } from '../../models/models';
+import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/models';
 
 @Component({
   selector: 'app-nutri-assessment',
@@ -23,7 +25,7 @@ import { ClientAssessment, ClientLink } from '../../models/models';
     CommonModule, FormsModule,
     MatCardModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule,
-    MatExpansionModule, MatSnackBarModule, TranslateModule
+    MatExpansionModule, MatSnackBarModule, MatDialogModule, MatTooltipModule, TranslateModule
   ],
   template: `
     <div class="page">
@@ -192,7 +194,109 @@ import { ClientAssessment, ClientLink } from '../../models/models';
             }
           </mat-expansion-panel>
 
-          <!-- 5. Objetivos -->
+          <!-- 5. Exames laboratoriais -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>science</mat-icon>
+                {{ 'assessment.sections.labs' | translate }}
+              </mat-panel-title>
+              <mat-panel-description>{{ 'assessment.sections.labsHint' | translate }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'assessment.f.labDate' | translate }}</mat-label>
+              <input matInput type="date" [(ngModel)]="d.labDate">
+            </mat-form-field>
+            <h4 class="lab-group">{{ 'assessment.labs.glycemic' | translate }}</h4>
+            <div class="grid">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.glucoseFasting' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.glucoseFasting"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.hba1c' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.hba1c"><span matSuffix>%</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.insulinFasting' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.insulinFasting"><span matSuffix>μUI/mL</span>
+              </mat-form-field>
+            </div>
+            <h4 class="lab-group">{{ 'assessment.labs.lipids' | translate }}</h4>
+            <div class="grid">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.totalCholesterol' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.totalCholesterol"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.ldl' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.ldl"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.hdl' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.hdl"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.triglycerides' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.triglycerides"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+            </div>
+            <h4 class="lab-group">{{ 'assessment.labs.thyroid' | translate }}</h4>
+            <div class="grid">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.tsh' | translate }}</mat-label>
+                <input matInput type="number" step="0.01" [(ngModel)]="d.tsh"><span matSuffix>mUI/L</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.t4Free' | translate }}</mat-label>
+                <input matInput type="number" step="0.01" [(ngModel)]="d.t4Free"><span matSuffix>ng/dL</span>
+              </mat-form-field>
+            </div>
+            <h4 class="lab-group">{{ 'assessment.labs.vitamins' | translate }}</h4>
+            <div class="grid">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.vitaminD' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.vitaminD"><span matSuffix>ng/mL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.vitaminB12' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.vitaminB12"><span matSuffix>pg/mL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.iron' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.iron"><span matSuffix>μg/dL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.ferritin' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.ferritin"><span matSuffix>ng/mL</span>
+              </mat-form-field>
+            </div>
+            <h4 class="lab-group">{{ 'assessment.labs.others' | translate }}</h4>
+            <div class="grid">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.crp' | translate }}</mat-label>
+                <input matInput type="number" step="0.01" [(ngModel)]="d.crp"><span matSuffix>mg/L</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.urea' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.urea"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.creatinine' | translate }}</mat-label>
+                <input matInput type="number" step="0.01" [(ngModel)]="d.creatinine"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.uricAcid' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.uricAcid"><span matSuffix>mg/dL</span>
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'assessment.f.labNotes' | translate }}</mat-label>
+              <textarea matInput rows="2" [(ngModel)]="d.labNotes"></textarea>
+            </mat-form-field>
+          </mat-expansion-panel>
+
+          <!-- 6. Objetivos -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
               <mat-panel-title>
@@ -223,6 +327,31 @@ import { ClientAssessment, ClientLink } from '../../models/models';
           </mat-expansion-panel>
         </mat-accordion>
 
+        @if (snapshots().length > 0) {
+          <mat-card class="snapshots-card">
+            <div class="snapshots-header">
+              <mat-icon>history</mat-icon>
+              <h3>{{ 'assessment.snapshots.title' | translate }}</h3>
+              <span class="text-muted small">
+                {{ 'assessment.snapshots.count' | translate:{ n: snapshots().length } }}
+              </span>
+            </div>
+            <ul class="snapshots-list">
+              @for (s of snapshots(); track s.id) {
+                <li>
+                  <span class="badge">v{{ s.version }}</span>
+                  <span class="snap-label">{{ s.label || ('assessment.snapshots.untitled' | translate) }}</span>
+                  <span class="text-muted small">{{ s.createdAt | date:'short' }}</span>
+                  <span class="text-muted small snap-author">· {{ s.createdByName }}</span>
+                  @if (s.payload?.weightKg != null) {
+                    <span class="snap-metric">{{ s.payload.weightKg }} kg</span>
+                  }
+                </li>
+              }
+            </ul>
+          </mat-card>
+        }
+
         <div class="footer">
           @if (d.updatedAt) {
             <span class="text-muted small">
@@ -230,6 +359,13 @@ import { ClientAssessment, ClientLink } from '../../models/models';
             </span>
           }
           <span class="spacer"></span>
+          @if (d.id) {
+            <button mat-stroked-button (click)="takeSnapshot()" [disabled]="snapshotting()"
+                    [matTooltip]="'assessment.snapshots.tooltip' | translate">
+              <mat-icon>history_edu</mat-icon>
+              {{ (snapshotting() ? 'assessment.snapshots.saving' : 'assessment.snapshots.new') | translate }}
+            </button>
+          }
           <button mat-flat-button color="primary" (click)="save()" [disabled]="saving()">
             <mat-icon>save</mat-icon>
             {{ (saving() ? 'assessment.saving' : 'assessment.save') | translate }}
@@ -260,6 +396,53 @@ import { ClientAssessment, ClientLink } from '../../models/models';
     .spacer { flex: 1; }
     .small { font-size: 0.85rem; }
     mat-checkbox { margin-bottom: 10px; display: block; }
+
+    .lab-group {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--nt-text-muted);
+      margin: 14px 0 6px;
+      font-weight: 600;
+    }
+    .lab-group:first-child { margin-top: 0; }
+
+    .snapshots-card {
+      margin-top: 20px;
+      padding: 16px !important;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .snapshots-header {
+      display: flex; align-items: center; gap: 8px;
+      mat-icon { color: var(--nt-primary); }
+      h3 { margin: 0; font-size: 1rem; }
+      .small { margin-left: auto; }
+    }
+    .snapshots-list {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; flex-direction: column; gap: 6px;
+      li {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 12px;
+        background: var(--nt-surface-2);
+        border-radius: 10px;
+        font-size: 0.9rem;
+      }
+    }
+    .badge {
+      background: var(--nt-primary-soft);
+      color: var(--nt-primary-dark);
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .snap-label { font-weight: 500; }
+    .snap-author { }
+    .snap-metric {
+      margin-left: auto;
+      background: var(--nt-surface);
+      padding: 2px 8px; border-radius: 8px;
+      font-weight: 600; color: var(--nt-primary-dark);
+    }
   `]
 })
 export class NutriAssessmentComponent implements OnInit {
@@ -274,6 +457,8 @@ export class NutriAssessmentComponent implements OnInit {
   draft = signal<ClientAssessment | null>(null);
   clientName = signal<string | null>(null);
   saving = signal(false);
+  snapshots = signal<AssessmentSnapshot[]>([]);
+  snapshotting = signal(false);
 
   private firstLoad = true;
   constructor() {
@@ -295,13 +480,40 @@ export class NutriAssessmentComponent implements OnInit {
         if (existing) {
           this.draft.set(existing);
           this.clientName.set(existing.clientName ?? null);
+          this.loadSnapshots();
         } else {
           this.draft.set(this.blank());
+          this.snapshots.set([]);
           this.loadClientName();
         }
       },
       error: err => this.snack.open(err?.error?.error ?? this.translate.instant('assessment.loadErr'),
                                     'OK', { duration: 3000 })
+    });
+  }
+
+  private loadSnapshots() {
+    this.api.nutriListAssessmentSnapshots(this.clientId, this.practiceCtx.activePracticeId())
+      .subscribe({ next: list => this.snapshots.set(list) });
+  }
+
+  takeSnapshot() {
+    const label = window.prompt(this.translate.instant('assessment.snapshots.labelPrompt'),
+                                 this.translate.instant('assessment.snapshots.defaultLabel'));
+    if (label === null) return; // usuario cancelou
+    this.snapshotting.set(true);
+    this.api.nutriCreateAssessmentSnapshot(this.clientId, label || null,
+                                             this.practiceCtx.activePracticeId()).subscribe({
+      next: () => {
+        this.snapshotting.set(false);
+        this.snack.open(this.translate.instant('assessment.snapshots.saved'), 'OK', { duration: 2500 });
+        this.loadSnapshots();
+      },
+      error: err => {
+        this.snapshotting.set(false);
+        this.snack.open(err?.error?.error ?? this.translate.instant('assessment.snapshots.err'),
+                        'OK', { duration: 3000 });
+      }
     });
   }
 

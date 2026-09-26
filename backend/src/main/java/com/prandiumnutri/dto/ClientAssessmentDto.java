@@ -52,6 +52,27 @@ public record ClientAssessmentDto(
         Double targetWeightKg,
         LocalDate targetDate,
 
+        // Exames laboratoriais
+        LocalDate labDate,
+        Double glucoseFasting,
+        Double hba1c,
+        Double insulinFasting,
+        Double totalCholesterol,
+        Double ldl,
+        Double hdl,
+        Double triglycerides,
+        Double tsh,
+        Double t4Free,
+        Double vitaminD,
+        Double vitaminB12,
+        Double iron,
+        Double ferritin,
+        Double crp,
+        Double urea,
+        Double creatinine,
+        Double uricAcid,
+        String labNotes,
+
         // Meta
         String notes,
         LocalDateTime createdAt,
