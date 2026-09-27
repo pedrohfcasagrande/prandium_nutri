@@ -236,6 +236,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V026      | client_assessments: 7 dobras cutaneas (JP) + 5 perimetros faltantes + skinfold_protocol (Fase 9B) |
 | V027      | client_assessments: prescricao energetica (target_calories/protein/carbs/fat/water) + parametros (tmb_formula, activity_factor, protein_g_per_kg, fat_pct, calorie_delta_pct, prescribed_at) (Fase 9C) |
 | V028      | users.signature_base64 (assinatura digital do nutri pra PDF de prescricao — Fase 9D) |
+| V029      | users.pdf_logo_base64/pdf_primary_color/pdf_header_text/pdf_footer_text (customizacao PDF — Fase 9D-2) |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -504,4 +505,14 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: `ApiService` usa `HttpClient` com `responseType: 'blob'` (preserva JWT). Botão "Baixar PDF da prescrição" na seção Prescrição do assessment (nutri, habilitado só com `targetCalories`). Botão "Baixar minha prescrição" no header do `MyAssessmentComponent`. Card "Assinatura digital" no topo do `/nutritionist/practices` com upload de PNG/JPG (limite 2MB, preview inline, botão de remoção). Download via `URL.createObjectURL` + `<a download>`.
   - Testes: `PrescriptionPdfServiceTest` (2 casos — smoke test do pipeline verifica assinatura `%PDF-` + falha ao gerar sem `targetCalories`). Suite backend em **111/111**, frontend em 60/60 (spec de practices ajustado pra mockar `/me/signature`).
   - Backlog Fase 9D-2: template customizável (logo por nutri, cabeçalho/rodapé/cores), assinatura digital ICP-Brasil, log de emissão + hash.
+- **Fase 9D-2 (customizacao do PDF + auto-snapshot no download — 2026-09-27): OK**
+  - Migração V029: `users` ganha `pdf_logo_base64` (MEDIUMTEXT), `pdf_primary_color` (VARCHAR(9), aceita `#RRGGBB` ou `#RRGGBBAA`), `pdf_header_text` (500), `pdf_footer_text` (1000).
+  - Backend: dependência nova `org.jsoup:jsoup:1.18.1` pra sanitização de HTML. `PrescriptionPdfService` agora passa `primaryColor`/`primaryColorDark` (derivado por darken 18%)/`headerHtml`/`footerHtml` no context; textos sanitizados via whitelist Jsoup (só `<b>`, `<i>`, `<br>`, `<p>`, `<a href>` — `<script>` e afins são removidos). Cor inválida → default teal. Template Thymeleaf usa `[[${primaryColor}]]` no CSS pra bordas/hero/section headings; se `nutritionist.pdfLogoBase64 != null`, substitui o header default pela logo dele.
+  - **Auto-snapshot no download**: cada `render()` bem-sucedido dispara `ClientAssessmentService.createSnapshot(nutri, clientId, null, "PDF emitido em <ts>")` — garante rastreabilidade sem tabela nova (backlog 9D-3 = log dedicado com hash). Sobrecarga `render(..., createSnapshot=false)` usada pelo preview e testes.
+  - Endpoints novos:
+    - `GET/PUT /api/nutritionist/me/pdf-template` — persiste `PdfCustomizationDto` (4 campos)
+    - `GET /api/nutritionist/me/pdf-preview` — renderiza PDF com paciente fictício (Maria Souza, F, 65kg/165cm) usando o template atual do nutri; **não** cria snapshot.
+  - Frontend: nova seção "Personalização do PDF" no `/nutritionist/practices` (card com border-left roxa pra distinguir da assinatura) — upload de logo com preview inline, `<input type="color">` com swatch + código hex + botão de reset, campos de texto para header/footer com hint de HTML permitido, botões "Pré-visualizar" (abre PDF em nova aba via `window.open(URL.createObjectURL)`) e "Salvar".
+  - Testes: 2 novos casos no `PrescriptionPdfServiceTest` (`render_createsAutoSnapshotWhenNutriAndClientPresent`, `render_customPrimaryColorReachesOutput` que injeta `<script>alert(1)</script>` pra validar sanitização). Suite backend em **113/113**, frontend em 60/60 (spec de practices mockado com `/me/pdf-template`).
+  - Fica no backlog 9D-3: tabela `prescription_issuances` com hash SHA-256 + assinatura ICP-Brasil.
 - Fase 8 (geolocalizacao restaurantes): backlog

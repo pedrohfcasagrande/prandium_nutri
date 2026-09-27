@@ -1,16 +1,26 @@
 package com.prandiumnutri.controller;
 
+import com.prandiumnutri.domain.ClientAssessment;
+import com.prandiumnutri.domain.Sex;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.ClientLinkDto;
 import com.prandiumnutri.dto.InviteClientRequest;
+import com.prandiumnutri.dto.PdfCustomizationDto;
 import com.prandiumnutri.repository.UserRepository;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.NutritionistLinkService;
+import com.prandiumnutri.service.PrescriptionPdfService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +31,7 @@ public class NutritionistController {
 
     private final NutritionistLinkService linkService;
     private final UserRepository userRepository;
+    private final PrescriptionPdfService pdfService;
     private final CurrentUser currentUser;
 
     @GetMapping("/clients")
@@ -91,5 +102,71 @@ public class NutritionistController {
         User u = currentUser.getAuthenticated();
         u.setSignatureBase64(base64 != null && !base64.isBlank() ? base64 : null);
         userRepository.save(u);
+    }
+
+    // Fase 9D-2: customizacao do PDF (logo, cor, header/footer text)
+
+    @GetMapping("/me/pdf-template")
+    @PreAuthorize("hasRole('NUTRITIONIST')")
+    public PdfCustomizationDto getPdfTemplate() {
+        User u = currentUser.getAuthenticated();
+        return new PdfCustomizationDto(
+                u.getPdfLogoBase64(), u.getPdfPrimaryColor(),
+                u.getPdfHeaderText(), u.getPdfFooterText());
+    }
+
+    @PutMapping("/me/pdf-template")
+    @PreAuthorize("hasRole('NUTRITIONIST')")
+    public void putPdfTemplate(@RequestBody PdfCustomizationDto dto) {
+        if (dto.pdfLogoBase64() != null && dto.pdfLogoBase64().length() > 2_800_000) {
+            throw new IllegalArgumentException("Logo muito grande (> 2MB)");
+        }
+        User u = currentUser.getAuthenticated();
+        u.setPdfLogoBase64(blankToNull(dto.pdfLogoBase64()));
+        u.setPdfPrimaryColor(blankToNull(dto.pdfPrimaryColor()));
+        u.setPdfHeaderText(blankToNull(dto.pdfHeaderText()));
+        u.setPdfFooterText(blankToNull(dto.pdfFooterText()));
+        userRepository.save(u);
+    }
+
+    /** Preview PDF: usa dados fake do proprio nutri como paciente ficticio; nao gera snapshot. */
+    @GetMapping(value = "/me/pdf-preview", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize("hasRole('NUTRITIONIST')")
+    public ResponseEntity<byte[]> previewPdf() {
+        User nutri = currentUser.getAuthenticated();
+        User fakeClient = User.builder()
+                .name("Maria Souza (preview)")
+                .cpf("12345678901")
+                .sex(Sex.FEMALE).birthDate(LocalDate.of(1990, 3, 15))
+                .weightKg(65.0).heightCm(165.0)
+                .build();
+        ClientAssessment fake = ClientAssessment.builder()
+                .client(fakeClient).nutritionist(nutri)
+                .assessmentDate(LocalDateTime.now())
+                .weightKg(65.0).heightCm(165)
+                .tmbFormula("MIFFLIN")
+                .activityFactor(1.55)
+                .calorieDeltaPct(-0.15)
+                .proteinGPerKg(1.8)
+                .fatPct(0.28)
+                .targetCalories(1720.0)
+                .targetProteinG(117.0)
+                .targetCarbsG(190.0)
+                .targetFatG(53.5)
+                .targetWaterMl(2275.0)
+                .prescribedAt(LocalDateTime.now())
+                .notes("Beber agua ao longo do dia. Priorizar proteina magra e legumes.")
+                .goalNotes("Reducao gradual de gordura corporal preservando massa magra.")
+                .build();
+        byte[] pdf = pdfService.render(fake, fakeClient, nutri,
+                LocaleContextHolder.getLocale(), /* snapshot */ false);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=preview.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    private static String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
     }
 }

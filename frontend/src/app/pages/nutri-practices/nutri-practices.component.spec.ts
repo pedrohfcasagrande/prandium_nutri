@@ -35,6 +35,11 @@ describe('NutriPracticesComponent', () => {
     ]);
     // Fase 9D: componente tambem le assinatura no init
     http.expectOne(`${base}/nutritionist/me/signature`).flush({ signatureBase64: '' });
+    // Fase 9D-2: e template PDF
+    http.expectOne(`${base}/nutritionist/me/pdf-template`).flush({
+      pdfLogoBase64: null, pdfPrimaryColor: null,
+      pdfHeaderText: null, pdfFooterText: null
+    });
   });
 
   afterEach(() => http.verify());

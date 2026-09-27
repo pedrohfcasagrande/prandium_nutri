@@ -1199,6 +1199,24 @@
       "saved": "Signature enregistrée",
       "err": "Échec de l'enregistrement",
       "tooBig": "Image trop grande (max 2 Mo)"
+    },
+    "pdf": {
+      "title": "Personnalisation du PDF de prescription",
+      "hint": "Remplace la marque Prandium par votre cabinet. Chaque nutritionniste a son propre modèle.",
+      "logo": "Logo",
+      "logoEmpty": "Sans logo — utilise la marque Prandium",
+      "uploadLogo": "Envoyer un logo",
+      "color": "Couleur principale",
+      "resetColor": "Revenir au défaut",
+      "headerText": "Texte d'en-tête",
+      "headerPlaceholder": "ex. : Cabinet Vida Ativa · SIRET 000000000",
+      "footerText": "Texte de pied de page",
+      "footerPlaceholder": "ex. : Rue X, 123 · +33 1 23 45 67 89 · <a href=\"https://\">site</a>",
+      "htmlAllowed": "HTML de base autorisé : <b>, <i>, <br>, <a>",
+      "preview": "Prévisualiser le PDF",
+      "previewLoading": "Génération...",
+      "saved": "Personnalisation enregistrée",
+      "err": "Échec de l'enregistrement"
     }
   },
   "nutriDashboard": {

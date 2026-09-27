@@ -1199,6 +1199,24 @@
       "saved": "Assinatura salva",
       "err": "Falha ao salvar assinatura",
       "tooBig": "Imagem muito grande (máx 2MB)"
+    },
+    "pdf": {
+      "title": "Personalização do PDF de prescrição",
+      "hint": "Substitui a marca Prandium pelo seu consultório. Cada nutri tem seu próprio template.",
+      "logo": "Logo",
+      "logoEmpty": "Sem logo — usa a marca Prandium",
+      "uploadLogo": "Enviar logo",
+      "color": "Cor principal",
+      "resetColor": "Voltar ao padrão",
+      "headerText": "Texto do cabeçalho",
+      "headerPlaceholder": "ex.: Clínica Vida Ativa · CNPJ 00.000.000/0001-00",
+      "footerText": "Texto do rodapé",
+      "footerPlaceholder": "ex.: Rua X, 123 · (11) 99999-9999 · <a href=\"https://\">site</a>",
+      "htmlAllowed": "HTML básico permitido: <b>, <i>, <br>, <a>",
+      "preview": "Pré-visualizar PDF",
+      "previewLoading": "Gerando pré-visualização...",
+      "saved": "Personalização salva",
+      "err": "Falha ao salvar"
     }
   },
   "nutriDashboard": {

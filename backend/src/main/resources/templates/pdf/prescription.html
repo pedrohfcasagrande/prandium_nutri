@@ -26,26 +26,33 @@
         /* Header — bloco separado, futuramente customizavel */
         .doc-header {
             display: block;
-            border-bottom: 3px solid #0e8f83;
+            border-bottom: 3px solid [[${primaryColor}]];
             padding-bottom: 12px;
             margin-bottom: 20px;
         }
         .doc-header table { width: 100%; border-collapse: collapse; }
         .doc-header .brand {
-            font-size: 20pt; font-weight: 700; color: #0a6c63;
+            font-size: 20pt; font-weight: 700;
+            color: [[${primaryColorDark}]];
             letter-spacing: -0.02em;
         }
         .doc-header .brand .leaf {
             display: inline-block; width: 18px; height: 18px;
-            background: #0e8f83; border-radius: 5px; margin-right: 6px;
+            background: [[${primaryColor}]]; border-radius: 5px; margin-right: 6px;
             vertical-align: -3px;
+        }
+        .doc-header .logo-custom {
+            max-height: 50px; max-width: 200px; display: inline-block;
+        }
+        .doc-header-text {
+            font-size: 9.5pt; color: #64748b; margin-top: 4px;
         }
         .doc-title {
             text-align: right;
             font-size: 11pt; color: #64748b; text-transform: uppercase;
             letter-spacing: 0.08em;
         }
-        .doc-title strong { display: block; font-size: 14pt; color: #0a6c63; letter-spacing: 0; margin-top: 2px; }
+        .doc-title strong { display: block; font-size: 14pt; color: [[${primaryColorDark}]]; letter-spacing: 0; margin-top: 2px; }
         .doc-date { font-size: 9pt; color: #94a3b8; margin-top: 3px; }
 
         /* Sections */
@@ -53,7 +60,7 @@
             margin: 0 0 18px 0;
             padding: 12px 14px;
             background: #f7f8fa;
-            border-left: 3px solid #0e8f83;
+            border-left: 3px solid [[${primaryColor}]];
             border-radius: 4px;
             page-break-inside: avoid;
         }
@@ -61,7 +68,7 @@
             font-size: 10pt;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: #0a6c63;
+            color: [[${primaryColorDark}]];
             margin: 0 0 8px 0;
             font-weight: 700;
         }
@@ -72,7 +79,7 @@
 
         /* Prescrição destaque */
         .rx-hero {
-            background: linear-gradient(135deg, #0e8f83, #0a6c63);
+            background: linear-gradient(135deg, [[${primaryColor}]], [[${primaryColorDark}]]);
             color: #fff;
             padding: 18px 20px;
             border-radius: 8px;
@@ -135,8 +142,16 @@
         }
         .sig-name { font-weight: 600; font-size: 11pt; }
         .sig-crn { color: #64748b; font-size: 9.5pt; }
+        .custom-footer {
+            margin-top: 10px;
+            font-size: 9pt;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .custom-footer a { color: [[${primaryColorDark}]]; text-decoration: none; }
         .disclaimer {
-            margin-top: 20px;
+            margin-top: 12px;
             font-size: 8pt;
             color: #94a3b8;
             text-align: center;
@@ -146,12 +161,17 @@
 </head>
 <body>
 
-<!-- ==================== HEADER (customizavel na Fase 9D-2) ==================== -->
+<!-- ==================== HEADER (Fase 9D-2: customizado por nutri) ==================== -->
 <div class="doc-header">
     <table>
         <tr>
             <td>
-                <div class="brand"><span class="leaf"></span>Prandium Nutri</div>
+                <img th:if="${nutritionist.pdfLogoBase64 != null}"
+                     th:src="${nutritionist.pdfLogoBase64}" class="logo-custom" alt="Logo"/>
+                <div th:if="${nutritionist.pdfLogoBase64 == null}" class="brand">
+                    <span class="leaf"></span>Prandium Nutri
+                </div>
+                <div th:if="${headerHtml != null}" class="doc-header-text" th:utext="${headerHtml}"></div>
             </td>
             <td class="doc-title">
                 Documento
@@ -267,7 +287,7 @@
     <pre class="notes" th:text="${activeMenu.content}">Cardápio...</pre>
 </div>
 
-<!-- ==================== FOOTER (customizavel na Fase 9D-2) ==================== -->
+<!-- ==================== FOOTER (Fase 9D-2: customizado por nutri) ==================== -->
 <div class="doc-footer">
     <table>
         <tr>
@@ -282,6 +302,7 @@
             </td>
         </tr>
     </table>
+    <div th:if="${footerHtml != null}" class="custom-footer" th:utext="${footerHtml}"></div>
     <div class="disclaimer" th:text="#{pdf.prescription.disclaimer}">
         Documento gerado eletronicamente. Este plano é individual e não substitui consulta presencial.
     </div>

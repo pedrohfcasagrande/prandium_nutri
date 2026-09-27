@@ -1199,6 +1199,24 @@
       "saved": "Signature saved",
       "err": "Failed to save signature",
       "tooBig": "Image too large (max 2MB)"
+    },
+    "pdf": {
+      "title": "Prescription PDF branding",
+      "hint": "Replaces the Prandium brand with your practice. Each nutritionist has their own template.",
+      "logo": "Logo",
+      "logoEmpty": "No logo — uses Prandium brand",
+      "uploadLogo": "Upload logo",
+      "color": "Primary color",
+      "resetColor": "Reset to default",
+      "headerText": "Header text",
+      "headerPlaceholder": "e.g.: Vida Ativa Clinic · Tax ID 00.000.000/0001-00",
+      "footerText": "Footer text",
+      "footerPlaceholder": "e.g.: 123 X Street · +55 11 99999-9999 · <a href=\"https://\">site</a>",
+      "htmlAllowed": "Basic HTML allowed: <b>, <i>, <br>, <a>",
+      "preview": "Preview PDF",
+      "previewLoading": "Generating preview...",
+      "saved": "Branding saved",
+      "err": "Failed to save"
     }
   },
   "nutriDashboard": {

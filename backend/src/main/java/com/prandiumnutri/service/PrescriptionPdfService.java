@@ -7,6 +7,8 @@ import com.prandiumnutri.domain.User;
 import com.prandiumnutri.repository.MenuPlanRepository;
 import com.prandiumnutri.support.CpfUtil;
 import lombok.RequiredArgsConstructor;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -24,9 +26,9 @@ import java.util.Map;
  * Renderiza HTML (Thymeleaf) → XHTML → PDF via OpenHTMLtoPDF.
  * Template: templates/pdf/prescription.html. Textos localizados via messages_*.properties.
  *
- * Fase 9D-1: template unico. Fase 9D-2 vai adicionar customizacao por nutri
- * (logo, cabecalho, cores) — os blocos `.doc-header` / `.doc-footer` do template
- * ja estao separados pra facilitar essa extensao.
+ * Fase 9D-2: nutri customiza logo, cor primaria, header/footer text (HTML sanitizado via Jsoup).
+ * Auto-snapshot: cada render bem-sucedido dispara {@link ClientAssessmentService#createSnapshot}
+ * com label "PDF emitido em ..." para garantir rastreabilidade sem tabela nova (backlog 9D-3).
  */
 @Service
 @RequiredArgsConstructor
@@ -34,10 +36,27 @@ public class PrescriptionPdfService {
 
     private final TemplateEngine templateEngine;
     private final MenuPlanRepository menuPlanRepository;
+    private final ClientAssessmentService assessmentService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TS_FMT   = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    // Cor teal Prandium (default quando nutri nao personaliza)
+    private static final String DEFAULT_PRIMARY      = "#0e8f83";
+    private static final String DEFAULT_PRIMARY_DARK = "#0a6c63";
+
+    // Whitelist para os campos custom header/footer — apenas formatacao basica + links
+    private static final Safelist HTML_SAFELIST = Safelist.basicWithImages()
+            .removeTags("img") // sem <img> aqui (logo tem campo proprio)
+            .addAttributes("a", "href", "title", "target");
 
     public byte[] render(ClientAssessment assessment, User client, User nutritionist, Locale locale) {
+        return render(assessment, client, nutritionist, locale, /* snapshot */ true);
+    }
+
+    /** Sobrecarga para permitir preview (sem snapshot) e testes. */
+    public byte[] render(ClientAssessment assessment, User client, User nutritionist,
+                          Locale locale, boolean createSnapshot) {
         if (assessment.getTargetCalories() == null) {
             throw new IllegalStateException("Assessment nao tem prescricao (targetCalories=null)");
         }
@@ -47,17 +66,34 @@ public class PrescriptionPdfService {
         vars.forEach(ctx::setVariable);
 
         String html = templateEngine.process("pdf/prescription", ctx);
-
+        byte[] pdf;
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             PdfRendererBuilder b = new PdfRendererBuilder();
             b.useFastMode();
             b.withHtmlContent(html, null);
             b.toStream(out);
             b.run();
-            return out.toByteArray();
+            pdf = out.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException("Falha ao renderizar PDF de prescricao", e);
         }
+
+        // Auto-snapshot pra rastreabilidade: garante que "o PDF que o cliente recebeu em X"
+        // possa ser reconstituido mesmo depois da ficha mudar. So faz se o nutri estiver
+        // conhecido (via assessment.nutritionist) — no preview passa createSnapshot=false.
+        if (createSnapshot && assessment.getNutritionist() != null && assessment.getClient() != null) {
+            try {
+                assessmentService.createSnapshot(
+                        assessment.getNutritionist(),
+                        assessment.getClient().getId(),
+                        null,
+                        "PDF emitido em " + LocalDateTime.now().format(TS_FMT)
+                );
+            } catch (Exception ignore) {
+                // Snapshot falho nao pode bloquear o download.
+            }
+        }
+        return pdf;
     }
 
     private Map<String, Object> buildContext(ClientAssessment a, User client, User nutri) {
@@ -87,6 +123,13 @@ public class PrescriptionPdfService {
                 .orElse(null);
         v.put("activeMenu", active);
 
+        // Fase 9D-2: customizacao do nutri
+        String primary = validColorOrNull(nutri.getPdfPrimaryColor());
+        v.put("primaryColor",     primary != null ? primary : DEFAULT_PRIMARY);
+        v.put("primaryColorDark", primary != null ? darken(primary) : DEFAULT_PRIMARY_DARK);
+        v.put("headerHtml", sanitize(nutri.getPdfHeaderText()));
+        v.put("footerHtml", sanitize(nutri.getPdfFooterText()));
+
         return v;
     }
 
@@ -101,5 +144,30 @@ public class PrescriptionPdfService {
             sb.append(client.getSex().name().charAt(0));
         }
         return sb.length() == 0 ? null : sb.toString();
+    }
+
+    /** Limpa HTML pra evitar tags perigosas — mantem so <b> <i> <a href> <br> <p>. */
+    private String sanitize(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        return Jsoup.clean(raw, HTML_SAFELIST);
+    }
+
+    /** Aceita "#RRGGBB" ou "#RRGGBBAA". Retorna null (usa default) se invalido. */
+    private String validColorOrNull(String c) {
+        if (c == null) return null;
+        return c.matches("^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$") ? c : null;
+    }
+
+    /** Escurece 18% pra usar como sombra/gradient escuro. */
+    private String darken(String hex) {
+        try {
+            int r = Integer.parseInt(hex.substring(1, 3), 16);
+            int g = Integer.parseInt(hex.substring(3, 5), 16);
+            int b = Integer.parseInt(hex.substring(5, 7), 16);
+            r = (int) (r * 0.82); g = (int) (g * 0.82); b = (int) (b * 0.82);
+            return String.format("#%02x%02x%02x", r, g, b);
+        } catch (Exception e) {
+            return DEFAULT_PRIMARY_DARK;
+        }
     }
 }

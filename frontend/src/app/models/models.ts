@@ -457,6 +457,14 @@ export interface ClientAssessment {
   updatedAt?: string;
 }
 
+// Customizacao do PDF de prescricao por nutri (Fase 9D-2)
+export interface PdfCustomization {
+  pdfLogoBase64?: string | null;
+  pdfPrimaryColor?: string | null;
+  pdfHeaderText?: string | null;
+  pdfFooterText?: string | null;
+}
+
 // Snapshot imutavel de assessment (Fase 9A)
 export interface AssessmentSnapshot {
   id: number;

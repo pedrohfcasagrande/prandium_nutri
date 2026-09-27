@@ -8,9 +8,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
-import { Practice } from '../../models/models';
+import { PdfCustomization, Practice } from '../../models/models';
 
 @Component({
   selector: 'app-nutri-practices',
@@ -19,7 +20,7 @@ import { Practice } from '../../models/models';
     CommonModule, FormsModule,
     MatCardModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatSlideToggleModule,
-    MatSnackBarModule, TranslateModule
+    MatSnackBarModule, MatTooltipModule, TranslateModule
   ],
   template: `
     <div class="page">
@@ -29,6 +30,84 @@ import { Practice } from '../../models/models';
           <p>{{ 'nutriPractices.subtitle' | translate }}</p>
         </div>
       </div>
+
+      <!-- Fase 9D-2: personalizacao do PDF -->
+      <mat-card class="pdf-card">
+        <div class="sig-head">
+          <mat-icon>palette</mat-icon>
+          <div>
+            <h3>{{ 'nutriPractices.pdf.title' | translate }}</h3>
+            <p class="text-muted small">{{ 'nutriPractices.pdf.hint' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="pdf-grid">
+          <div class="pdf-col">
+            <label class="pdf-label">{{ 'nutriPractices.pdf.logo' | translate }}</label>
+            @if (pdfDraft.pdfLogoBase64) {
+              <img [src]="pdfDraft.pdfLogoBase64" alt="Logo" class="logo-preview"/>
+            } @else {
+              <div class="logo-empty">
+                <mat-icon>image</mat-icon>
+                <span>{{ 'nutriPractices.pdf.logoEmpty' | translate }}</span>
+              </div>
+            }
+            <div class="row-actions">
+              <button mat-stroked-button (click)="logoInput.click()">
+                <mat-icon>upload</mat-icon>
+                {{ 'nutriPractices.pdf.uploadLogo' | translate }}
+              </button>
+              <input #logoInput type="file" accept="image/png,image/jpeg" hidden (change)="onLogoPicked($event)">
+              @if (pdfDraft.pdfLogoBase64) {
+                <button mat-icon-button color="warn" (click)="pdfDraft.pdfLogoBase64 = null; savePdf()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="pdf-col">
+            <label class="pdf-label">{{ 'nutriPractices.pdf.color' | translate }}</label>
+            <div class="color-row">
+              <input type="color" [(ngModel)]="colorPickerValue" (change)="onColorChange($event)"
+                     class="color-input">
+              <span class="color-swatch" [style.background]="pdfDraft.pdfPrimaryColor || '#0e8f83'"></span>
+              <span class="color-code text-muted small">{{ pdfDraft.pdfPrimaryColor || '#0e8f83' }}</span>
+              @if (pdfDraft.pdfPrimaryColor) {
+                <button mat-icon-button (click)="pdfDraft.pdfPrimaryColor = null; savePdf()"
+                        [matTooltip]="'nutriPractices.pdf.resetColor' | translate">
+                  <mat-icon>restart_alt</mat-icon>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{ 'nutriPractices.pdf.headerText' | translate }}</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="pdfDraft.pdfHeaderText"
+                    [placeholder]="'nutriPractices.pdf.headerPlaceholder' | translate"></textarea>
+          <mat-hint>{{ 'nutriPractices.pdf.htmlAllowed' | translate }}</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{ 'nutriPractices.pdf.footerText' | translate }}</mat-label>
+          <textarea matInput rows="3" [(ngModel)]="pdfDraft.pdfFooterText"
+                    [placeholder]="'nutriPractices.pdf.footerPlaceholder' | translate"></textarea>
+          <mat-hint>{{ 'nutriPractices.pdf.htmlAllowed' | translate }}</mat-hint>
+        </mat-form-field>
+
+        <div class="pdf-actions">
+          <button mat-stroked-button (click)="previewPdf()" [disabled]="loadingPreview()">
+            <mat-icon>visibility</mat-icon>
+            {{ (loadingPreview() ? 'nutriPractices.pdf.previewLoading' : 'nutriPractices.pdf.preview') | translate }}
+          </button>
+          <button mat-flat-button color="primary" (click)="savePdf()" [disabled]="savingPdf()">
+            <mat-icon>save</mat-icon>
+            {{ (savingPdf() ? 'app.actions.saving' : 'app.actions.save') | translate }}
+          </button>
+        </div>
+      </mat-card>
 
       <!-- Fase 9D: assinatura digital para PDF de prescricao -->
       <mat-card class="signature-card">
@@ -164,6 +243,44 @@ import { Practice } from '../../models/models';
       mat-icon { font-size: 24px; width: 24px; height: 24px; }
     }
     .sig-actions { display: flex; gap: 8px; }
+
+    .pdf-card {
+      padding: 20px !important; margin-bottom: 20px;
+      display: flex; flex-direction: column; gap: 14px;
+      border-left: 4px solid var(--nt-purple) !important;
+    }
+    .pdf-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .pdf-col { display: flex; flex-direction: column; gap: 8px; }
+    .pdf-label {
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--nt-text-muted); font-weight: 600;
+    }
+    .logo-preview {
+      max-width: 200px; max-height: 60px;
+      border: 1px dashed var(--nt-border); border-radius: 8px;
+      padding: 6px; background: #fff; align-self: flex-start;
+    }
+    .logo-empty {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px; background: var(--nt-surface-2); border-radius: 8px;
+      color: var(--nt-text-muted); font-size: 0.9rem;
+      mat-icon { font-size: 20px; width: 20px; height: 20px; }
+    }
+    .row-actions { display: flex; align-items: center; gap: 4px; }
+    .color-row { display: flex; align-items: center; gap: 8px; }
+    .color-input {
+      width: 44px; height: 44px; border: 1px solid var(--nt-border);
+      border-radius: 8px; cursor: pointer; padding: 0; background: transparent;
+    }
+    .color-swatch {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid var(--nt-border);
+    }
+    .color-code { font-family: 'JetBrains Mono', monospace; }
+    .pdf-actions { display: flex; justify-content: flex-end; gap: 8px; }
   `]
 })
 export class NutriPracticesComponent implements OnInit {
@@ -175,10 +292,21 @@ export class NutriPracticesComponent implements OnInit {
   saving = signal(new Set<number>());
   signaturePreview = signal<string | null>(null);
 
+  // Fase 9D-2: customizacao do PDF
+  pdfDraft: PdfCustomization = { pdfLogoBase64: null, pdfPrimaryColor: null,
+                                   pdfHeaderText: null, pdfFooterText: null };
+  colorPickerValue = '#0e8f83';
+  savingPdf = signal(false);
+  loadingPreview = signal(false);
+
   ngOnInit(): void {
     this.load();
     this.api.nutriGetSignature().subscribe(r => {
       if (r?.signatureBase64) this.signaturePreview.set(r.signatureBase64);
+    });
+    this.api.nutriGetPdfTemplate().subscribe(t => {
+      this.pdfDraft = { ...t };
+      if (t.pdfPrimaryColor) this.colorPickerValue = t.pdfPrimaryColor;
     });
   }
 
@@ -212,6 +340,62 @@ export class NutriPracticesComponent implements OnInit {
   clearSignature() {
     this.signaturePreview.set(null);
     this.api.nutriPutSignature(null).subscribe();
+  }
+
+  onLogoPicked(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 2_000_000) {
+      this.snack.open(this.translate.instant('nutriPractices.signature.tooBig'), 'OK', { duration: 3000 });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.pdfDraft.pdfLogoBase64 = reader.result as string;
+      this.savePdf();
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  onColorChange(ev: Event) {
+    const v = (ev.target as HTMLInputElement).value;
+    this.pdfDraft.pdfPrimaryColor = v;
+    this.savePdf();
+  }
+
+  savePdf() {
+    this.savingPdf.set(true);
+    this.api.nutriPutPdfTemplate(this.pdfDraft).subscribe({
+      next: () => {
+        this.savingPdf.set(false);
+        this.snack.open(this.translate.instant('nutriPractices.pdf.saved'),
+                        'OK', { duration: 2000 });
+      },
+      error: err => {
+        this.savingPdf.set(false);
+        this.snack.open(err?.error?.error ?? this.translate.instant('nutriPractices.pdf.err'),
+                        'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  previewPdf() {
+    this.loadingPreview.set(true);
+    this.api.nutriPdfPreview().subscribe({
+      next: blob => {
+        this.loadingPreview.set(false);
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      },
+      error: () => {
+        this.loadingPreview.set(false);
+        this.snack.open(this.translate.instant('nutriPractices.pdf.err'),
+                        'OK', { duration: 3000 });
+      }
+    });
   }
 
   save(p: Practice) {

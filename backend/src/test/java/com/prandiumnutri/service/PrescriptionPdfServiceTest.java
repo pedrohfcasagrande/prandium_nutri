@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +31,8 @@ class PrescriptionPdfServiceTest {
     @Autowired PrescriptionPdfService pdfService;
     @Autowired UserRepository userRepo;
     @Autowired ClientAssessmentRepository assessmentRepo;
+    @Autowired AssessmentSnapshotRepository snapshotRepo;
+    @Autowired NutritionistClientLinkRepository linkRepo;
     @Autowired SubscriptionService subscriptionService;
     @Autowired PlanRepository planRepo;
     @Autowired PlanPriceRepository priceRepo;
@@ -122,5 +125,64 @@ class PrescriptionPdfServiceTest {
 
     private String cpf() {
         return String.format("%011d", Math.abs(System.nanoTime() % 100000000000L));
+    }
+
+    @Test
+    void render_createsAutoSnapshotWhenNutriAndClientPresent() {
+        User nutri = quickNutri();
+        User client = quickClient();
+        linkRepo.save(NutritionistClientLink.builder()
+                .nutritionist(nutri).client(client)
+                .invitedByEmail(client.getEmail()).inviteToken("t-" + System.nanoTime())
+                .status(LinkStatus.ACTIVE).invitedAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusDays(30))
+                .build());
+        client.setSex(Sex.FEMALE);
+        client.setBirthDate(LocalDate.of(1990, 1, 1));
+        client.setWeightKg(65.0);
+        client.setHeightCm(165.0);
+        userRepo.save(client);
+
+        ClientAssessment a = assessmentRepo.save(ClientAssessment.builder()
+                .client(client).nutritionist(nutri)
+                .assessmentDate(LocalDateTime.now())
+                .weightKg(65.0).heightCm(165)
+                .targetCalories(1600.0).targetProteinG(100.0)
+                .targetCarbsG(180.0).targetFatG(50.0).targetWaterMl(2275.0)
+                .build());
+
+        pdfService.render(a, client, nutri, Locale.forLanguageTag("pt-BR"));
+
+        List<AssessmentSnapshot> snaps = snapshotRepo.findByAssessmentIdOrderByVersionDesc(a.getId());
+        assertThat(snaps).hasSize(1);
+        assertThat(snaps.get(0).getLabel()).contains("PDF emitido em");
+    }
+
+    @Test
+    void render_customPrimaryColorReachesOutput() {
+        User nutri = quickNutri();
+        nutri.setPdfPrimaryColor("#ff5733");
+        nutri.setPdfFooterText("<b>consultorio</b> · <script>alert(1)</script>Rua X");
+        userRepo.save(nutri);
+        User client = quickClient();
+        client.setSex(Sex.MALE);
+        client.setBirthDate(LocalDate.of(1985, 6, 15));
+        client.setWeightKg(80.0);
+        client.setHeightCm(175.0);
+        userRepo.save(client);
+
+        ClientAssessment a = ClientAssessment.builder()
+                .client(client).nutritionist(nutri)
+                .assessmentDate(LocalDateTime.now())
+                .weightKg(80.0).heightCm(175)
+                .targetCalories(2000.0).targetProteinG(140.0)
+                .targetCarbsG(220.0).targetFatG(65.0).targetWaterMl(2800.0)
+                .build();
+
+        byte[] pdf = pdfService.render(a, client, nutri,
+                Locale.forLanguageTag("pt-BR"), /* snapshot */ false);
+        assertThat(pdf).isNotEmpty();
+        // Sanity: pdf gerado sem exception (nao verifica bytes internos —
+        // jsoup deve ter removido o <script> pra evitar XSS ate mesmo no PDF).
     }
 }

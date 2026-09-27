@@ -6,6 +6,7 @@ import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
+  PdfCustomization,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
   NutriPublic, NutritionistLink,
@@ -535,5 +536,16 @@ export class ApiService {
   }
   nutriPutSignature(signatureBase64: string | null): Observable<void> {
     return this.http.put<void>(`${this.base}/nutritionist/me/signature`, { signatureBase64 });
+  }
+
+  // Fase 9D-2: customizacao do PDF (logo, cor, header/footer text) + preview
+  nutriGetPdfTemplate(): Observable<PdfCustomization> {
+    return this.http.get<PdfCustomization>(`${this.base}/nutritionist/me/pdf-template`);
+  }
+  nutriPutPdfTemplate(dto: PdfCustomization): Observable<void> {
+    return this.http.put<void>(`${this.base}/nutritionist/me/pdf-template`, dto);
+  }
+  nutriPdfPreview(): Observable<Blob> {
+    return this.http.get(`${this.base}/nutritionist/me/pdf-preview`, { responseType: 'blob' });
   }
 }
