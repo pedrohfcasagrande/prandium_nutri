@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +17,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { PracticeService } from '../../services/practice.service';
 import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/models';
+import { deriveMetrics } from '../../util/assessment-metrics';
+import { AssessmentTrendChartComponent } from '../../components/assessment-trend-chart.component';
 
 @Component({
   selector: 'app-nutri-assessment',
@@ -25,7 +27,8 @@ import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/m
     CommonModule, FormsModule,
     MatCardModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule,
-    MatExpansionModule, MatSnackBarModule, MatDialogModule, MatTooltipModule, TranslateModule
+    MatExpansionModule, MatSnackBarModule, MatDialogModule, MatTooltipModule, TranslateModule,
+    AssessmentTrendChartComponent
   ],
   template: `
     <div class="page">
@@ -80,7 +83,120 @@ import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/m
                 <mat-label>{{ 'assessment.f.armCm' | translate }}</mat-label>
                 <input matInput type="number" step="0.1" [(ngModel)]="d.armCm"><span matSuffix>cm</span>
               </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.thighCm' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.thighCm"><span matSuffix>cm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.calfCm' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.calfCm"><span matSuffix>cm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.chestCm' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.chestCm"><span matSuffix>cm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.forearmCm' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.forearmCm"><span matSuffix>cm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.abdomenCm' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.abdomenCm"><span matSuffix>cm</span>
+              </mat-form-field>
             </div>
+
+            @if (derived(); as m) {
+              <div class="derived-strip">
+                @if (m.bmi != null) {
+                  <div class="pill">
+                    <span class="p-label">IMC</span>
+                    <span class="p-val">{{ m.bmi }}</span>
+                    <span class="p-note">{{ ('assessment.bmi.' + m.bmiCategory) | translate }}</span>
+                  </div>
+                }
+                @if (m.whr != null) {
+                  <div class="pill" [class.risk-mod]="m.whrRisk === 'moderate'"
+                                    [class.risk-hi]="m.whrRisk === 'high'">
+                    <span class="p-label">RCQ</span>
+                    <span class="p-val">{{ m.whr }}</span>
+                    @if (m.whrRisk) {
+                      <span class="p-note">{{ ('assessment.whr.' + m.whrRisk) | translate }}</span>
+                    }
+                  </div>
+                }
+                @if (m.bodyFatPctCalc != null) {
+                  <div class="pill">
+                    <span class="p-label">% G (JP-7)</span>
+                    <span class="p-val">{{ m.bodyFatPctCalc }}%</span>
+                  </div>
+                }
+                @if (m.fatMassKg != null) {
+                  <div class="pill">
+                    <span class="p-label">MG</span>
+                    <span class="p-val">{{ m.fatMassKg }} kg</span>
+                  </div>
+                }
+                @if (m.leanMassKg != null) {
+                  <div class="pill">
+                    <span class="p-label">MM</span>
+                    <span class="p-val">{{ m.leanMassKg }} kg</span>
+                  </div>
+                }
+              </div>
+            }
+          </mat-expansion-panel>
+
+          <!-- 1b. Dobras cutaneas (Jackson-Pollock) -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>compress</mat-icon>
+                {{ 'assessment.sections.skinfolds' | translate }}
+              </mat-panel-title>
+              <mat-panel-description>{{ 'assessment.sections.skinfoldsHint' | translate }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'assessment.f.skinfoldProtocol' | translate }}</mat-label>
+              <mat-select [(ngModel)]="d.skinfoldProtocol">
+                <mat-option [value]="null">-</mat-option>
+                <mat-option value="JP_7">{{ 'assessment.skinfoldProtocol.JP_7' | translate }}</mat-option>
+                <mat-option value="JP_3">{{ 'assessment.skinfoldProtocol.JP_3' | translate }}</mat-option>
+                <mat-option value="DURNIN_4">{{ 'assessment.skinfoldProtocol.DURNIN_4' | translate }}</mat-option>
+                <mat-option value="POLLOCK_3">{{ 'assessment.skinfoldProtocol.POLLOCK_3' | translate }}</mat-option>
+                <mat-option value="MANUAL">{{ 'assessment.skinfoldProtocol.MANUAL' | translate }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <div class="grid">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.sfTricipital' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.sfTricipital"><span matSuffix>mm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.sfSubscapular' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.sfSubscapular"><span matSuffix>mm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.sfSuprailiac' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.sfSuprailiac"><span matSuffix>mm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.sfAbdominal' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.sfAbdominal"><span matSuffix>mm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.sfThigh' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.sfThigh"><span matSuffix>mm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.sfChest' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.sfChest"><span matSuffix>mm</span>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.sfMidaxillary' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.sfMidaxillary"><span matSuffix>mm</span>
+              </mat-form-field>
+            </div>
+            <p class="text-muted small">{{ 'assessment.skinfolds.formulaNote' | translate }}</p>
           </mat-expansion-panel>
 
           <!-- 2. Perfil clinico -->
@@ -327,6 +443,12 @@ import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/m
           </mat-expansion-panel>
         </mat-accordion>
 
+        <app-assessment-trend-chart
+          [snapshots]="snapshots()"
+          [current]="draft()"
+          [birthDate]="clientBirthDate()"
+          [sex]="clientSex()"></app-assessment-trend-chart>
+
         @if (snapshots().length > 0) {
           <mat-card class="snapshots-card">
             <div class="snapshots-header">
@@ -407,6 +529,24 @@ import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/m
     }
     .lab-group:first-child { margin-top: 0; }
 
+    .derived-strip {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 14px;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      background: var(--nt-primary-soft);
+      border-radius: 999px;
+      font-size: 0.85rem;
+    }
+    .pill.risk-mod { background: var(--nt-accent-soft); color: var(--nt-accent); }
+    .pill.risk-hi  { background: var(--nt-danger-soft); color: var(--nt-danger); }
+    .p-label { font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; opacity: 0.75; }
+    .p-val   { font-weight: 700; color: var(--nt-primary-dark); }
+    .pill.risk-mod .p-val, .pill.risk-hi .p-val { color: inherit; }
+    .p-note  { opacity: 0.75; font-size: 0.8rem; }
+
     .snapshots-card {
       margin-top: 20px;
       padding: 16px !important;
@@ -456,9 +596,16 @@ export class NutriAssessmentComponent implements OnInit {
   clientId!: number;
   draft = signal<ClientAssessment | null>(null);
   clientName = signal<string | null>(null);
+  clientBirthDate = signal<string | null>(null);
+  clientSex = signal<string | null>(null);
   saving = signal(false);
   snapshots = signal<AssessmentSnapshot[]>([]);
   snapshotting = signal(false);
+  derived = computed(() => {
+    const d = this.draft();
+    if (!d) return null;
+    return deriveMetrics(d, this.clientBirthDate(), this.clientSex() as any);
+  });
 
   private firstLoad = true;
   constructor() {
@@ -480,6 +627,8 @@ export class NutriAssessmentComponent implements OnInit {
         if (existing) {
           this.draft.set(existing);
           this.clientName.set(existing.clientName ?? null);
+          this.clientSex.set(existing.clientSex ?? null);
+          this.clientBirthDate.set(existing.clientBirthDate ?? null);
           this.loadSnapshots();
         } else {
           this.draft.set(this.blank());

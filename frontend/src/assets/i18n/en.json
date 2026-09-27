@@ -606,7 +606,37 @@
       "goals": "Goals and targets",
       "goalsHint": "Target weight, deadline, notes",
       "labs": "Lab results",
-      "labsHint": "Blood tests and other markers"
+      "labsHint": "Blood tests and other markers",
+      "skinfolds": "Skinfolds",
+      "skinfoldsHint": "Jackson-Pollock 7-site — enables automatic body fat % calculation"
+    },
+    "bmi": {
+      "underweight": "Underweight",
+      "normal": "Normal",
+      "overweight": "Overweight",
+      "obesity1": "Obesity I",
+      "obesity2": "Obesity II",
+      "obesity3": "Obesity III"
+    },
+    "whr": {
+      "low": "Low risk",
+      "moderate": "Increased risk",
+      "high": "High risk"
+    },
+    "skinfoldProtocol": {
+      "JP_7": "Jackson-Pollock 7-site",
+      "JP_3": "Jackson-Pollock 3-site",
+      "DURNIN_4": "Durnin & Womersley 4-site",
+      "POLLOCK_3": "Pollock 3-site",
+      "MANUAL": "Manual / other"
+    },
+    "skinfolds": {
+      "formulaNote": "With the 7 skinfolds + client sex + birth date filled, body fat % is auto-calculated via Siri."
+    },
+    "trend": {
+      "title": "Progress",
+      "bmi": "BMI",
+      "notEnoughData": "At least 2 records/consultations needed to see progress."
     },
     "labs": {
       "glycemic": "Glycemic profile",
@@ -662,6 +692,19 @@
       "goalNotes": "Goal description",
       "targetWeightKg": "Target weight",
       "targetDate": "Target date",
+      "thighCm": "Thigh",
+      "calfCm": "Calf",
+      "chestCm": "Chest",
+      "forearmCm": "Forearm",
+      "abdomenCm": "Abdomen",
+      "sfTricipital": "SF Tricipital",
+      "sfSubscapular": "SF Subscapular",
+      "sfSuprailiac": "SF Suprailiac",
+      "sfAbdominal": "SF Abdominal",
+      "sfThigh": "SF Thigh",
+      "sfChest": "SF Chest",
+      "sfMidaxillary": "SF Midaxillary",
+      "skinfoldProtocol": "Protocol",
       "labDate": "Lab results date",
       "glucoseFasting": "Fasting glucose",
       "hba1c": "Glycated hemoglobin (HbA1c)",

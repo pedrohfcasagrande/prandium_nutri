@@ -87,6 +87,23 @@ public class ClientAssessmentService {
         ent.setNeckCm(dto.neckCm());
         ent.setArmCm(dto.armCm());
 
+        // Perimetros adicionais (Fase 9B)
+        ent.setThighCm(dto.thighCm());
+        ent.setCalfCm(dto.calfCm());
+        ent.setChestCm(dto.chestCm());
+        ent.setForearmCm(dto.forearmCm());
+        ent.setAbdomenCm(dto.abdomenCm());
+
+        // Dobras cutaneas (Fase 9B)
+        ent.setSfTricipital(dto.sfTricipital());
+        ent.setSfSubscapular(dto.sfSubscapular());
+        ent.setSfSuprailiac(dto.sfSuprailiac());
+        ent.setSfAbdominal(dto.sfAbdominal());
+        ent.setSfThigh(dto.sfThigh());
+        ent.setSfChest(dto.sfChest());
+        ent.setSfMidaxillary(dto.sfMidaxillary());
+        ent.setSkinfoldProtocol(dto.skinfoldProtocol());
+
         // Clinico
         ent.setChiefComplaint(dto.chiefComplaint());
         ent.setMedicalHistory(dto.medicalHistory());
@@ -290,12 +307,17 @@ public class ClientAssessmentService {
                 a.getClient() != null ? a.getClient().getId() : null,
                 a.getClient() != null ? a.getClient().getName() : null,
                 a.getClient() != null ? a.getClient().getEmail() : null,
+                a.getClient() != null && a.getClient().getSex() != null ? a.getClient().getSex().name() : null,
+                a.getClient() != null ? a.getClient().getBirthDate() : null,
                 a.getNutritionist() != null ? a.getNutritionist().getId() : null,
                 a.getNutritionist() != null ? a.getNutritionist().getName() : null,
                 a.getPractice() != null ? a.getPractice().getId() : null,
                 a.getAssessmentDate(),
                 a.getWeightKg(), a.getHeightCm(), a.getBodyFatPct(),
                 a.getWaistCm(), a.getHipCm(), a.getNeckCm(), a.getArmCm(),
+                a.getThighCm(), a.getCalfCm(), a.getChestCm(), a.getForearmCm(), a.getAbdomenCm(),
+                a.getSfTricipital(), a.getSfSubscapular(), a.getSfSuprailiac(), a.getSfAbdominal(),
+                a.getSfThigh(), a.getSfChest(), a.getSfMidaxillary(), a.getSkinfoldProtocol(),
                 a.getChiefComplaint(), a.getMedicalHistory(), a.getMedications(),
                 a.getPreExistingConditions(), a.getAllergies(), a.getFamilyHistory(),
                 a.getDietaryRecall24h(), a.getMealFrequency(), a.getWaterIntakeLiters(),

@@ -606,7 +606,37 @@
       "goals": "Objetivos e metas",
       "goalsHint": "Meta de peso, prazo, anotações",
       "labs": "Exames laboratoriais",
-      "labsHint": "Resultados de exames de sangue e afins"
+      "labsHint": "Resultados de exames de sangue e afins",
+      "skinfolds": "Dobras cutâneas",
+      "skinfoldsHint": "Jackson-Pollock 7 pontos — permite cálculo automático de %gordura"
+    },
+    "bmi": {
+      "underweight": "Baixo peso",
+      "normal": "Eutrófico",
+      "overweight": "Sobrepeso",
+      "obesity1": "Obesidade I",
+      "obesity2": "Obesidade II",
+      "obesity3": "Obesidade III"
+    },
+    "whr": {
+      "low": "Risco baixo",
+      "moderate": "Risco aumentado",
+      "high": "Risco alto"
+    },
+    "skinfoldProtocol": {
+      "JP_7": "Jackson-Pollock 7 dobras",
+      "JP_3": "Jackson-Pollock 3 dobras",
+      "DURNIN_4": "Durnin & Womersley 4 dobras",
+      "POLLOCK_3": "Pollock 3 dobras",
+      "MANUAL": "Manual / outro protocolo"
+    },
+    "skinfolds": {
+      "formulaNote": "Com as 7 dobras + sexo + data de nascimento do cliente preenchidos, o %gordura é calculado automaticamente via Siri."
+    },
+    "trend": {
+      "title": "Evolução",
+      "bmi": "IMC",
+      "notEnoughData": "Faça pelo menos 2 registros/consultas para visualizar a evolução."
     },
     "labs": {
       "glycemic": "Perfil glicêmico",
@@ -662,6 +692,19 @@
       "goalNotes": "Descrição do objetivo",
       "targetWeightKg": "Peso alvo",
       "targetDate": "Data alvo",
+      "thighCm": "Coxa",
+      "calfCm": "Panturrilha",
+      "chestCm": "Tórax",
+      "forearmCm": "Antebraço",
+      "abdomenCm": "Abdômen",
+      "sfTricipital": "DC Tricipital",
+      "sfSubscapular": "DC Subescapular",
+      "sfSuprailiac": "DC Suprailíaca",
+      "sfAbdominal": "DC Abdominal",
+      "sfThigh": "DC Coxa",
+      "sfChest": "DC Peitoral",
+      "sfMidaxillary": "DC Axilar média",
+      "skinfoldProtocol": "Protocolo",
       "labDate": "Data dos exames",
       "glucoseFasting": "Glicemia de jejum",
       "hba1c": "Hemoglobina glicada (HbA1c)",

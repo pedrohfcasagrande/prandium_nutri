@@ -10,6 +10,8 @@ public record ClientAssessmentDto(
         Long clientId,
         String clientName,
         String clientEmail,
+        String clientSex,           // Fase 9B: usado no calculo de %gordura JP-7
+        LocalDate clientBirthDate,  // Fase 9B: idade -> formula Jackson-Pollock
         Long nutritionistId,
         String nutritionistName,
         Long practiceId,
@@ -23,6 +25,23 @@ public record ClientAssessmentDto(
         Double hipCm,
         Double neckCm,
         Double armCm,
+
+        // Perimetros adicionais (Fase 9B)
+        Double thighCm,
+        Double calfCm,
+        Double chestCm,
+        Double forearmCm,
+        Double abdomenCm,
+
+        // Dobras cutaneas Jackson-Pollock (mm) (Fase 9B)
+        Double sfTricipital,
+        Double sfSubscapular,
+        Double sfSuprailiac,
+        Double sfAbdominal,
+        Double sfThigh,
+        Double sfChest,
+        Double sfMidaxillary,
+        String skinfoldProtocol,
 
         // Clinico
         String chiefComplaint,

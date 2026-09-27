@@ -351,6 +351,8 @@ export interface ClientAssessment {
   clientId?: number;
   clientName?: string;
   clientEmail?: string;
+  clientSex?: string | null;          // Fase 9B
+  clientBirthDate?: string | null;    // Fase 9B
   nutritionistId?: number;
   nutritionistName?: string;
   practiceId?: number | null;
@@ -364,6 +366,23 @@ export interface ClientAssessment {
   hipCm?: number | null;
   neckCm?: number | null;
   armCm?: number | null;
+
+  // Perimetros adicionais (Fase 9B)
+  thighCm?: number | null;
+  calfCm?: number | null;
+  chestCm?: number | null;
+  forearmCm?: number | null;
+  abdomenCm?: number | null;
+
+  // Dobras cutaneas Jackson-Pollock (mm) (Fase 9B)
+  sfTricipital?: number | null;
+  sfSubscapular?: number | null;
+  sfSuprailiac?: number | null;
+  sfAbdominal?: number | null;
+  sfThigh?: number | null;
+  sfChest?: number | null;
+  sfMidaxillary?: number | null;
+  skinfoldProtocol?: string | null;
 
   // Clinico
   chiefComplaint?: string | null;

@@ -158,6 +158,29 @@ class ClientAssessmentServiceTest {
     }
 
     @Test
+    void upsert_persistsSkinfoldsAndPerimeters() {
+        User nutri = createNutri();
+        User client = createClient();
+        linkActive(nutri, client);
+
+        ClientAssessmentDto dto = baseDto(client)
+                .withWeightKg(70.0)
+                .withSfTricipital(10.0)
+                .withSfAbdominal(15.0)
+                .withThighCm(52.0)
+                .withCalfCm(36.0)
+                .withSkinfoldProtocol("JP_7")
+                .raw();
+
+        ClientAssessmentDto saved = service.upsert(nutri, client.getId(), null, dto);
+        assertThat(saved.sfTricipital()).isEqualTo(10.0);
+        assertThat(saved.sfAbdominal()).isEqualTo(15.0);
+        assertThat(saved.thighCm()).isEqualTo(52.0);
+        assertThat(saved.calfCm()).isEqualTo(36.0);
+        assertThat(saved.skinfoldProtocol()).isEqualTo("JP_7");
+    }
+
+    @Test
     void selfFill_failsWhenNoAssessmentYet() {
         User client = createClient();
         assertThatThrownBy(() -> service.selfFillForClient(client.getId(),
@@ -213,6 +236,9 @@ class ClientAssessmentServiceTest {
         LocalDateTime assessmentDate = LocalDateTime.now();
         Double weightKg, bodyFatPct, waistCm, hipCm, neckCm, armCm;
         Integer heightCm;
+        Double thighCm, calfCm, chestCm, forearmCm, abdomenCm;
+        Double sfTricipital, sfSubscapular, sfSuprailiac, sfAbdominal, sfThigh, sfChest, sfMidaxillary;
+        String skinfoldProtocol;
         String chiefComplaint, medicalHistory, medications, preExistingConditions, allergies, familyHistory;
         String dietaryRecall24h, mealFrequency, alcoholFrequency, foodPreferences, foodAversions;
         Double waterIntakeLiters, sleepHours;
@@ -234,11 +260,19 @@ class ClientAssessmentServiceTest {
         DtoBuilder withVitaminD(double v) { this.vitaminD = v; return this; }
         DtoBuilder withFoodPreferences(String v) { this.foodPreferences = v; return this; }
         DtoBuilder withChiefComplaint(String v) { this.chiefComplaint = v; return this; }
+        DtoBuilder withSfTricipital(double v) { this.sfTricipital = v; return this; }
+        DtoBuilder withSfAbdominal(double v) { this.sfAbdominal = v; return this; }
+        DtoBuilder withThighCm(double v) { this.thighCm = v; return this; }
+        DtoBuilder withCalfCm(double v) { this.calfCm = v; return this; }
+        DtoBuilder withSkinfoldProtocol(String v) { this.skinfoldProtocol = v; return this; }
 
         ClientAssessmentDto raw() {
             return new ClientAssessmentDto(
-                    null, clientId, null, null, null, null, null, assessmentDate,
+                    null, clientId, null, null, null, null, null, null, null, assessmentDate,
                     weightKg, heightCm, bodyFatPct, waistCm, hipCm, neckCm, armCm,
+                    thighCm, calfCm, chestCm, forearmCm, abdomenCm,
+                    sfTricipital, sfSubscapular, sfSuprailiac, sfAbdominal, sfThigh, sfChest, sfMidaxillary,
+                    skinfoldProtocol,
                     chiefComplaint, medicalHistory, medications, preExistingConditions, allergies, familyHistory,
                     dietaryRecall24h, mealFrequency, waterIntakeLiters, alcoholFrequency, foodPreferences, foodAversions,
                     physicalActivityDetails, sleepHours, stressLevel, smoker, smokingDetails,

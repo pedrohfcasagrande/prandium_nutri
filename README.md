@@ -233,6 +233,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V023      | appointments (agenda de consultas)                                    |
 | V024      | client_assessments (ficha clinica base — 1 por par nutri↔cliente)     |
 | V025      | client_assessments.labs (exames) + assessment_snapshots (historico versionado — Fase 9A) |
+| V026      | client_assessments: 7 dobras cutaneas (JP) + 5 perimetros faltantes + skinfold_protocol (Fase 9B) |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -478,4 +479,10 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: `NutriAssessmentComponent` ganha seção "Exames laboratoriais" (5 sub-grupos) + botão "Nova consulta" (cria snapshot) + card timeline com `v1..vN` + peso do momento; `MyAssessmentComponent` ganha render read-only dos labs + `<mat-expansion-panel>` "Atualizar minhas informações" (self-fill form) + timeline "Minhas consultas anteriores"
   - Testes: `ClientAssessmentServiceTest` cobre upsert com labs, snapshot com incremento de versão, snapshot falha sem ficha, self-fill atualiza só campos safe e falha sem ficha inicial, ownership (nutri sem link é bloqueado)
   - Verificação: `mvn test` 100/100 (94 + 6 novos) + `npm test` 60/60
+- **Fase 9B (antropometria completa + composição corporal + gráfico de evolução — 2026-09-26): OK**
+  - Migração V026: 7 dobras cutâneas (tricipital, subescapular, suprailíaca, abdominal, coxa, peitoral, axilar média) + 5 perímetros faltantes (coxa, panturrilha, tórax, antebraço, abdômen) + coluna `skinfold_protocol` (JP_7/JP_3/DURNIN_4/POLLOCK_3/MANUAL)
+  - Backend: entity/DTO/service atualizados; `ClientAssessmentDto` agora expõe `clientSex`/`clientBirthDate` a partir do `User` (necessários pra cálculo Jackson-Pollock no cliente)
+  - Frontend: novo `util/assessment-metrics.ts` com funções puras `bmi()`, `whr()`, `bodyFatJP7()` (fórmula Siri sobre densidade JP), `leanMassKg()`, `fatMassKg()` + categoria IMC + risco cardiovascular WHR por sexo; nova seção "Dobras cutâneas" e 5 novos perímetros na antropometria; card de derivados (IMC/RCQ/%G-JP7/MG/MM) em pills coloridas (verde/amarelo/vermelho pra risco); render read-only espelhado no `MyAssessmentComponent`
+  - Novo componente reutilizável `AssessmentTrendChartComponent` (Chart.js line via ng2-charts) — consome snapshots + ficha atual, exibe chips só das métricas com >=1 valor no histórico (peso, %gordura, IMC, cintura, quadril, coxa, braço, glicemia, HbA1c, colesterol total/LDL/HDL/triglicerídeos, vit D), renderiza série temporal ordenada por data. Empty state exige >=2 pontos.
+  - Testes: novo caso `upsert_persistsSkinfoldsAndPerimeters` no `ClientAssessmentServiceTest`. Suite backend em 101/101, frontend em 60/60.
 - Fase 8 (geolocalizacao restaurantes): backlog

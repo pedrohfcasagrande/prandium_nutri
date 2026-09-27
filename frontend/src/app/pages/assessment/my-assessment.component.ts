@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -13,13 +13,15 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { AssessmentSelfFill, AssessmentSnapshot, ClientAssessment } from '../../models/models';
 import { EmptyStateComponent } from '../../components/empty-state.component';
+import { deriveMetrics } from '../../util/assessment-metrics';
+import { AssessmentTrendChartComponent } from '../../components/assessment-trend-chart.component';
 
 @Component({
   selector: 'app-my-assessment',
   standalone: true,
   imports: [CommonModule, FormsModule, MatCardModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatCheckboxModule, MatExpansionModule,
-    MatSnackBarModule, TranslateModule, EmptyStateComponent],
+    MatSnackBarModule, TranslateModule, EmptyStateComponent, AssessmentTrendChartComponent],
   template: `
     <div class="page">
       <div class="page-header">
@@ -58,6 +60,53 @@ import { EmptyStateComponent } from '../../components/empty-state.component';
             @if (a.hipCm != null) { <div><span class="k">{{ 'assessment.f.hipCm' | translate }}</span><span class="v">{{ a.hipCm }} cm</span></div> }
             @if (a.neckCm != null) { <div><span class="k">{{ 'assessment.f.neckCm' | translate }}</span><span class="v">{{ a.neckCm }} cm</span></div> }
             @if (a.armCm != null) { <div><span class="k">{{ 'assessment.f.armCm' | translate }}</span><span class="v">{{ a.armCm }} cm</span></div> }
+            @if (a.thighCm != null) { <div><span class="k">{{ 'assessment.f.thighCm' | translate }}</span><span class="v">{{ a.thighCm }} cm</span></div> }
+            @if (a.calfCm != null) { <div><span class="k">{{ 'assessment.f.calfCm' | translate }}</span><span class="v">{{ a.calfCm }} cm</span></div> }
+            @if (a.chestCm != null) { <div><span class="k">{{ 'assessment.f.chestCm' | translate }}</span><span class="v">{{ a.chestCm }} cm</span></div> }
+            @if (a.forearmCm != null) { <div><span class="k">{{ 'assessment.f.forearmCm' | translate }}</span><span class="v">{{ a.forearmCm }} cm</span></div> }
+            @if (a.abdomenCm != null) { <div><span class="k">{{ 'assessment.f.abdomenCm' | translate }}</span><span class="v">{{ a.abdomenCm }} cm</span></div> }
+          </div>
+          @if (derived(); as m) {
+            <div class="derived-strip">
+              @if (m.bmi != null) {
+                <div class="pill"><span class="p-label">IMC</span><span class="p-val">{{ m.bmi }}</span>
+                  <span class="p-note">{{ ('assessment.bmi.' + m.bmiCategory) | translate }}</span></div>
+              }
+              @if (m.whr != null) {
+                <div class="pill" [class.risk-mod]="m.whrRisk === 'moderate'" [class.risk-hi]="m.whrRisk === 'high'">
+                  <span class="p-label">RCQ</span><span class="p-val">{{ m.whr }}</span>
+                  @if (m.whrRisk) { <span class="p-note">{{ ('assessment.whr.' + m.whrRisk) | translate }}</span> }
+                </div>
+              }
+              @if (m.bodyFatPctCalc != null) {
+                <div class="pill"><span class="p-label">% G (JP-7)</span><span class="p-val">{{ m.bodyFatPctCalc }}%</span></div>
+              }
+              @if (m.fatMassKg != null) {
+                <div class="pill"><span class="p-label">MG</span><span class="p-val">{{ m.fatMassKg }} kg</span></div>
+              }
+              @if (m.leanMassKg != null) {
+                <div class="pill"><span class="p-label">MM</span><span class="p-val">{{ m.leanMassKg }} kg</span></div>
+              }
+            </div>
+          }
+        </mat-card>
+
+        <mat-card class="section" *ngIf="hasSkinfolds(a)">
+          <div class="section-head">
+            <mat-icon>compress</mat-icon>
+            <h3>{{ 'assessment.sections.skinfolds' | translate }}</h3>
+            @if (a.skinfoldProtocol) {
+              <span class="text-muted small">{{ ('assessment.skinfoldProtocol.' + a.skinfoldProtocol) | translate }}</span>
+            }
+          </div>
+          <div class="kv-grid">
+            @if (a.sfTricipital != null) { <div><span class="k">{{ 'assessment.f.sfTricipital' | translate }}</span><span class="v">{{ a.sfTricipital }} mm</span></div> }
+            @if (a.sfSubscapular != null) { <div><span class="k">{{ 'assessment.f.sfSubscapular' | translate }}</span><span class="v">{{ a.sfSubscapular }} mm</span></div> }
+            @if (a.sfSuprailiac != null) { <div><span class="k">{{ 'assessment.f.sfSuprailiac' | translate }}</span><span class="v">{{ a.sfSuprailiac }} mm</span></div> }
+            @if (a.sfAbdominal != null) { <div><span class="k">{{ 'assessment.f.sfAbdominal' | translate }}</span><span class="v">{{ a.sfAbdominal }} mm</span></div> }
+            @if (a.sfThigh != null) { <div><span class="k">{{ 'assessment.f.sfThigh' | translate }}</span><span class="v">{{ a.sfThigh }} mm</span></div> }
+            @if (a.sfChest != null) { <div><span class="k">{{ 'assessment.f.sfChest' | translate }}</span><span class="v">{{ a.sfChest }} mm</span></div> }
+            @if (a.sfMidaxillary != null) { <div><span class="k">{{ 'assessment.f.sfMidaxillary' | translate }}</span><span class="v">{{ a.sfMidaxillary }} mm</span></div> }
           </div>
         </mat-card>
 
@@ -212,6 +261,13 @@ import { EmptyStateComponent } from '../../components/empty-state.component';
           </div>
         </mat-expansion-panel>
 
+        <!-- Gráfico de evolução (Fase 9B) -->
+        <app-assessment-trend-chart
+          [snapshots]="snapshots()"
+          [current]="a"
+          [birthDate]="a.clientBirthDate ?? null"
+          [sex]="a.clientSex ?? null"></app-assessment-trend-chart>
+
         <!-- Timeline de snapshots -->
         @if (snapshots().length > 0) {
           <mat-card class="section snapshots-card">
@@ -269,6 +325,19 @@ import { EmptyStateComponent } from '../../components/empty-state.component';
     .v.pre { white-space: pre-wrap; }
     .notes-body { white-space: pre-wrap; margin: 0; }
 
+    .derived-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; background: var(--nt-primary-soft);
+      border-radius: 999px; font-size: 0.85rem;
+    }
+    .pill.risk-mod { background: var(--nt-accent-soft); color: var(--nt-accent); }
+    .pill.risk-hi  { background: var(--nt-danger-soft); color: var(--nt-danger); }
+    .p-label { font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; opacity: 0.75; }
+    .p-val   { font-weight: 700; color: var(--nt-primary-dark); }
+    .pill.risk-mod .p-val, .pill.risk-hi .p-val { color: inherit; }
+    .p-note  { opacity: 0.75; font-size: 0.8rem; }
+
     .self-fill { margin-top: 16px; }
     .self-fill mat-panel-title { display: flex; align-items: center; gap: 8px;
       mat-icon { color: var(--nt-primary); } }
@@ -309,6 +378,11 @@ export class MyAssessmentComponent implements OnInit {
   snapshots = signal<AssessmentSnapshot[]>([]);
   selfDraft: AssessmentSelfFill = {};
   savingSelf = signal(false);
+  derived = computed(() => {
+    const a = this.assessment();
+    if (!a) return null;
+    return deriveMetrics(a, a.clientBirthDate, a.clientSex as any);
+  });
 
   ngOnInit() {
     this.load();
@@ -367,6 +441,10 @@ export class MyAssessmentComponent implements OnInit {
   }
   hasGoals(a: ClientAssessment): boolean {
     return !!(a.goalNotes || a.targetWeightKg != null || a.targetDate);
+  }
+  hasSkinfolds(a: ClientAssessment): boolean {
+    return [a.sfTricipital, a.sfSubscapular, a.sfSuprailiac, a.sfAbdominal,
+      a.sfThigh, a.sfChest, a.sfMidaxillary].some(x => x != null);
   }
   hasLabs(a: ClientAssessment): boolean {
     return [a.glucoseFasting, a.hba1c, a.insulinFasting, a.totalCholesterol, a.ldl, a.hdl,

@@ -606,7 +606,37 @@
       "goals": "Objectifs",
       "goalsHint": "Poids cible, échéance, notes",
       "labs": "Résultats de laboratoire",
-      "labsHint": "Analyses de sang et autres marqueurs"
+      "labsHint": "Analyses de sang et autres marqueurs",
+      "skinfolds": "Plis cutanés",
+      "skinfoldsHint": "Jackson-Pollock 7 sites — permet le calcul auto du %graisse"
+    },
+    "bmi": {
+      "underweight": "Insuffisance pondérale",
+      "normal": "Normal",
+      "overweight": "Surpoids",
+      "obesity1": "Obésité I",
+      "obesity2": "Obésité II",
+      "obesity3": "Obésité III"
+    },
+    "whr": {
+      "low": "Risque faible",
+      "moderate": "Risque accru",
+      "high": "Risque élevé"
+    },
+    "skinfoldProtocol": {
+      "JP_7": "Jackson-Pollock 7 sites",
+      "JP_3": "Jackson-Pollock 3 sites",
+      "DURNIN_4": "Durnin & Womersley 4 sites",
+      "POLLOCK_3": "Pollock 3 sites",
+      "MANUAL": "Manuel / autre"
+    },
+    "skinfolds": {
+      "formulaNote": "Avec les 7 plis + sexe + date de naissance du client, le %graisse est calculé automatiquement via Siri."
+    },
+    "trend": {
+      "title": "Évolution",
+      "bmi": "IMC",
+      "notEnoughData": "Au moins 2 enregistrements/consultations pour voir l'évolution."
     },
     "labs": {
       "glycemic": "Profil glycémique",
@@ -662,6 +692,19 @@
       "goalNotes": "Description de l'objectif",
       "targetWeightKg": "Poids cible",
       "targetDate": "Date cible",
+      "thighCm": "Cuisse",
+      "calfCm": "Mollet",
+      "chestCm": "Thorax",
+      "forearmCm": "Avant-bras",
+      "abdomenCm": "Abdomen",
+      "sfTricipital": "PC Tricipital",
+      "sfSubscapular": "PC Sous-scapulaire",
+      "sfSuprailiac": "PC Supra-iliaque",
+      "sfAbdominal": "PC Abdominal",
+      "sfThigh": "PC Cuisse",
+      "sfChest": "PC Pectoral",
+      "sfMidaxillary": "PC Axillaire moyen",
+      "skinfoldProtocol": "Protocole",
       "labDate": "Date des analyses",
       "glucoseFasting": "Glycémie à jeun",
       "hba1c": "Hémoglobine glyquée (HbA1c)",

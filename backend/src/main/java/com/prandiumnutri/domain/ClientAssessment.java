@@ -46,6 +46,24 @@ public class ClientAssessment {
     private Double neckCm;
     private Double armCm;
 
+    // ----- Perimetros adicionais (Fase 9B) -----
+    private Double thighCm;
+    private Double calfCm;
+    private Double chestCm;
+    private Double forearmCm;
+    private Double abdomenCm;
+
+    // ----- Dobras cutaneas Jackson-Pollock (mm) (Fase 9B) -----
+    @Column(name = "sf_tricipital")   private Double sfTricipital;
+    @Column(name = "sf_subscapular")  private Double sfSubscapular;
+    @Column(name = "sf_suprailiac")   private Double sfSuprailiac;
+    @Column(name = "sf_abdominal")    private Double sfAbdominal;
+    @Column(name = "sf_thigh")        private Double sfThigh;
+    @Column(name = "sf_chest")        private Double sfChest;
+    @Column(name = "sf_midaxillary")  private Double sfMidaxillary;
+
+    @Column(length = 30) private String skinfoldProtocol;
+
     // ----- Perfil clinico -----
     @Column(columnDefinition = "TEXT") private String chiefComplaint;
     @Column(columnDefinition = "TEXT") private String medicalHistory;
