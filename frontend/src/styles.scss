@@ -624,11 +624,18 @@ router-outlet + * .kpi-grid > *:nth-child(5) { animation-delay: 280ms; }
   background: radial-gradient(circle, rgba(45, 212, 191, 0.35) 0%, transparent 70%);
   animation-delay: -9s;
 }
-[data-theme="dark"] .auth-shell::before {
-  background: radial-gradient(circle, rgba(20, 184, 166, 0.28) 0%, transparent 70%);
+// Estilos dark do auth precisam responder a AMBOS: opt-in explicito e auto+OS-dark.
+@mixin dark-auth-blobs {
+  .auth-shell::before {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.28) 0%, transparent 70%);
+  }
+  .auth-shell::after {
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.22) 0%, transparent 70%);
+  }
 }
-[data-theme="dark"] .auth-shell::after {
-  background: radial-gradient(circle, rgba(45, 212, 191, 0.22) 0%, transparent 70%);
+html[data-theme="dark"] { @include dark-auth-blobs; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) { @include dark-auth-blobs; }
 }
 
 @keyframes nt-blob-float {
@@ -661,11 +668,17 @@ router-outlet + * .kpi-grid > *:nth-child(5) { animation-delay: 280ms; }
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
-[data-theme="dark"] .brand-hero h1 {
-  background: linear-gradient(135deg, #f1f5f9 0%, var(--nt-primary) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+@mixin dark-brand-hero-h1 {
+  .brand-hero h1 {
+    background: linear-gradient(135deg, #f1f5f9 0%, var(--nt-primary) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+html[data-theme="dark"] { @include dark-brand-hero-h1; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) { @include dark-brand-hero-h1; }
 }
 .brand-hero p {
   margin: 0;
@@ -705,12 +718,18 @@ router-outlet + * .kpi-grid > *:nth-child(5) { animation-delay: 280ms; }
   flex-direction: column;
   gap: 22px;
 }
-[data-theme="dark"] .auth-card {
-  background: rgba(26, 31, 43, 0.72) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.5),
-    0 8px 18px rgba(0, 0, 0, 0.3) !important;
+@mixin dark-auth-card {
+  .auth-card {
+    background: rgba(26, 31, 43, 0.72) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.5),
+      0 8px 18px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+html[data-theme="dark"] { @include dark-auth-card; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) { @include dark-auth-card; }
 }
 
 .auth-trust {

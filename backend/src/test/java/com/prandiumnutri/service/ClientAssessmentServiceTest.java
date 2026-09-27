@@ -277,6 +277,7 @@ class ClientAssessmentServiceTest {
                     dietaryRecall24h, mealFrequency, waterIntakeLiters, alcoholFrequency, foodPreferences, foodAversions,
                     physicalActivityDetails, sleepHours, stressLevel, smoker, smokingDetails,
                     goalNotes, targetWeightKg, targetDate,
+                    null, null, null, null, null, null, null, null, null, null, null, // Fase 9C prescription
                     labDate, glucoseFasting, hba1c, insulinFasting,
                     totalCholesterol, ldl, hdl, triglycerides,
                     tsh, t4Free, vitaminD, vitaminB12, iron, ferritin, crp,

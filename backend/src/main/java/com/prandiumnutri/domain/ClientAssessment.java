@@ -99,6 +99,19 @@ public class ClientAssessment {
     private Double targetWeightKg;
     private LocalDate targetDate;
 
+    // ----- Prescricao energetica + macros (Fase 9C) -----
+    @Column(length = 30) private String tmbFormula;    // MIFFLIN / HARRIS_BENEDICT / KATCH_MCARDLE
+    private Double activityFactor;                     // override manual
+    private Double targetCalories;
+    private Double targetProteinG;
+    private Double targetCarbsG;
+    private Double targetFatG;
+    private Double targetWaterMl;
+    private Double proteinGPerKg;
+    private Double fatPct;
+    private Double calorieDeltaPct;
+    private LocalDateTime prescribedAt;
+
     // ----- Exames laboratoriais -----
     private LocalDate labDate;
     private Double glucoseFasting;

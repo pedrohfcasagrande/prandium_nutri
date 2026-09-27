@@ -7,11 +7,16 @@ public record DailySummaryDto(
         LocalDate date,
         Double calorieGoal,
         Double proteinGoal,
+        Double carbsGoal,
+        Double fatGoal,
+        Double waterGoalMl,
         Double caloriesConsumed,
         Double proteinConsumed,
         Double carbsConsumed,
         Double fatConsumed,
         Double calorieRemaining,
         Double proteinRemaining,
+        /** "PRESCRIPTION" quando as metas vem da ficha do nutri, "SELF" quando calculado do proprio user, null quando indefinido. */
+        String goalsSource,
         List<MealDto> meals
 ) {}

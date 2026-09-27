@@ -289,14 +289,19 @@ export interface Meal {
 
 export interface DailySummary {
   date: string;
-  calorieGoal: number;
-  proteinGoal: number;
+  calorieGoal: number | null;
+  proteinGoal: number | null;
+  carbsGoal?: number | null;
+  fatGoal?: number | null;
+  waterGoalMl?: number | null;
   caloriesConsumed: number;
   proteinConsumed: number;
   carbsConsumed: number;
   fatConsumed: number;
-  calorieRemaining: number;
-  proteinRemaining: number;
+  calorieRemaining: number | null;
+  proteinRemaining: number | null;
+  /** 'PRESCRIPTION' quando as metas vem da ficha do nutri, 'SELF' quando do proprio HealthProfile. */
+  goalsSource?: 'PRESCRIPTION' | 'SELF' | null;
   meals: Meal[];
 }
 
@@ -411,6 +416,19 @@ export interface ClientAssessment {
   goalNotes?: string | null;
   targetWeightKg?: number | null;
   targetDate?: string | null;
+
+  // Prescricao energetica + macros (Fase 9C)
+  tmbFormula?: 'MIFFLIN' | 'HARRIS_BENEDICT' | 'KATCH_MCARDLE' | null;
+  activityFactor?: number | null;
+  targetCalories?: number | null;
+  targetProteinG?: number | null;
+  targetCarbsG?: number | null;
+  targetFatG?: number | null;
+  targetWaterMl?: number | null;
+  proteinGPerKg?: number | null;
+  fatPct?: number | null;
+  calorieDeltaPct?: number | null;
+  prescribedAt?: string | null;
 
   // Exames laboratoriais (Fase 9A)
   labDate?: string | null;

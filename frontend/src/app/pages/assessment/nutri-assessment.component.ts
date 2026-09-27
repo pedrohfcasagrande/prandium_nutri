@@ -18,6 +18,7 @@ import { ApiService } from '../../services/api.service';
 import { PracticeService } from '../../services/practice.service';
 import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/models';
 import { deriveMetrics } from '../../util/assessment-metrics';
+import { ACTIVITY_FACTORS, derive as derivePrescription } from '../../util/nutrition-calculator';
 import { AssessmentTrendChartComponent } from '../../components/assessment-trend-chart.component';
 
 @Component({
@@ -412,6 +413,87 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
             </mat-form-field>
           </mat-expansion-panel>
 
+          <!-- 5c. Prescricao energetica (Fase 9C) -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>local_fire_department</mat-icon>
+                {{ 'assessment.sections.prescription' | translate }}
+              </mat-panel-title>
+              <mat-panel-description>{{ 'assessment.sections.prescriptionHint' | translate }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <div class="grid two">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.tmbFormula' | translate }}</mat-label>
+                <mat-select [(ngModel)]="d.tmbFormula">
+                  <mat-option value="MIFFLIN">{{ 'assessment.tmbFormula.MIFFLIN' | translate }}</mat-option>
+                  <mat-option value="HARRIS_BENEDICT">{{ 'assessment.tmbFormula.HARRIS_BENEDICT' | translate }}</mat-option>
+                  <mat-option value="KATCH_MCARDLE">{{ 'assessment.tmbFormula.KATCH_MCARDLE' | translate }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.activityFactor' | translate }}</mat-label>
+                <mat-select [(ngModel)]="d.activityFactor">
+                  <mat-option [value]="null">{{ 'assessment.activity.useProfile' | translate }}</mat-option>
+                  <mat-option [value]="1.2">1.2 — {{ 'assessment.activity.SEDENTARY' | translate }}</mat-option>
+                  <mat-option [value]="1.375">1.375 — {{ 'assessment.activity.LIGHT' | translate }}</mat-option>
+                  <mat-option [value]="1.55">1.55 — {{ 'assessment.activity.MODERATE' | translate }}</mat-option>
+                  <mat-option [value]="1.725">1.725 — {{ 'assessment.activity.ACTIVE' | translate }}</mat-option>
+                  <mat-option [value]="1.9">1.9 — {{ 'assessment.activity.VERY_ACTIVE' | translate }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="grid two">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.calorieDeltaPct' | translate }}</mat-label>
+                <mat-select [(ngModel)]="d.calorieDeltaPct">
+                  <mat-option [value]="-0.25">{{ 'assessment.calorieDelta.deficit25' | translate }}</mat-option>
+                  <mat-option [value]="-0.20">{{ 'assessment.calorieDelta.deficit20' | translate }}</mat-option>
+                  <mat-option [value]="-0.10">{{ 'assessment.calorieDelta.deficit10' | translate }}</mat-option>
+                  <mat-option [value]="0">{{ 'assessment.calorieDelta.maintain' | translate }}</mat-option>
+                  <mat-option [value]="0.10">{{ 'assessment.calorieDelta.surplus10' | translate }}</mat-option>
+                  <mat-option [value]="0.15">{{ 'assessment.calorieDelta.surplus15' | translate }}</mat-option>
+                  <mat-option [value]="0.20">{{ 'assessment.calorieDelta.surplus20' | translate }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ 'assessment.f.proteinGPerKg' | translate }}</mat-label>
+                <input matInput type="number" step="0.1" [(ngModel)]="d.proteinGPerKg"
+                       [placeholder]="'assessment.proteinDefault' | translate">
+                <span matSuffix>g/kg</span>
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'assessment.f.fatPct' | translate }}</mat-label>
+              <input matInput type="number" step="0.01" min="0.15" max="0.45"
+                     [ngModel]="d.fatPct" (ngModelChange)="d.fatPct = $event">
+              <span matSuffix>({{ ((d.fatPct ?? 0.28) * 100) | number:'1.0-0' }} %)</span>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="button" (click)="recalculatePrescription()">
+              <mat-icon>calculate</mat-icon>
+              {{ 'assessment.prescription.recalc' | translate }}
+            </button>
+
+            @if (d.targetCalories != null) {
+              <div class="rx-summary">
+                <div class="rx-header">
+                  <mat-icon>bolt</mat-icon>
+                  <strong>{{ d.targetCalories | number:'1.0-0' }} kcal/dia</strong>
+                  @if (d.prescribedAt) {
+                    <span class="text-muted small">· {{ d.prescribedAt | date:'shortDate' }}</span>
+                  }
+                </div>
+                <div class="rx-macros">
+                  <span class="macro p"><b>P</b> {{ d.targetProteinG | number:'1.0-1' }} g</span>
+                  <span class="macro c"><b>C</b> {{ d.targetCarbsG | number:'1.0-1' }} g</span>
+                  <span class="macro f"><b>G</b> {{ d.targetFatG | number:'1.0-1' }} g</span>
+                  <span class="macro w"><b>Água</b> {{ (d.targetWaterMl ?? 0) / 1000 | number:'1.1-1' }} L</span>
+                </div>
+              </div>
+            }
+          </mat-expansion-panel>
+
           <!-- 6. Objetivos -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -547,6 +629,28 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
     .pill.risk-mod .p-val, .pill.risk-hi .p-val { color: inherit; }
     .p-note  { opacity: 0.75; font-size: 0.8rem; }
 
+    .rx-summary {
+      margin-top: 14px; padding: 14px 16px;
+      background: var(--nt-primary-soft);
+      border-radius: 12px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .rx-header { display: flex; align-items: center; gap: 8px;
+      mat-icon { color: var(--nt-primary-dark); }
+      strong { font-size: 1.15rem; color: var(--nt-primary-dark); }
+    }
+    .rx-macros { display: flex; flex-wrap: wrap; gap: 8px; }
+    .rx-macros .macro {
+      padding: 4px 12px; border-radius: 999px;
+      background: var(--nt-surface);
+      font-size: 0.85rem;
+      b { color: var(--nt-primary-dark); margin-right: 4px; }
+    }
+    .rx-macros .macro.p b { color: #2563eb; }
+    .rx-macros .macro.c b { color: #d97706; }
+    .rx-macros .macro.f b { color: #dc2626; }
+    .rx-macros .macro.w b { color: #06b6d4; }
+
     .snapshots-card {
       margin-top: 20px;
       padding: 16px !important;
@@ -644,6 +748,24 @@ export class NutriAssessmentComponent implements OnInit {
   private loadSnapshots() {
     this.api.nutriListAssessmentSnapshots(this.clientId, this.practiceCtx.activePracticeId())
       .subscribe({ next: list => this.snapshots.set(list) });
+  }
+
+  recalculatePrescription() {
+    const d = this.draft();
+    if (!d) return;
+    const rx = derivePrescription(d, this.clientBirthDate(), this.clientSex(), null);
+    if (!rx) {
+      this.snack.open(this.translate.instant('assessment.prescription.needData'),
+                      'OK', { duration: 3500 });
+      return;
+    }
+    d.targetCalories = rx.calories;
+    d.targetProteinG = rx.proteinG;
+    d.targetCarbsG = rx.carbsG;
+    d.targetFatG = rx.fatG;
+    d.targetWaterMl = rx.waterMl;
+    d.prescribedAt = new Date().toISOString();
+    this.draft.set({ ...d }); // trigger signal
   }
 
   takeSnapshot() {

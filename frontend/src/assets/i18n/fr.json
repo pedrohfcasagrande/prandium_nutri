@@ -447,6 +447,8 @@
     "setGoals": "Configurer les objectifs",
     "carbs": "Glucides",
     "fat": "Lipides",
+    "water": "Eau",
+    "prescribedByNutri": "Objectifs prescrits par votre nutritionniste",
     "mealsCount": "Repas",
     "quickActions": "Actions rapides",
     "registerMeal": "Enregistrer un repas",
@@ -608,7 +610,36 @@
       "labs": "Résultats de laboratoire",
       "labsHint": "Analyses de sang et autres marqueurs",
       "skinfolds": "Plis cutanés",
-      "skinfoldsHint": "Jackson-Pollock 7 sites — permet le calcul auto du %graisse"
+      "skinfoldsHint": "Jackson-Pollock 7 sites — permet le calcul auto du %graisse",
+      "prescription": "Prescription énergétique",
+      "prescriptionHint": "MB + DEJ + macros — devient l'objectif du tableau de bord du client"
+    },
+    "tmbFormula": {
+      "MIFFLIN": "Mifflin-St Jeor",
+      "HARRIS_BENEDICT": "Harris-Benedict (révisée)",
+      "KATCH_MCARDLE": "Katch-McArdle (utilise la masse maigre)"
+    },
+    "activity": {
+      "useProfile": "Utiliser le profil du client",
+      "SEDENTARY": "Sédentaire",
+      "LIGHT": "Léger",
+      "MODERATE": "Modéré",
+      "ACTIVE": "Actif",
+      "VERY_ACTIVE": "Très actif"
+    },
+    "calorieDelta": {
+      "deficit25": "Déficit agressif (−25%)",
+      "deficit20": "Déficit (−20%)",
+      "deficit10": "Léger déficit (−10%)",
+      "maintain": "Maintien",
+      "surplus10": "Léger surplus (+10%)",
+      "surplus15": "Surplus (+15%)",
+      "surplus20": "Surplus agressif (+20%)"
+    },
+    "proteinDefault": "Défaut : 1.6 g/kg",
+    "prescription": {
+      "recalc": "Recalculer la prescription",
+      "needData": "Besoin de poids + taille + sexe + date de naissance pour calculer"
     },
     "bmi": {
       "underweight": "Insuffisance pondérale",
@@ -705,6 +736,11 @@
       "sfChest": "PC Pectoral",
       "sfMidaxillary": "PC Axillaire moyen",
       "skinfoldProtocol": "Protocole",
+      "tmbFormula": "Formule MB",
+      "activityFactor": "Facteur d'activité",
+      "calorieDeltaPct": "Objectif calorique",
+      "proteinGPerKg": "Protéines (g/kg)",
+      "fatPct": "Lipides",
       "labDate": "Date des analyses",
       "glucoseFasting": "Glycémie à jeun",
       "hba1c": "Hémoglobine glyquée (HbA1c)",

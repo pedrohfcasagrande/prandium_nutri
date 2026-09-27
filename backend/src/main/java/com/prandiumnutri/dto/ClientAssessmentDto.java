@@ -71,6 +71,19 @@ public record ClientAssessmentDto(
         Double targetWeightKg,
         LocalDate targetDate,
 
+        // Prescricao energetica + macros (Fase 9C)
+        String tmbFormula,
+        Double activityFactor,
+        Double targetCalories,
+        Double targetProteinG,
+        Double targetCarbsG,
+        Double targetFatG,
+        Double targetWaterMl,
+        Double proteinGPerKg,
+        Double fatPct,
+        Double calorieDeltaPct,
+        LocalDateTime prescribedAt,
+
         // Exames laboratoriais
         LocalDate labDate,
         Double glucoseFasting,

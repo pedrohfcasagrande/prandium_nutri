@@ -51,6 +51,12 @@ import { DatePickerComponent } from '../../components/date-picker.component';
             </a>
           </mat-card>
         }
+        @if (summary()!.goalsSource === 'PRESCRIPTION') {
+          <div class="rx-badge">
+            <mat-icon>medical_services</mat-icon>
+            {{ 'dashboard.prescribedByNutri' | translate }}
+          </div>
+        }
         <div class="grid-cards">
           <mat-card class="stat-card">
             <div class="stat-header">
@@ -59,7 +65,7 @@ import { DatePickerComponent } from '../../components/date-picker.component';
                 <div class="stat-label">{{ 'dashboard.calories' | translate }}</div>
                 <div class="stat-value">
                   {{ summary()!.caloriesConsumed | number:'1.0-0' }}
-                  @if (summary()!.calorieGoal > 0) {
+                  @if ((summary()!.calorieGoal ?? 0) > 0) {
                     <span class="stat-goal">/ {{ summary()!.calorieGoal | number:'1.0-0' }} kcal</span>
                   } @else {
                     <span class="stat-goal">kcal</span>
@@ -67,8 +73,8 @@ import { DatePickerComponent } from '../../components/date-picker.component';
                 </div>
               </div>
             </div>
-            @if (summary()!.calorieGoal > 0) {
-              <mat-progress-bar mode="determinate" [value]="pct(summary()!.caloriesConsumed, summary()!.calorieGoal)" class="thick-bar"></mat-progress-bar>
+            @if ((summary()!.calorieGoal ?? 0) > 0) {
+              <mat-progress-bar mode="determinate" [value]="pct(summary()!.caloriesConsumed, summary()!.calorieGoal!)" class="thick-bar"></mat-progress-bar>
               <div class="stat-footer">
                 <span class="text-muted">{{ 'dashboard.remaining' | translate }}</span>
                 <strong>{{ summary()!.calorieRemaining | number:'1.0-0' }} kcal</strong>
@@ -83,7 +89,7 @@ import { DatePickerComponent } from '../../components/date-picker.component';
                 <div class="stat-label">{{ 'dashboard.protein' | translate }}</div>
                 <div class="stat-value">
                   {{ summary()!.proteinConsumed | number:'1.0-1' }}
-                  @if (summary()!.proteinGoal > 0) {
+                  @if ((summary()!.proteinGoal ?? 0) > 0) {
                     <span class="stat-goal">/ {{ summary()!.proteinGoal | number:'1.0-0' }} g</span>
                   } @else {
                     <span class="stat-goal">g</span>
@@ -91,8 +97,8 @@ import { DatePickerComponent } from '../../components/date-picker.component';
                 </div>
               </div>
             </div>
-            @if (summary()!.proteinGoal > 0) {
-              <mat-progress-bar mode="determinate" color="accent" [value]="pct(summary()!.proteinConsumed, summary()!.proteinGoal)" class="thick-bar"></mat-progress-bar>
+            @if ((summary()!.proteinGoal ?? 0) > 0) {
+              <mat-progress-bar mode="determinate" color="accent" [value]="pct(summary()!.proteinConsumed, summary()!.proteinGoal!)" class="thick-bar"></mat-progress-bar>
               <div class="stat-footer">
                 <span class="text-muted">{{ 'dashboard.remaining' | translate }}</span>
                 <strong>{{ summary()!.proteinRemaining | number:'1.0-1' }} g</strong>
@@ -109,12 +115,28 @@ import { DatePickerComponent } from '../../components/date-picker.component';
             </div>
             <div class="macro-row">
               <span class="text-muted">{{ 'dashboard.carbs' | translate }}</span>
-              <strong>{{ summary()!.carbsConsumed | number:'1.0-1' }} g</strong>
+              <strong>{{ summary()!.carbsConsumed | number:'1.0-1' }} g
+                @if (summary()!.carbsGoal) { <span class="stat-goal">/ {{ summary()!.carbsGoal | number:'1.0-0' }} g</span> }
+              </strong>
             </div>
+            @if (summary()!.carbsGoal) {
+              <mat-progress-bar mode="determinate" [value]="pct(summary()!.carbsConsumed, summary()!.carbsGoal!)" class="thin-bar"></mat-progress-bar>
+            }
             <div class="macro-row">
               <span class="text-muted">{{ 'dashboard.fat' | translate }}</span>
-              <strong>{{ summary()!.fatConsumed | number:'1.0-1' }} g</strong>
+              <strong>{{ summary()!.fatConsumed | number:'1.0-1' }} g
+                @if (summary()!.fatGoal) { <span class="stat-goal">/ {{ summary()!.fatGoal | number:'1.0-0' }} g</span> }
+              </strong>
             </div>
+            @if (summary()!.fatGoal) {
+              <mat-progress-bar mode="determinate" [value]="pct(summary()!.fatConsumed, summary()!.fatGoal!)" class="thin-bar"></mat-progress-bar>
+            }
+            @if (summary()!.waterGoalMl) {
+              <div class="macro-row">
+                <span class="text-muted"><mat-icon>local_drink</mat-icon> {{ 'dashboard.water' | translate }}</span>
+                <strong>{{ (summary()!.waterGoalMl! / 1000) | number:'1.1-1' }} L</strong>
+              </div>
+            }
             <div class="macro-row meals-count">
               <span class="text-muted">
                 <mat-icon>restaurant</mat-icon>
@@ -245,6 +267,15 @@ import { DatePickerComponent } from '../../components/date-picker.component';
     .stat-value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
     .stat-goal { color: var(--nt-text-muted); font-size: 0.9rem; font-weight: 500; }
     .thick-bar { height: 10px !important; border-radius: 5px; overflow: hidden; }
+    .thin-bar { height: 6px !important; border-radius: 3px; overflow: hidden; margin: 4px 0 8px; }
+
+    .rx-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; margin-bottom: 12px;
+      background: var(--nt-primary-soft); color: var(--nt-primary-dark);
+      border-radius: 999px; font-size: 0.85rem; font-weight: 500;
+      mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    }
     .stat-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
     .macro-row {
       display: flex; justify-content: space-between; padding: 6px 0;
@@ -381,7 +412,7 @@ export class DashboardComponent implements OnInit {
 
   hasGoals(): boolean {
     const s = this.summary();
-    return !!s && (s.calorieGoal > 0 || s.proteinGoal > 0);
+    return !!s && ((s.calorieGoal ?? 0) > 0 || (s.proteinGoal ?? 0) > 0);
   }
 
   /**

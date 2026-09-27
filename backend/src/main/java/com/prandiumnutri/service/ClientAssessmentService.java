@@ -132,6 +132,24 @@ public class ClientAssessmentService {
         ent.setTargetWeightKg(dto.targetWeightKg());
         ent.setTargetDate(dto.targetDate());
 
+        // Prescricao energetica + macros (Fase 9C)
+        ent.setTmbFormula(dto.tmbFormula());
+        ent.setActivityFactor(dto.activityFactor());
+        ent.setTargetCalories(dto.targetCalories());
+        ent.setTargetProteinG(dto.targetProteinG());
+        ent.setTargetCarbsG(dto.targetCarbsG());
+        ent.setTargetFatG(dto.targetFatG());
+        ent.setTargetWaterMl(dto.targetWaterMl());
+        ent.setProteinGPerKg(dto.proteinGPerKg());
+        ent.setFatPct(dto.fatPct());
+        ent.setCalorieDeltaPct(dto.calorieDeltaPct());
+        // Marca prescribed_at somente se veio target_calories preenchido (a prescricao "existe")
+        if (dto.targetCalories() != null && ent.getPrescribedAt() == null) {
+            ent.setPrescribedAt(LocalDateTime.now());
+        } else if (dto.prescribedAt() != null) {
+            ent.setPrescribedAt(dto.prescribedAt());
+        }
+
         // Exames laboratoriais
         ent.setLabDate(dto.labDate());
         ent.setGlucoseFasting(dto.glucoseFasting());
@@ -325,6 +343,10 @@ public class ClientAssessmentService {
                 a.getPhysicalActivityDetails(), a.getSleepHours(), a.getStressLevel(),
                 a.isSmoker(), a.getSmokingDetails(),
                 a.getGoalNotes(), a.getTargetWeightKg(), a.getTargetDate(),
+                a.getTmbFormula(), a.getActivityFactor(),
+                a.getTargetCalories(), a.getTargetProteinG(), a.getTargetCarbsG(), a.getTargetFatG(),
+                a.getTargetWaterMl(), a.getProteinGPerKg(), a.getFatPct(), a.getCalorieDeltaPct(),
+                a.getPrescribedAt(),
                 a.getLabDate(), a.getGlucoseFasting(), a.getHba1c(), a.getInsulinFasting(),
                 a.getTotalCholesterol(), a.getLdl(), a.getHdl(), a.getTriglycerides(),
                 a.getTsh(), a.getT4Free(), a.getVitaminD(), a.getVitaminB12(),

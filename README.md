@@ -234,6 +234,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V024      | client_assessments (ficha clinica base — 1 por par nutri↔cliente)     |
 | V025      | client_assessments.labs (exames) + assessment_snapshots (historico versionado — Fase 9A) |
 | V026      | client_assessments: 7 dobras cutaneas (JP) + 5 perimetros faltantes + skinfold_protocol (Fase 9B) |
+| V027      | client_assessments: prescricao energetica (target_calories/protein/carbs/fat/water) + parametros (tmb_formula, activity_factor, protein_g_per_kg, fat_pct, calorie_delta_pct, prescribed_at) (Fase 9C) |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -485,4 +486,11 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: novo `util/assessment-metrics.ts` com funções puras `bmi()`, `whr()`, `bodyFatJP7()` (fórmula Siri sobre densidade JP), `leanMassKg()`, `fatMassKg()` + categoria IMC + risco cardiovascular WHR por sexo; nova seção "Dobras cutâneas" e 5 novos perímetros na antropometria; card de derivados (IMC/RCQ/%G-JP7/MG/MM) em pills coloridas (verde/amarelo/vermelho pra risco); render read-only espelhado no `MyAssessmentComponent`
   - Novo componente reutilizável `AssessmentTrendChartComponent` (Chart.js line via ng2-charts) — consome snapshots + ficha atual, exibe chips só das métricas com >=1 valor no histórico (peso, %gordura, IMC, cintura, quadril, coxa, braço, glicemia, HbA1c, colesterol total/LDL/HDL/triglicerídeos, vit D), renderiza série temporal ordenada por data. Empty state exige >=2 pontos.
   - Testes: novo caso `upsert_persistsSkinfoldsAndPerimeters` no `ClientAssessmentServiceTest`. Suite backend em 101/101, frontend em 60/60.
+- **Fase 9C (calculo energetico + prescricao de macros — 2026-09-27): OK**
+  - Migração V027: `target_calories/protein_g/carbs_g/fat_g/water_ml` + parâmetros (`tmb_formula`, `activity_factor`, `protein_g_per_kg`, `fat_pct`, `calorie_delta_pct`) + `prescribed_at` em `client_assessments`
+  - Backend: `NutritionCalculator` estendido com Harris-Benedict + Katch-McArdle + método `derive(assessment, user)` que retorna `Prescription (calories, proteinG, carbsG, fatG, waterMl, bmr, tdee, formulaUsed)`. Katch faz fallback pra Mifflin quando %gordura ausente.
+  - `DashboardService`: **source of truth das metas passa a ser a prescrição** quando existe ficha com `target_calories` — senão calcula por `HealthProfile` como antes. `DailySummaryDto` ganha `carbsGoal`/`fatGoal`/`waterGoalMl`/`goalsSource` ('PRESCRIPTION' ou 'SELF').
+  - Frontend: nova seção "Prescrição energética" no `NutriAssessmentComponent` — dropdown fórmula, fator atividade override, objetivo calórico (déficit 10/20/25% até superávit +10/15/20%), proteína g/kg, % gordura. Botão "Recalcular" preenche `targetCalories/protein/carbs/fat/water` via `util/nutrition-calculator.ts` client-side (espelho do backend). Preview visual com kcal, macros e água.
+  - `DashboardComponent`: progress bars finas para carbs/fat, linha de água (L), badge "Metas prescritas pelo seu nutricionista" quando `goalsSource === 'PRESCRIPTION'`.
+  - Testes: `NutritionCalculatorTest` (novo, 8 casos — fórmulas + `derive` + fallback + inputs inválidos). Suite backend em **109/109**, frontend em 60/60.
 - Fase 8 (geolocalizacao restaurantes): backlog

@@ -447,6 +447,8 @@
     "setGoals": "Configurar metas",
     "carbs": "Carboidratos",
     "fat": "Gorduras",
+    "water": "Água",
+    "prescribedByNutri": "Metas prescritas pelo seu nutricionista",
     "mealsCount": "Refeições",
     "quickActions": "Ações rápidas",
     "registerMeal": "Registrar refeição",
@@ -608,7 +610,36 @@
       "labs": "Exames laboratoriais",
       "labsHint": "Resultados de exames de sangue e afins",
       "skinfolds": "Dobras cutâneas",
-      "skinfoldsHint": "Jackson-Pollock 7 pontos — permite cálculo automático de %gordura"
+      "skinfoldsHint": "Jackson-Pollock 7 pontos — permite cálculo automático de %gordura",
+      "prescription": "Prescrição energética",
+      "prescriptionHint": "TMB + gasto energético + macros — vira meta no dashboard do cliente"
+    },
+    "tmbFormula": {
+      "MIFFLIN": "Mifflin-St Jeor",
+      "HARRIS_BENEDICT": "Harris-Benedict revisada",
+      "KATCH_MCARDLE": "Katch-McArdle (usa massa magra)"
+    },
+    "activity": {
+      "useProfile": "Usar o perfil do cliente",
+      "SEDENTARY": "Sedentário",
+      "LIGHT": "Leve",
+      "MODERATE": "Moderado",
+      "ACTIVE": "Intenso",
+      "VERY_ACTIVE": "Muito intenso"
+    },
+    "calorieDelta": {
+      "deficit25": "Déficit agressivo (−25%)",
+      "deficit20": "Déficit (−20%)",
+      "deficit10": "Déficit leve (−10%)",
+      "maintain": "Manutenção",
+      "surplus10": "Superávit leve (+10%)",
+      "surplus15": "Superávit (+15%)",
+      "surplus20": "Superávit agressivo (+20%)"
+    },
+    "proteinDefault": "Padrão: 1.6 g/kg",
+    "prescription": {
+      "recalc": "Recalcular prescrição",
+      "needData": "Preencha peso + altura + sexo + data de nascimento pra calcular"
     },
     "bmi": {
       "underweight": "Baixo peso",
@@ -705,6 +736,11 @@
       "sfChest": "DC Peitoral",
       "sfMidaxillary": "DC Axilar média",
       "skinfoldProtocol": "Protocolo",
+      "tmbFormula": "Fórmula TMB",
+      "activityFactor": "Fator de atividade",
+      "calorieDeltaPct": "Objetivo calórico",
+      "proteinGPerKg": "Proteína (g/kg)",
+      "fatPct": "Gordura",
       "labDate": "Data dos exames",
       "glucoseFasting": "Glicemia de jejum",
       "hba1c": "Hemoglobina glicada (HbA1c)",

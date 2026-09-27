@@ -447,6 +447,8 @@
     "setGoals": "Set goals",
     "carbs": "Carbs",
     "fat": "Fat",
+    "water": "Water",
+    "prescribedByNutri": "Goals prescribed by your nutritionist",
     "mealsCount": "Meals",
     "quickActions": "Quick actions",
     "registerMeal": "Log a meal",
@@ -608,7 +610,36 @@
       "labs": "Lab results",
       "labsHint": "Blood tests and other markers",
       "skinfolds": "Skinfolds",
-      "skinfoldsHint": "Jackson-Pollock 7-site — enables automatic body fat % calculation"
+      "skinfoldsHint": "Jackson-Pollock 7-site — enables automatic body fat % calculation",
+      "prescription": "Energy prescription",
+      "prescriptionHint": "BMR + TDEE + macros — becomes the client dashboard goal"
+    },
+    "tmbFormula": {
+      "MIFFLIN": "Mifflin-St Jeor",
+      "HARRIS_BENEDICT": "Harris-Benedict (revised)",
+      "KATCH_MCARDLE": "Katch-McArdle (uses lean mass)"
+    },
+    "activity": {
+      "useProfile": "Use client's profile",
+      "SEDENTARY": "Sedentary",
+      "LIGHT": "Light",
+      "MODERATE": "Moderate",
+      "ACTIVE": "Active",
+      "VERY_ACTIVE": "Very active"
+    },
+    "calorieDelta": {
+      "deficit25": "Aggressive deficit (−25%)",
+      "deficit20": "Deficit (−20%)",
+      "deficit10": "Slight deficit (−10%)",
+      "maintain": "Maintenance",
+      "surplus10": "Slight surplus (+10%)",
+      "surplus15": "Surplus (+15%)",
+      "surplus20": "Aggressive surplus (+20%)"
+    },
+    "proteinDefault": "Default: 1.6 g/kg",
+    "prescription": {
+      "recalc": "Recalculate prescription",
+      "needData": "Requires weight + height + sex + birth date to calculate"
     },
     "bmi": {
       "underweight": "Underweight",
@@ -705,6 +736,11 @@
       "sfChest": "SF Chest",
       "sfMidaxillary": "SF Midaxillary",
       "skinfoldProtocol": "Protocol",
+      "tmbFormula": "BMR formula",
+      "activityFactor": "Activity factor",
+      "calorieDeltaPct": "Calorie goal",
+      "proteinGPerKg": "Protein (g/kg)",
+      "fatPct": "Fat",
       "labDate": "Lab results date",
       "glucoseFasting": "Fasting glucose",
       "hba1c": "Glycated hemoglobin (HbA1c)",
