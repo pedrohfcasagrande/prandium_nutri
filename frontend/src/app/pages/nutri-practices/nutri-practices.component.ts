@@ -30,6 +30,38 @@ import { Practice } from '../../models/models';
         </div>
       </div>
 
+      <!-- Fase 9D: assinatura digital para PDF de prescricao -->
+      <mat-card class="signature-card">
+        <div class="sig-head">
+          <mat-icon>draw</mat-icon>
+          <div>
+            <h3>{{ 'nutriPractices.signature.title' | translate }}</h3>
+            <p class="text-muted small">{{ 'nutriPractices.signature.hint' | translate }}</p>
+          </div>
+        </div>
+        @if (signaturePreview()) {
+          <img [src]="signaturePreview()!" alt="Assinatura" class="sig-preview"/>
+        } @else {
+          <div class="sig-empty">
+            <mat-icon>gesture</mat-icon>
+            <span>{{ 'nutriPractices.signature.empty' | translate }}</span>
+          </div>
+        }
+        <div class="sig-actions">
+          <button mat-stroked-button (click)="fileInput.click()">
+            <mat-icon>upload</mat-icon>
+            {{ 'nutriPractices.signature.upload' | translate }}
+          </button>
+          <input #fileInput type="file" accept="image/png,image/jpeg" hidden (change)="onSignaturePicked($event)">
+          @if (signaturePreview()) {
+            <button mat-stroked-button color="warn" (click)="clearSignature()">
+              <mat-icon>delete</mat-icon>
+              {{ 'nutriPractices.signature.remove' | translate }}
+            </button>
+          }
+        </div>
+      </mat-card>
+
       @if (!practices().length) {
         <div class="empty card-surface">
           <mat-icon>badge</mat-icon>
@@ -109,6 +141,29 @@ import { Practice } from '../../models/models';
 
     .actions { display: flex; justify-content: flex-end; }
     .small { font-size: 0.85rem; margin: 0; }
+
+    .signature-card {
+      padding: 20px !important; margin-bottom: 20px;
+      display: flex; flex-direction: column; gap: 12px;
+      border-left: 4px solid var(--nt-primary-dark) !important;
+    }
+    .sig-head { display: flex; align-items: center; gap: 12px;
+      mat-icon { color: var(--nt-primary-dark); font-size: 28px; width: 28px; height: 28px; }
+      h3 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+    }
+    .sig-preview {
+      max-width: 260px; max-height: 90px;
+      border: 1px dashed var(--nt-border); border-radius: 8px;
+      padding: 6px; background: #fff;
+      align-self: flex-start;
+    }
+    .sig-empty {
+      display: flex; align-items: center; gap: 8px;
+      padding: 20px; background: var(--nt-surface-2); border-radius: 8px;
+      color: var(--nt-text-muted); font-size: 0.9rem;
+      mat-icon { font-size: 24px; width: 24px; height: 24px; }
+    }
+    .sig-actions { display: flex; gap: 8px; }
   `]
 })
 export class NutriPracticesComponent implements OnInit {
@@ -118,11 +173,45 @@ export class NutriPracticesComponent implements OnInit {
 
   practices = signal<Practice[]>([]);
   saving = signal(new Set<number>());
+  signaturePreview = signal<string | null>(null);
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+    this.api.nutriGetSignature().subscribe(r => {
+      if (r?.signatureBase64) this.signaturePreview.set(r.signatureBase64);
+    });
+  }
 
   load() {
     this.api.nutriMyPractices().subscribe(list => this.practices.set(list));
+  }
+
+  onSignaturePicked(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 2_000_000) {
+      this.snack.open(this.translate.instant('nutriPractices.signature.tooBig'), 'OK', { duration: 3000 });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      this.signaturePreview.set(dataUrl);
+      this.api.nutriPutSignature(dataUrl).subscribe({
+        next: () => this.snack.open(this.translate.instant('nutriPractices.signature.saved'),
+                                     'OK', { duration: 2500 }),
+        error: () => this.snack.open(this.translate.instant('nutriPractices.signature.err'),
+                                      'OK', { duration: 3000 })
+      });
+    };
+    reader.readAsDataURL(file);
+    input.value = ''; // limpa pra permitir re-upload do mesmo arquivo
+  }
+
+  clearSignature() {
+    this.signaturePreview.set(null);
+    this.api.nutriPutSignature(null).subscribe();
   }
 
   save(p: Practice) {

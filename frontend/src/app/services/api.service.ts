@@ -517,4 +517,23 @@ export class ApiService {
   myAssessmentSelfFill(dto: AssessmentSelfFill): Observable<ClientAssessment> {
     return this.http.put<ClientAssessment>(`${this.base}/me/assessment/self-fill`, dto);
   }
+
+  // Fase 9D: PDF de prescricao (nutri + cliente) + assinatura do nutri
+  // Uso responseType:'blob' + HttpClient pra que o interceptor de auth inclua o JWT.
+  nutriPrescriptionPdf(clientId: number, practiceId?: number | null): Observable<Blob> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get(
+      `${this.base}/nutritionist/assessments/client/${clientId}/prescription.pdf`,
+      { params, responseType: 'blob' });
+  }
+  myPrescriptionPdf(): Observable<Blob> {
+    return this.http.get(`${this.base}/me/assessment/prescription.pdf`, { responseType: 'blob' });
+  }
+  nutriGetSignature(): Observable<{ signatureBase64: string }> {
+    return this.http.get<{ signatureBase64: string }>(`${this.base}/nutritionist/me/signature`);
+  }
+  nutriPutSignature(signatureBase64: string | null): Observable<void> {
+    return this.http.put<void>(`${this.base}/nutritionist/me/signature`, { signatureBase64 });
+  }
 }

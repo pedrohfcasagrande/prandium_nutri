@@ -1,7 +1,9 @@
 package com.prandiumnutri.controller;
 
+import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.ClientLinkDto;
 import com.prandiumnutri.dto.InviteClientRequest;
+import com.prandiumnutri.repository.UserRepository;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.NutritionistLinkService;
 import jakarta.validation.Valid;
@@ -10,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/nutritionist")
@@ -17,6 +20,7 @@ import java.util.List;
 public class NutritionistController {
 
     private final NutritionistLinkService linkService;
+    private final UserRepository userRepository;
     private final CurrentUser currentUser;
 
     @GetMapping("/clients")
@@ -65,5 +69,27 @@ public class NutritionistController {
                                @RequestBody(required = false) java.util.Map<String, String> body) {
         String note = body == null ? null : body.get("note");
         linkService.rejectRequest(currentUser.getAuthenticated(), linkId, note);
+    }
+
+    // Fase 9D: assinatura digital para rodape do PDF de prescricao
+
+    @GetMapping("/me/signature")
+    @PreAuthorize("hasRole('NUTRITIONIST')")
+    public Map<String, String> getSignature() {
+        User u = currentUser.getAuthenticated();
+        return Map.of("signatureBase64", u.getSignatureBase64() != null ? u.getSignatureBase64() : "");
+    }
+
+    @PutMapping("/me/signature")
+    @PreAuthorize("hasRole('NUTRITIONIST')")
+    public void putSignature(@RequestBody Map<String, String> body) {
+        String base64 = body.get("signatureBase64");
+        // Limite defensivo: ~2MB em base64 (~1.5MB de imagem). Acima disso, rejeita.
+        if (base64 != null && base64.length() > 2_800_000) {
+            throw new IllegalArgumentException("Assinatura muito grande (> 2MB)");
+        }
+        User u = currentUser.getAuthenticated();
+        u.setSignatureBase64(base64 != null && !base64.isBlank() ? base64 : null);
+        userRepository.save(u);
     }
 }

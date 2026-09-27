@@ -105,4 +105,8 @@ public class User {
 
     @Column(length = 500)
     private String specialties;
+
+    // ---- Fase 9D: assinatura digital (imagem PNG em data URL base64) ----
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String signatureBase64;
 }

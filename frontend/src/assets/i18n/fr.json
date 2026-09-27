@@ -641,6 +641,11 @@
       "recalc": "Recalculer la prescription",
       "needData": "Besoin de poids + taille + sexe + date de naissance pour calculer"
     },
+    "pdf": {
+      "download": "Télécharger le PDF de la prescription",
+      "downloading": "Génération du PDF...",
+      "err": "Échec de la génération du PDF"
+    },
     "bmi": {
       "underweight": "Insuffisance pondérale",
       "normal": "Normal",
@@ -779,7 +784,8 @@
     },
     "history": {
       "title": "Mes consultations passées"
-    }
+    },
+    "downloadPdf": "Télécharger ma prescription"
   },
   "appointments": {
     "title": "Consultations",
@@ -1183,6 +1189,16 @@
     "status": {
       "ACTIVE": "Actif",
       "SUSPENDED": "Suspendu"
+    },
+    "signature": {
+      "title": "Signature numérique",
+      "hint": "Image PNG/JPG apparaît en pied de page du PDF de prescription.",
+      "empty": "Aucune signature enregistrée",
+      "upload": "Envoyer une image",
+      "remove": "Supprimer",
+      "saved": "Signature enregistrée",
+      "err": "Échec de l'enregistrement",
+      "tooBig": "Image trop grande (max 2 Mo)"
     }
   },
   "nutriDashboard": {

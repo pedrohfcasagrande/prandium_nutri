@@ -45,6 +45,13 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
               {{ 'myAssessment.updatedAt' | translate }}: {{ a.updatedAt | date:'short' }}
             </div>
           </div>
+          <span class="spacer"></span>
+          @if (a.targetCalories != null) {
+            <button mat-flat-button color="primary" (click)="downloadPdf()" [disabled]="downloadingPdf()">
+              <mat-icon>picture_as_pdf</mat-icon>
+              {{ (downloadingPdf() ? 'assessment.pdf.downloading' : 'myAssessment.downloadPdf') | translate }}
+            </button>
+          }
         </div>
 
         <mat-card class="section" *ngIf="hasAnthropometry(a)">
@@ -308,6 +315,7 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
     .meta { display: flex; align-items: center; gap: 12px; padding: 14px 18px !important;
       mat-icon { color: var(--nt-primary); font-size: 32px; width: 32px; height: 32px; }
     }
+    .spacer { flex: 1; }
     .small { font-size: 0.85rem; }
     .section { padding: 20px !important; margin-bottom: 12px; }
     .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
@@ -378,6 +386,7 @@ export class MyAssessmentComponent implements OnInit {
   snapshots = signal<AssessmentSnapshot[]>([]);
   selfDraft: AssessmentSelfFill = {};
   savingSelf = signal(false);
+  downloadingPdf = signal(false);
   derived = computed(() => {
     const a = this.assessment();
     if (!a) return null;
@@ -418,6 +427,26 @@ export class MyAssessmentComponent implements OnInit {
       error: err => {
         this.savingSelf.set(false);
         this.snack.open(err?.error?.error ?? this.translate.instant('myAssessment.selfFill.err'),
+                        'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  downloadPdf() {
+    this.downloadingPdf.set(true);
+    this.api.myPrescriptionPdf().subscribe({
+      next: blob => {
+        this.downloadingPdf.set(false);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'minha-prescricao.pdf';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      error: err => {
+        this.downloadingPdf.set(false);
+        this.snack.open(err?.error?.error ?? this.translate.instant('assessment.pdf.err'),
                         'OK', { duration: 3000 });
       }
     });

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Prescrição Nutricional</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 18mm 22mm 18mm;
+            @bottom-right {
+                content: "Pág. " counter(page) " de " counter(pages);
+                font-family: sans-serif;
+                font-size: 9pt;
+                color: #64748b;
+            }
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #1a1f2b;
+            font-size: 10.5pt;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Header — bloco separado, futuramente customizavel */
+        .doc-header {
+            display: block;
+            border-bottom: 3px solid #0e8f83;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .doc-header table { width: 100%; border-collapse: collapse; }
+        .doc-header .brand {
+            font-size: 20pt; font-weight: 700; color: #0a6c63;
+            letter-spacing: -0.02em;
+        }
+        .doc-header .brand .leaf {
+            display: inline-block; width: 18px; height: 18px;
+            background: #0e8f83; border-radius: 5px; margin-right: 6px;
+            vertical-align: -3px;
+        }
+        .doc-title {
+            text-align: right;
+            font-size: 11pt; color: #64748b; text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .doc-title strong { display: block; font-size: 14pt; color: #0a6c63; letter-spacing: 0; margin-top: 2px; }
+        .doc-date { font-size: 9pt; color: #94a3b8; margin-top: 3px; }
+
+        /* Sections */
+        .section {
+            margin: 0 0 18px 0;
+            padding: 12px 14px;
+            background: #f7f8fa;
+            border-left: 3px solid #0e8f83;
+            border-radius: 4px;
+            page-break-inside: avoid;
+        }
+        .section > h2 {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #0a6c63;
+            margin: 0 0 8px 0;
+            font-weight: 700;
+        }
+        .kv { width: 100%; border-collapse: collapse; }
+        .kv td { padding: 3px 0; vertical-align: top; }
+        .kv .k { color: #64748b; font-size: 9.5pt; width: 35%; }
+        .kv .v { font-weight: 500; }
+
+        /* Prescrição destaque */
+        .rx-hero {
+            background: linear-gradient(135deg, #0e8f83, #0a6c63);
+            color: #fff;
+            padding: 18px 20px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+        .rx-hero table { width: 100%; border-collapse: collapse; }
+        .rx-hero .kcal { font-size: 32pt; font-weight: 700; letter-spacing: -0.02em; }
+        .rx-hero .kcal-lbl { font-size: 10pt; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85; }
+        .rx-hero .meta { text-align: right; font-size: 9.5pt; opacity: 0.9; line-height: 1.5; }
+
+        .macros {
+            display: block;
+            width: 100%;
+            margin: 12px 0;
+        }
+        .macros table { width: 100%; border-collapse: collapse; }
+        .macros td {
+            width: 25%;
+            padding: 10px 8px;
+            text-align: center;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+        .macros td:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+        .macros td:last-child  { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+        .macros .m-lbl { font-size: 9pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .macros .m-val { font-size: 14pt; font-weight: 700; }
+        .macros .m-sub { font-size: 8.5pt; color: #94a3b8; margin-top: 2px; }
+        .macros .p .m-val { color: #2563eb; }
+        .macros .c .m-val { color: #d97706; }
+        .macros .f .m-val { color: #dc2626; }
+        .macros .w .m-val { color: #06b6d4; }
+
+        pre.notes {
+            font-family: inherit;
+            white-space: pre-wrap;
+            margin: 0;
+            font-size: 10pt;
+        }
+
+        /* Footer — bloco separado, futuramente customizavel */
+        .doc-footer {
+            margin-top: 30px;
+            padding-top: 18px;
+            border-top: 1px solid #e2e8f0;
+            page-break-inside: avoid;
+        }
+        .doc-footer table { width: 100%; border-collapse: collapse; }
+        .sig-cell { text-align: center; width: 60%; }
+        .sig-img {
+            max-width: 180px;
+            max-height: 60px;
+            display: block;
+            margin: 0 auto 4px auto;
+        }
+        .sig-line {
+            width: 260px;
+            border-top: 1px solid #64748b;
+            margin: 8px auto 4px auto;
+        }
+        .sig-name { font-weight: 600; font-size: 11pt; }
+        .sig-crn { color: #64748b; font-size: 9.5pt; }
+        .disclaimer {
+            margin-top: 20px;
+            font-size: 8pt;
+            color: #94a3b8;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== HEADER (customizavel na Fase 9D-2) ==================== -->
+<div class="doc-header">
+    <table>
+        <tr>
+            <td>
+                <div class="brand"><span class="leaf"></span>Prandium Nutri</div>
+            </td>
+            <td class="doc-title">
+                Documento
+                <strong th:text="#{pdf.prescription.title}">Prescrição Nutricional</strong>
+                <div class="doc-date" th:text="${issuedAtFormatted}">27/09/2026</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ==================== PACIENTE ==================== -->
+<div class="section">
+    <h2 th:text="#{pdf.prescription.patient}">Paciente</h2>
+    <table class="kv">
+        <tr>
+            <td class="k" th:text="#{pdf.prescription.name}">Nome</td>
+            <td class="v" th:text="${client.name}">João da Silva</td>
+        </tr>
+        <tr th:if="${clientCpfMasked != null}">
+            <td class="k">CPF</td>
+            <td class="v" th:text="${clientCpfMasked}">***.***.***-45</td>
+        </tr>
+        <tr th:if="${clientAgeSex != null}">
+            <td class="k" th:text="#{pdf.prescription.ageSex}">Idade / sexo</td>
+            <td class="v" th:text="${clientAgeSex}">32 anos · M</td>
+        </tr>
+        <tr th:if="${assessment.weightKg != null or assessment.heightCm != null}">
+            <td class="k" th:text="#{pdf.prescription.anthropometry}">Peso / altura</td>
+            <td class="v">
+                <span th:if="${assessment.weightKg != null}" th:text="${#numbers.formatDecimal(assessment.weightKg, 1, 1)} + ' kg'">80.0 kg</span>
+                <span th:if="${assessment.weightKg != null and assessment.heightCm != null}"> · </span>
+                <span th:if="${assessment.heightCm != null}" th:text="${assessment.heightCm} + ' cm'">180 cm</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ==================== HERO: KCAL + FORMULA ==================== -->
+<div class="rx-hero">
+    <table>
+        <tr>
+            <td>
+                <div class="kcal-lbl" th:text="#{pdf.prescription.calorieTarget}">Meta calórica diária</div>
+                <div class="kcal">
+                    <span th:text="${#numbers.formatInteger(assessment.targetCalories, 1)}">2200</span> kcal
+                </div>
+            </td>
+            <td class="meta">
+                <div th:if="${assessment.tmbFormula != null}">
+                    <span th:text="#{pdf.prescription.formula}">Fórmula</span>:
+                    <strong th:text="#{'pdf.prescription.formula.' + ${assessment.tmbFormula}}">Mifflin-St Jeor</strong>
+                </div>
+                <div th:if="${assessment.calorieDeltaPct != null}">
+                    <span th:text="#{pdf.prescription.calorieDelta}">Ajuste calórico</span>:
+                    <strong th:text="${#numbers.formatPercent(assessment.calorieDeltaPct, 1, 0)}">-20%</strong>
+                </div>
+                <div th:if="${assessment.activityFactor != null}">
+                    <span th:text="#{pdf.prescription.activityFactor}">Fator atividade</span>:
+                    <strong th:text="${#numbers.formatDecimal(assessment.activityFactor, 1, 3)}">1.55</strong>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ==================== MACROS ==================== -->
+<div class="macros">
+    <table>
+        <tr>
+            <td class="p">
+                <div class="m-lbl" th:text="#{pdf.prescription.protein}">Proteína</div>
+                <div class="m-val"><span th:text="${#numbers.formatDecimal(assessment.targetProteinG, 1, 1)}">160.0</span> g</div>
+                <div class="m-sub" th:if="${assessment.proteinGPerKg != null}"
+                     th:text="${#numbers.formatDecimal(assessment.proteinGPerKg, 1, 1)} + ' g/kg'">2.0 g/kg</div>
+            </td>
+            <td class="c">
+                <div class="m-lbl" th:text="#{pdf.prescription.carbs}">Carboidratos</div>
+                <div class="m-val"><span th:text="${#numbers.formatDecimal(assessment.targetCarbsG, 1, 1)}">240.0</span> g</div>
+                <div class="m-sub" th:text="${carbsPct} + '%'">44%</div>
+            </td>
+            <td class="f">
+                <div class="m-lbl" th:text="#{pdf.prescription.fat}">Gorduras</div>
+                <div class="m-val"><span th:text="${#numbers.formatDecimal(assessment.targetFatG, 1, 1)}">73.5</span> g</div>
+                <div class="m-sub" th:if="${assessment.fatPct != null}"
+                     th:text="${#numbers.formatPercent(assessment.fatPct, 1, 0)}">30%</div>
+            </td>
+            <td class="w">
+                <div class="m-lbl" th:text="#{pdf.prescription.water}">Água</div>
+                <div class="m-val"><span th:text="${#numbers.formatDecimal(assessment.targetWaterMl / 1000, 1, 1)}">2.8</span> L</div>
+                <div class="m-sub" th:text="${#numbers.formatInteger(assessment.targetWaterMl, 1)} + ' ml/dia'">2800 ml/dia</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ==================== ORIENTACOES ==================== -->
+<div class="section" th:if="${assessment.notes != null and !#strings.isEmpty(assessment.notes)}">
+    <h2 th:text="#{pdf.prescription.guidelines}">Orientações gerais</h2>
+    <pre class="notes" th:text="${assessment.notes}">Orientações...</pre>
+</div>
+
+<div class="section" th:if="${assessment.goalNotes != null and !#strings.isEmpty(assessment.goalNotes)}">
+    <h2 th:text="#{pdf.prescription.goal}">Objetivo</h2>
+    <pre class="notes" th:text="${assessment.goalNotes}">Objetivo...</pre>
+</div>
+
+<!-- ==================== CARDAPIO (opcional) ==================== -->
+<div class="section" th:if="${activeMenu != null}" style="page-break-before: auto;">
+    <h2>
+        <span th:text="#{pdf.prescription.menu}">Cardápio</span>
+        <span th:if="${activeMenu.name != null}"> · <span th:text="${activeMenu.name}">Nome do plano</span></span>
+    </h2>
+    <pre class="notes" th:text="${activeMenu.content}">Cardápio...</pre>
+</div>
+
+<!-- ==================== FOOTER (customizavel na Fase 9D-2) ==================== -->
+<div class="doc-footer">
+    <table>
+        <tr>
+            <td class="sig-cell">
+                <img th:if="${nutritionist.signatureBase64 != null}"
+                     th:src="${nutritionist.signatureBase64}" class="sig-img" alt="Assinatura"/>
+                <div class="sig-line"></div>
+                <div class="sig-name" th:text="${nutritionist.name}">Dra. Camila Rocha</div>
+                <div class="sig-crn"
+                     th:if="${nutritionist.crn != null}"
+                     th:text="'CRN ' + ${nutritionist.crn}">CRN 12345</div>
+            </td>
+        </tr>
+    </table>
+    <div class="disclaimer" th:text="#{pdf.prescription.disclaimer}">
+        Documento gerado eletronicamente. Este plano é individual e não substitui consulta presencial.
+    </div>
+</div>
+
+</body>
+</html>

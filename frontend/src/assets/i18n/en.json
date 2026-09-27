@@ -641,6 +641,11 @@
       "recalc": "Recalculate prescription",
       "needData": "Requires weight + height + sex + birth date to calculate"
     },
+    "pdf": {
+      "download": "Download prescription PDF",
+      "downloading": "Generating PDF...",
+      "err": "Failed to generate PDF"
+    },
     "bmi": {
       "underweight": "Underweight",
       "normal": "Normal",
@@ -779,7 +784,8 @@
     },
     "history": {
       "title": "My past consultations"
-    }
+    },
+    "downloadPdf": "Download my prescription"
   },
   "appointments": {
     "title": "Appointments",
@@ -1183,6 +1189,16 @@
     "status": {
       "ACTIVE": "Active",
       "SUSPENDED": "Suspended"
+    },
+    "signature": {
+      "title": "Digital signature",
+      "hint": "PNG/JPG image appears in the footer of the prescription PDF.",
+      "empty": "No signature saved",
+      "upload": "Upload image",
+      "remove": "Remove",
+      "saved": "Signature saved",
+      "err": "Failed to save signature",
+      "tooBig": "Image too large (max 2MB)"
     }
   },
   "nutriDashboard": {

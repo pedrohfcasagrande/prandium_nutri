@@ -641,6 +641,11 @@
       "recalc": "Recalcular prescrição",
       "needData": "Preencha peso + altura + sexo + data de nascimento pra calcular"
     },
+    "pdf": {
+      "download": "Baixar PDF da prescrição",
+      "downloading": "Gerando PDF...",
+      "err": "Falha ao gerar PDF"
+    },
     "bmi": {
       "underweight": "Baixo peso",
       "normal": "Eutrófico",
@@ -779,7 +784,8 @@
     },
     "history": {
       "title": "Minhas consultas anteriores"
-    }
+    },
+    "downloadPdf": "Baixar minha prescrição"
   },
   "appointments": {
     "title": "Consultas",
@@ -1183,6 +1189,16 @@
     "status": {
       "ACTIVE": "Ativo",
       "SUSPENDED": "Suspenso"
+    },
+    "signature": {
+      "title": "Assinatura digital",
+      "hint": "Imagem PNG/JPG aparece no rodapé do PDF de prescrição.",
+      "empty": "Nenhuma assinatura salva",
+      "upload": "Enviar imagem",
+      "remove": "Remover",
+      "saved": "Assinatura salva",
+      "err": "Falha ao salvar assinatura",
+      "tooBig": "Imagem muito grande (máx 2MB)"
     }
   },
   "nutriDashboard": {

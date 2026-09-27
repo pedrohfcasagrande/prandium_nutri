@@ -33,6 +33,8 @@ describe('NutriPracticesComponent', () => {
       { id: 2, companyId: 10, companyName: 'NutriPro', bio: null, specialties: null,
         acceptsNewClients: false, status: 'ACTIVE' }
     ]);
+    // Fase 9D: componente tambem le assinatura no init
+    http.expectOne(`${base}/nutritionist/me/signature`).flush({ signatureBase64: '' });
   });
 
   afterEach(() => http.verify());

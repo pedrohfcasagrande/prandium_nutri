@@ -491,6 +491,10 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
                   <span class="macro w"><b>Água</b> {{ (d.targetWaterMl ?? 0) / 1000 | number:'1.1-1' }} L</span>
                 </div>
               </div>
+              <button mat-stroked-button type="button" (click)="downloadPdf()" [disabled]="downloadingPdf()">
+                <mat-icon>picture_as_pdf</mat-icon>
+                {{ (downloadingPdf() ? 'assessment.pdf.downloading' : 'assessment.pdf.download') | translate }}
+              </button>
             }
           </mat-expansion-panel>
 
@@ -705,6 +709,7 @@ export class NutriAssessmentComponent implements OnInit {
   saving = signal(false);
   snapshots = signal<AssessmentSnapshot[]>([]);
   snapshotting = signal(false);
+  downloadingPdf = signal(false);
   derived = computed(() => {
     const d = this.draft();
     if (!d) return null;
@@ -766,6 +771,25 @@ export class NutriAssessmentComponent implements OnInit {
     d.targetWaterMl = rx.waterMl;
     d.prescribedAt = new Date().toISOString();
     this.draft.set({ ...d }); // trigger signal
+  }
+
+  downloadPdf() {
+    this.downloadingPdf.set(true);
+    this.api.nutriPrescriptionPdf(this.clientId, this.practiceCtx.activePracticeId()).subscribe({
+      next: blob => {
+        this.downloadingPdf.set(false);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `prescricao-${this.clientId}.pdf`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
+      error: () => {
+        this.downloadingPdf.set(false);
+        this.snack.open(this.translate.instant('assessment.pdf.err'), 'OK', { duration: 3000 });
+      }
+    });
   }
 
   takeSnapshot() {

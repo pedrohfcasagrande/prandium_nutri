@@ -235,6 +235,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V025      | client_assessments.labs (exames) + assessment_snapshots (historico versionado — Fase 9A) |
 | V026      | client_assessments: 7 dobras cutaneas (JP) + 5 perimetros faltantes + skinfold_protocol (Fase 9B) |
 | V027      | client_assessments: prescricao energetica (target_calories/protein/carbs/fat/water) + parametros (tmb_formula, activity_factor, protein_g_per_kg, fat_pct, calorie_delta_pct, prescribed_at) (Fase 9C) |
+| V028      | users.signature_base64 (assinatura digital do nutri pra PDF de prescricao — Fase 9D) |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -493,4 +494,14 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: nova seção "Prescrição energética" no `NutriAssessmentComponent` — dropdown fórmula, fator atividade override, objetivo calórico (déficit 10/20/25% até superávit +10/15/20%), proteína g/kg, % gordura. Botão "Recalcular" preenche `targetCalories/protein/carbs/fat/water` via `util/nutrition-calculator.ts` client-side (espelho do backend). Preview visual com kcal, macros e água.
   - `DashboardComponent`: progress bars finas para carbs/fat, linha de água (L), badge "Metas prescritas pelo seu nutricionista" quando `goalsSource === 'PRESCRIPTION'`.
   - Testes: `NutritionCalculatorTest` (novo, 8 casos — fórmulas + `derive` + fallback + inputs inválidos). Suite backend em **109/109**, frontend em 60/60.
+- **Fase 9D-1 (PDF de prescricao — 2026-09-27): OK**
+  - Migração V028: `users.signature_base64` (MEDIUMTEXT — assinatura PNG como data URL, limite ~2MB, sem storage externo)
+  - Backend: dep nova `com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10` + spring-boot-starter-thymeleaf; template `resources/templates/pdf/prescription.html` (blocos `.doc-header`/`.doc-footer` separados pra facilitar customização por nutri na Fase 9D-2); labels via `messages_pt/en/fr.properties`; novo `PrescriptionPdfService` renderiza Thymeleaf → XHTML → PDF via OpenHTMLtoPDF.
+  - Endpoints (retornam `application/pdf`):
+    - `GET /api/nutritionist/assessments/client/{id}/prescription.pdf` (nutri)
+    - `GET /api/me/assessment/prescription.pdf` (cliente)
+    - `GET /api/nutritionist/me/signature` + `PUT /api/nutritionist/me/signature` `{signatureBase64}` (nutri gerencia assinatura)
+  - Frontend: `ApiService` usa `HttpClient` com `responseType: 'blob'` (preserva JWT). Botão "Baixar PDF da prescrição" na seção Prescrição do assessment (nutri, habilitado só com `targetCalories`). Botão "Baixar minha prescrição" no header do `MyAssessmentComponent`. Card "Assinatura digital" no topo do `/nutritionist/practices` com upload de PNG/JPG (limite 2MB, preview inline, botão de remoção). Download via `URL.createObjectURL` + `<a download>`.
+  - Testes: `PrescriptionPdfServiceTest` (2 casos — smoke test do pipeline verifica assinatura `%PDF-` + falha ao gerar sem `targetCalories`). Suite backend em **111/111**, frontend em 60/60 (spec de practices ajustado pra mockar `/me/signature`).
+  - Backlog Fase 9D-2: template customizável (logo por nutri, cabeçalho/rodapé/cores), assinatura digital ICP-Brasil, log de emissão + hash.
 - Fase 8 (geolocalizacao restaurantes): backlog
