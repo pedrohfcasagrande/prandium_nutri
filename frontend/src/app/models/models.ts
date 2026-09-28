@@ -453,6 +453,30 @@ export interface ClientAssessment {
 
   // Meta
   notes?: string | null;
+  /** Fase 9E: notas privadas do nutri; nunca vem para o cliente. */
+  nutriNotes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Fase 9E: consulta formal nutri↔cliente
+export type ConsultationType = 'INITIAL' | 'RETURN' | 'EMERGENCY' | 'CHECKUP';
+
+export interface Consultation {
+  id?: number;
+  clientId?: number;
+  clientName?: string;
+  nutritionistId?: number;
+  nutritionistName?: string;
+  practiceId?: number | null;
+  consultationDate: string;
+  type: ConsultationType;
+  chiefComplaint?: string | null;
+  findings?: string | null;
+  plan?: string | null;
+  nextConsultationDate?: string | null;
+  snapshotId?: number | null;
+  snapshotVersion?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -611,6 +611,8 @@
       "labsHint": "Analyses de sang et autres marqueurs",
       "skinfolds": "Plis cutanés",
       "skinfoldsHint": "Jackson-Pollock 7 sites — permet le calcul auto du %graisse",
+      "nutriNotes": "Notes privées du nutritionniste",
+      "nutriNotesHint": "Vous seul les voyez — jamais dans le PDF ni partagées avec le client",
       "prescription": "Prescription énergétique",
       "prescriptionHint": "MB + DEJ + macros — devient l'objectif du tableau de bord du client"
     },
@@ -766,7 +768,23 @@
       "uricAcid": "Acide urique",
       "labNotes": "Notes sur les analyses",
       "notes": "Notes générales",
-      "notesHint": "Conclusions, plan, conseils..."
+      "notesHint": "Conclusions, plan, conseils...",
+      "nutriNotes": "Notes privées du nutritionniste",
+      "nutriNotesPlaceholder": "Notes internes — jamais partagées avec le client ou le PDF"
+    },
+    "chart": {
+      "title": "Dossier / historique",
+      "empty": "Aucune consultation ou snapshot enregistré.",
+      "new": "Nouvelle consultation",
+      "created": "Consultation enregistrée",
+      "err": "Échec de l'enregistrement",
+      "promptComplaint": "Motif / plainte principale (facultatif) :",
+      "type": {
+        "INITIAL": "Consultation initiale",
+        "RETURN": "Suivi",
+        "EMERGENCY": "Urgence",
+        "CHECKUP": "Bilan"
+      }
     }
   },
   "myAssessment": {
@@ -784,6 +802,9 @@
     },
     "history": {
       "title": "Mes consultations passées"
+    },
+    "consultations": {
+      "title": "Consultations avec mon nutritionniste"
     },
     "downloadPdf": "Télécharger ma prescription"
   },

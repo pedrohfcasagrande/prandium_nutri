@@ -36,12 +36,44 @@ public class ClientAssessmentService {
 
     // -------------------- Leituras --------------------
 
-    /** Cliente le a propria ficha mais recente (independente do nutri que criou). */
+    /**
+     * Cliente le a propria ficha mais recente. Fase 9E: nunca expoe {@code nutriNotes}
+     * pra fora do escopo do nutri (elas sao anotacoes privadas do profissional).
+     */
     @Transactional(readOnly = true)
     public Optional<ClientAssessmentDto> findLatestForClient(Long clientId) {
         return repository.findByClientIdOrderByUpdatedAtDesc(clientId).stream()
                 .findFirst()
-                .map(this::toDto);
+                .map(this::toDto)
+                .map(dto -> new ClientAssessmentDto(
+                        dto.id(), dto.clientId(), dto.clientName(), dto.clientEmail(),
+                        dto.clientSex(), dto.clientBirthDate(),
+                        dto.nutritionistId(), dto.nutritionistName(), dto.practiceId(),
+                        dto.assessmentDate(),
+                        dto.weightKg(), dto.heightCm(), dto.bodyFatPct(),
+                        dto.waistCm(), dto.hipCm(), dto.neckCm(), dto.armCm(),
+                        dto.thighCm(), dto.calfCm(), dto.chestCm(), dto.forearmCm(), dto.abdomenCm(),
+                        dto.sfTricipital(), dto.sfSubscapular(), dto.sfSuprailiac(), dto.sfAbdominal(),
+                        dto.sfThigh(), dto.sfChest(), dto.sfMidaxillary(), dto.skinfoldProtocol(),
+                        dto.chiefComplaint(), dto.medicalHistory(), dto.medications(),
+                        dto.preExistingConditions(), dto.allergies(), dto.familyHistory(),
+                        dto.dietaryRecall24h(), dto.mealFrequency(), dto.waterIntakeLiters(),
+                        dto.alcoholFrequency(), dto.foodPreferences(), dto.foodAversions(),
+                        dto.physicalActivityDetails(), dto.sleepHours(), dto.stressLevel(),
+                        dto.smoker(), dto.smokingDetails(),
+                        dto.goalNotes(), dto.targetWeightKg(), dto.targetDate(),
+                        dto.tmbFormula(), dto.activityFactor(),
+                        dto.targetCalories(), dto.targetProteinG(), dto.targetCarbsG(), dto.targetFatG(),
+                        dto.targetWaterMl(), dto.proteinGPerKg(), dto.fatPct(), dto.calorieDeltaPct(),
+                        dto.prescribedAt(),
+                        dto.labDate(), dto.glucoseFasting(), dto.hba1c(), dto.insulinFasting(),
+                        dto.totalCholesterol(), dto.ldl(), dto.hdl(), dto.triglycerides(),
+                        dto.tsh(), dto.t4Free(), dto.vitaminD(), dto.vitaminB12(),
+                        dto.iron(), dto.ferritin(), dto.crp(),
+                        dto.urea(), dto.creatinine(), dto.uricAcid(), dto.labNotes(),
+                        dto.notes(),
+                        null, // nutriNotes suprimido
+                        dto.createdAt(), dto.updatedAt()));
     }
 
     /** Nutri le a ficha que ele mesmo mantem para aquele cliente. */
@@ -173,6 +205,9 @@ public class ClientAssessmentService {
 
         // Meta
         ent.setNotes(dto.notes());
+
+        // Fase 9E: nutri_notes so pode ser alterado pelo nutri (nunca vai vir do self-fill do cliente)
+        ent.setNutriNotes(dto.nutriNotes());
 
         ent = repository.save(ent);
 
@@ -352,7 +387,8 @@ public class ClientAssessmentService {
                 a.getTsh(), a.getT4Free(), a.getVitaminD(), a.getVitaminB12(),
                 a.getIron(), a.getFerritin(), a.getCrp(),
                 a.getUrea(), a.getCreatinine(), a.getUricAcid(), a.getLabNotes(),
-                a.getNotes(), a.getCreatedAt(), a.getUpdatedAt()
+                a.getNotes(), a.getNutriNotes(),
+                a.getCreatedAt(), a.getUpdatedAt()
         );
     }
 }

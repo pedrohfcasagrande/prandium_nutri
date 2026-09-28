@@ -16,7 +16,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { PracticeService } from '../../services/practice.service';
-import { AssessmentSnapshot, ClientAssessment, ClientLink } from '../../models/models';
+import { AssessmentSnapshot, ClientAssessment, ClientLink, Consultation, ConsultationType } from '../../models/models';
 import { deriveMetrics } from '../../util/assessment-metrics';
 import { ACTIVITY_FACTORS, derive as derivePrescription } from '../../util/nutrition-calculator';
 import { AssessmentTrendChartComponent } from '../../components/assessment-trend-chart.component';
@@ -498,6 +498,23 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
             }
           </mat-expansion-panel>
 
+          <!-- 5d. Notas privadas do nutri (Fase 9E) -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>lock</mat-icon>
+                {{ 'assessment.sections.nutriNotes' | translate }}
+              </mat-panel-title>
+              <mat-panel-description>{{ 'assessment.sections.nutriNotesHint' | translate }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>{{ 'assessment.f.nutriNotes' | translate }}</mat-label>
+              <textarea matInput rows="5" [(ngModel)]="d.nutriNotes"
+                        [placeholder]="'assessment.f.nutriNotesPlaceholder' | translate"></textarea>
+              <mat-hint>{{ 'assessment.sections.nutriNotesHint' | translate }}</mat-hint>
+            </mat-form-field>
+          </mat-expansion-panel>
+
           <!-- 6. Objetivos -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
@@ -534,6 +551,41 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
           [current]="draft()"
           [birthDate]="clientBirthDate()"
           [sex]="clientSex()"></app-assessment-trend-chart>
+
+        <!-- Fase 9E: prontuário — timeline unificada de consultas + snapshots -->
+        <mat-card class="chart-card">
+          <div class="chart-head">
+            <mat-icon>history_edu</mat-icon>
+            <h3>{{ 'assessment.chart.title' | translate }}</h3>
+            <span class="spacer"></span>
+            <button mat-flat-button color="primary" (click)="openNewConsultation()">
+              <mat-icon>add</mat-icon>
+              {{ 'assessment.chart.new' | translate }}
+            </button>
+          </div>
+          @if (timeline().length === 0) {
+            <p class="text-muted small chart-empty">{{ 'assessment.chart.empty' | translate }}</p>
+          } @else {
+            <ul class="chart-list">
+              @for (ev of timeline(); track ev.key) {
+                <li [class]="'ev-' + ev.kind">
+                  <span class="ev-icon">
+                    <mat-icon>{{ ev.icon }}</mat-icon>
+                  </span>
+                  <div class="ev-body">
+                    <div class="ev-title">
+                      <strong>{{ ev.title }}</strong>
+                      <span class="text-muted small">· {{ ev.date | date:'short' }}</span>
+                    </div>
+                    @if (ev.subtitle) {
+                      <div class="text-muted small">{{ ev.subtitle }}</div>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </mat-card>
 
         @if (snapshots().length > 0) {
           <mat-card class="snapshots-card">
@@ -691,6 +743,38 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
       padding: 2px 8px; border-radius: 8px;
       font-weight: 600; color: var(--nt-primary-dark);
     }
+
+    .chart-card {
+      margin-top: 20px; padding: 16px !important;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .chart-head {
+      display: flex; align-items: center; gap: 8px;
+      mat-icon { color: var(--nt-primary); }
+      h3 { margin: 0; font-size: 1.05rem; }
+      .spacer { flex: 1; }
+    }
+    .chart-empty { padding: 24px 0; text-align: center; margin: 0; }
+    .chart-list {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; flex-direction: column; gap: 4px;
+      li {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border-left: 3px solid var(--nt-border);
+      }
+      li.ev-consultation { background: var(--nt-primary-soft); border-left-color: var(--nt-primary); }
+      li.ev-snapshot     { background: var(--nt-surface-2); border-left-color: var(--nt-accent); }
+    }
+    .ev-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      background: var(--nt-surface); border-radius: 8px;
+      mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--nt-primary-dark); }
+    }
+    .ev-body { flex: 1; min-width: 0; }
+    .ev-title { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
   `]
 })
 export class NutriAssessmentComponent implements OnInit {
@@ -708,8 +792,36 @@ export class NutriAssessmentComponent implements OnInit {
   clientSex = signal<string | null>(null);
   saving = signal(false);
   snapshots = signal<AssessmentSnapshot[]>([]);
+  consultations = signal<Consultation[]>([]);
   snapshotting = signal(false);
   downloadingPdf = signal(false);
+  timeline = computed(() => {
+    // Une consultas + snapshots ordenados por data desc pra montar timeline visual
+    const events: Array<{ key: string; kind: 'consultation' | 'snapshot'; date: string;
+                          icon: string; title: string; subtitle?: string }> = [];
+    for (const c of this.consultations()) {
+      const typeLabel = this.translate.instant('assessment.chart.type.' + c.type);
+      events.push({
+        key: 'c-' + c.id,
+        kind: 'consultation',
+        date: c.consultationDate,
+        icon: 'event_note',
+        title: typeLabel,
+        subtitle: c.chiefComplaint || undefined
+      });
+    }
+    for (const s of this.snapshots()) {
+      events.push({
+        key: 's-' + s.id,
+        kind: 'snapshot',
+        date: s.createdAt,
+        icon: 'photo_camera',
+        title: s.label || `Snapshot v${s.version}`,
+        subtitle: s.payload?.weightKg != null ? `${s.payload.weightKg} kg` : undefined
+      });
+    }
+    return events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  });
   derived = computed(() => {
     const d = this.draft();
     if (!d) return null;
@@ -753,6 +865,32 @@ export class NutriAssessmentComponent implements OnInit {
   private loadSnapshots() {
     this.api.nutriListAssessmentSnapshots(this.clientId, this.practiceCtx.activePracticeId())
       .subscribe({ next: list => this.snapshots.set(list) });
+    this.api.nutriListConsultations(this.clientId, this.practiceCtx.activePracticeId())
+      .subscribe({ next: list => this.consultations.set(list) });
+  }
+
+  /** Cria consulta rapida (mesmo dia, tipo padrao RETURN, com auto-snapshot). */
+  openNewConsultation() {
+    const complaint = window.prompt(
+      this.translate.instant('assessment.chart.promptComplaint'),
+      '');
+    if (complaint === null) return;
+    const dto: Consultation = {
+      consultationDate: new Date().toISOString(),
+      type: 'RETURN' as ConsultationType,
+      chiefComplaint: complaint || null
+    };
+    this.api.nutriCreateConsultation(this.clientId, dto,
+      { snapshot: true, practiceId: this.practiceCtx.activePracticeId() }).subscribe({
+        next: () => {
+          this.snack.open(this.translate.instant('assessment.chart.created'),
+                          'OK', { duration: 2500 });
+          this.loadSnapshots();
+        },
+        error: err => this.snack.open(err?.error?.error ??
+                          this.translate.instant('assessment.chart.err'),
+                          'OK', { duration: 3000 })
+      });
   }
 
   recalculatePrescription() {

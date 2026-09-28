@@ -282,7 +282,7 @@ class ClientAssessmentServiceTest {
                     totalCholesterol, ldl, hdl, triglycerides,
                     tsh, t4Free, vitaminD, vitaminB12, iron, ferritin, crp,
                     urea, creatinine, uricAcid, labNotes,
-                    notes, null, null
+                    notes, null, null, null
             );
         }
     }

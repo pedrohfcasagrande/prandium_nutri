@@ -611,6 +611,8 @@
       "labsHint": "Resultados de exames de sangue e afins",
       "skinfolds": "Dobras cutâneas",
       "skinfoldsHint": "Jackson-Pollock 7 pontos — permite cálculo automático de %gordura",
+      "nutriNotes": "Notas privadas do nutri",
+      "nutriNotesHint": "Só você vê — não aparece no PDF nem para o cliente",
       "prescription": "Prescrição energética",
       "prescriptionHint": "TMB + gasto energético + macros — vira meta no dashboard do cliente"
     },
@@ -766,7 +768,23 @@
       "uricAcid": "Ácido úrico",
       "labNotes": "Observações sobre os exames",
       "notes": "Observações gerais",
-      "notesHint": "Conclusões, plano de conduta, orientações..."
+      "notesHint": "Conclusões, plano de conduta, orientações...",
+      "nutriNotes": "Notas privadas do nutri",
+      "nutriNotesPlaceholder": "Anotações internas — nunca compartilhadas com o cliente ou no PDF"
+    },
+    "chart": {
+      "title": "Prontuário",
+      "empty": "Nenhuma consulta ou snapshot registrado ainda.",
+      "new": "Nova consulta",
+      "created": "Consulta registrada",
+      "err": "Falha ao registrar consulta",
+      "promptComplaint": "Motivo/queixa principal da consulta (opcional):",
+      "type": {
+        "INITIAL": "Consulta inicial",
+        "RETURN": "Retorno",
+        "EMERGENCY": "Emergência",
+        "CHECKUP": "Avaliação periódica"
+      }
     }
   },
   "myAssessment": {
@@ -784,6 +802,9 @@
     },
     "history": {
       "title": "Minhas consultas anteriores"
+    },
+    "consultations": {
+      "title": "Consultas com meu nutricionista"
     },
     "downloadPdf": "Baixar minha prescrição"
   },

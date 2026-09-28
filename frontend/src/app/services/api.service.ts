@@ -6,6 +6,7 @@ import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
+  Consultation,
   PdfCustomization,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
@@ -547,5 +548,31 @@ export class ApiService {
   }
   nutriPdfPreview(): Observable<Blob> {
     return this.http.get(`${this.base}/nutritionist/me/pdf-preview`, { responseType: 'blob' });
+  }
+
+  // Fase 9E: consultas (prontuário)
+  nutriListConsultations(clientId: number, practiceId?: number | null): Observable<Consultation[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<Consultation[]>(
+      `${this.base}/nutritionist/consultations/client/${clientId}`, { params });
+  }
+  nutriCreateConsultation(clientId: number, dto: Consultation,
+                           opts: { snapshot?: boolean; practiceId?: number | null } = {})
+                           : Observable<Consultation> {
+    let params = new HttpParams();
+    if (opts.snapshot === false) params = params.set('snapshot', 'false');
+    if (opts.practiceId != null) params = params.set('practiceId', opts.practiceId);
+    return this.http.post<Consultation>(
+      `${this.base}/nutritionist/consultations/client/${clientId}`, dto, { params });
+  }
+  nutriUpdateConsultation(id: number, dto: Consultation): Observable<Consultation> {
+    return this.http.put<Consultation>(`${this.base}/nutritionist/consultations/${id}`, dto);
+  }
+  nutriDeleteConsultation(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/nutritionist/consultations/${id}`);
+  }
+  myConsultations(): Observable<Consultation[]> {
+    return this.http.get<Consultation[]>(`${this.base}/me/assessment/consultations`);
   }
 }

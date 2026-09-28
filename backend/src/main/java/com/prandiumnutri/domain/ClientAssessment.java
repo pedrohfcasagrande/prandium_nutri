@@ -136,6 +136,9 @@ public class ClientAssessment {
     // ----- Meta -----
     @Column(columnDefinition = "TEXT") private String notes;
 
+    // Fase 9E: notas privadas do nutri (nunca aparecem no PDF nem no MyAssessment)
+    @Column(columnDefinition = "TEXT") private String nutriNotes;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

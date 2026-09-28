@@ -611,6 +611,8 @@
       "labsHint": "Blood tests and other markers",
       "skinfolds": "Skinfolds",
       "skinfoldsHint": "Jackson-Pollock 7-site — enables automatic body fat % calculation",
+      "nutriNotes": "Private nutritionist notes",
+      "nutriNotesHint": "Only you see it — never on the PDF or shared with the client",
       "prescription": "Energy prescription",
       "prescriptionHint": "BMR + TDEE + macros — becomes the client dashboard goal"
     },
@@ -766,7 +768,23 @@
       "uricAcid": "Uric acid",
       "labNotes": "Lab notes",
       "notes": "General notes",
-      "notesHint": "Conclusions, plan, guidance..."
+      "notesHint": "Conclusions, plan, guidance...",
+      "nutriNotes": "Private nutritionist notes",
+      "nutriNotesPlaceholder": "Internal notes — never shared with the client or PDF"
+    },
+    "chart": {
+      "title": "Chart / medical record",
+      "empty": "No consultations or snapshots recorded yet.",
+      "new": "New consultation",
+      "created": "Consultation recorded",
+      "err": "Failed to record consultation",
+      "promptComplaint": "Chief complaint / reason (optional):",
+      "type": {
+        "INITIAL": "Initial consultation",
+        "RETURN": "Follow-up",
+        "EMERGENCY": "Emergency",
+        "CHECKUP": "Check-up"
+      }
     }
   },
   "myAssessment": {
@@ -784,6 +802,9 @@
     },
     "history": {
       "title": "My past consultations"
+    },
+    "consultations": {
+      "title": "Consultations with my nutritionist"
     },
     "downloadPdf": "Download my prescription"
   },

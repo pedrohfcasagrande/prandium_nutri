@@ -11,7 +11,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
-import { AssessmentSelfFill, AssessmentSnapshot, ClientAssessment } from '../../models/models';
+import { AssessmentSelfFill, AssessmentSnapshot, ClientAssessment, Consultation } from '../../models/models';
 import { EmptyStateComponent } from '../../components/empty-state.component';
 import { deriveMetrics } from '../../util/assessment-metrics';
 import { AssessmentTrendChartComponent } from '../../components/assessment-trend-chart.component';
@@ -275,6 +275,28 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
           [birthDate]="a.clientBirthDate ?? null"
           [sex]="a.clientSex ?? null"></app-assessment-trend-chart>
 
+        <!-- Fase 9E: consultas passadas -->
+        @if (consultations().length > 0) {
+          <mat-card class="section">
+            <div class="section-head">
+              <mat-icon>event_note</mat-icon>
+              <h3>{{ 'myAssessment.consultations.title' | translate }}</h3>
+              <span class="text-muted small">{{ consultations().length }}</span>
+            </div>
+            <ul class="cons-list">
+              @for (c of consultations(); track c.id) {
+                <li>
+                  <span class="cons-type">{{ ('assessment.chart.type.' + c.type) | translate }}</span>
+                  <span class="text-muted small">{{ c.consultationDate | date:'shortDate' }}</span>
+                  @if (c.chiefComplaint) {
+                    <span class="cons-complaint">· {{ c.chiefComplaint }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          </mat-card>
+        }
+
         <!-- Timeline de snapshots -->
         @if (snapshots().length > 0) {
           <mat-card class="section snapshots-card">
@@ -375,6 +397,22 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
       padding: 2px 8px; border-radius: 8px;
       font-weight: 600; color: var(--nt-primary-dark);
     }
+
+    .cons-list {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; flex-direction: column; gap: 6px;
+      li {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        padding: 8px 12px; background: var(--nt-surface-2);
+        border-radius: 10px; font-size: 0.9rem;
+      }
+    }
+    .cons-type {
+      background: var(--nt-primary-soft); color: var(--nt-primary-dark);
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .cons-complaint { color: var(--nt-text); }
   `]
 })
 export class MyAssessmentComponent implements OnInit {
@@ -384,6 +422,7 @@ export class MyAssessmentComponent implements OnInit {
 
   assessment = signal<ClientAssessment | null>(null);
   snapshots = signal<AssessmentSnapshot[]>([]);
+  consultations = signal<Consultation[]>([]);
   selfDraft: AssessmentSelfFill = {};
   savingSelf = signal(false);
   downloadingPdf = signal(false);
@@ -412,6 +451,7 @@ export class MyAssessmentComponent implements OnInit {
           goalNotes: a.goalNotes ?? null,
         };
         this.api.myAssessmentSnapshots().subscribe(s => this.snapshots.set(s));
+        this.api.myConsultations().subscribe(c => this.consultations.set(c));
       }
     });
   }

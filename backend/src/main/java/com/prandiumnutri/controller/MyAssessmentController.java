@@ -9,6 +9,7 @@ import com.prandiumnutri.repository.ClientAssessmentRepository;
 import com.prandiumnutri.repository.UserRepository;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.ClientAssessmentService;
+import com.prandiumnutri.service.ConsultationService;
 import com.prandiumnutri.service.PrescriptionPdfService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import java.util.List;
 public class MyAssessmentController {
 
     private final ClientAssessmentService service;
+    private final ConsultationService consultationService;
     private final PrescriptionPdfService pdfService;
     private final ClientAssessmentRepository assessmentRepository;
     private final UserRepository userRepository;
@@ -50,6 +52,11 @@ public class MyAssessmentController {
     @GetMapping("/snapshots")
     public List<AssessmentSnapshotDto> mySnapshots() {
         return service.listSnapshotsForClient(currentUser.getAuthenticatedId());
+    }
+
+    @GetMapping("/consultations")
+    public List<com.prandiumnutri.dto.ConsultationDto> myConsultations() {
+        return consultationService.listForClient(currentUser.getAuthenticatedId());
     }
 
     @GetMapping(value = "/prescription.pdf", produces = MediaType.APPLICATION_PDF_VALUE)

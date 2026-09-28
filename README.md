@@ -237,6 +237,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V027      | client_assessments: prescricao energetica (target_calories/protein/carbs/fat/water) + parametros (tmb_formula, activity_factor, protein_g_per_kg, fat_pct, calorie_delta_pct, prescribed_at) (Fase 9C) |
 | V028      | users.signature_base64 (assinatura digital do nutri pra PDF de prescricao — Fase 9D) |
 | V029      | users.pdf_logo_base64/pdf_primary_color/pdf_header_text/pdf_footer_text (customizacao PDF — Fase 9D-2) |
+| V030      | client_assessments.nutri_notes + tabela consultations (prontuario — Fase 9E) |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -515,4 +516,13 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: nova seção "Personalização do PDF" no `/nutritionist/practices` (card com border-left roxa pra distinguir da assinatura) — upload de logo com preview inline, `<input type="color">` com swatch + código hex + botão de reset, campos de texto para header/footer com hint de HTML permitido, botões "Pré-visualizar" (abre PDF em nova aba via `window.open(URL.createObjectURL)`) e "Salvar".
   - Testes: 2 novos casos no `PrescriptionPdfServiceTest` (`render_createsAutoSnapshotWhenNutriAndClientPresent`, `render_customPrimaryColorReachesOutput` que injeta `<script>alert(1)</script>` pra validar sanitização). Suite backend em **113/113**, frontend em 60/60 (spec de practices mockado com `/me/pdf-template`).
   - Fica no backlog 9D-3: tabela `prescription_issuances` com hash SHA-256 + assinatura ICP-Brasil.
+- **Fase 9E (prontuário + timeline + notas privadas — 2026-09-28): OK**
+  - Migração V030: `client_assessments.nutri_notes` (TEXT, notas privadas do nutri) + nova tabela `consultations` (client_id, nutritionist_id, practice_id, consultation_date, type INITIAL/RETURN/EMERGENCY/CHECKUP, chief_complaint, findings, plan, next_consultation_date, snapshot_id nullable FK → assessment_snapshots).
+  - Backend: entity `Consultation` + enum `ConsultationType` + repo + `ConsultationService` (CRUD com autorização por `NutritionistClientLink`, listagem cross-nutri para o cliente); DTO estende `ClientAssessmentDto` com `nutriNotes` (**omitido em `findLatestForClient` para nunca vazar pro cliente** — implementação copia o DTO trocando o campo por `null`).
+  - Endpoints:
+    - `GET/POST /api/nutritionist/consultations/client/{id}` (com `?snapshot=true` opcional que cria snapshot linkado)
+    - `PUT/DELETE /api/nutritionist/consultations/{id}`
+    - `GET /api/me/assessment/consultations` (cliente vê próprias consultas, sem `nutriNotes`)
+  - Frontend: `NutriAssessmentComponent` ganha seção "Notas privadas" (expansion panel com ícone cadeado) + card "Prontuário" com timeline unificada (consultas + snapshots por data desc, cor teal p/ consultas e âmbar p/ snapshots) + botão "Nova consulta" (prompt de queixa + auto-snapshot). `MyAssessmentComponent` ganha card "Consultas com meu nutricionista" read-only.
+  - Testes: `ConsultationServiceTest` (5 casos — persistência, snapshot linkado, filtragem por nutri, autorização de update, listagem cross-nutri pro cliente). Ajuste no `ClientAssessmentServiceTest` pra passar o `nutriNotes` novo. Suite backend em **118/118**, frontend em 60/60.
 - Fase 8 (geolocalizacao restaurantes): backlog

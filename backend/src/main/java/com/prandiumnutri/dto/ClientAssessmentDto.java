@@ -107,6 +107,8 @@ public record ClientAssessmentDto(
 
         // Meta
         String notes,
+        // Fase 9E: notas privadas do nutri (sempre null pra cliente)
+        String nutriNotes,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}
