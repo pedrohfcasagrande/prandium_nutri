@@ -8,7 +8,7 @@ spring:
     import: optional:classpath:application-local.yml
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8081}
 
 # Config compartilhada (defaults). Cada perfil sobrescreve o que precisa.
 prandiumnutri:
@@ -23,7 +23,7 @@ prandiumnutri:
     model: ${GEMINI_MODEL:gemini-flash-lite-latest}
     base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4201,http://localhost}
   jwt:
     secret: ${JWT_SECRET:change-me-please-change-me-please-change-me-please-32b}
     expiration-ms: ${JWT_EXPIRATION_MS:3600000}
@@ -38,7 +38,7 @@ prandiumnutri:
     from: ${MAIL_FROM:no-reply@prandiumnutri.local}
   reset:
     expiration-hours: ${RESET_EXPIRATION_HOURS:1}
-    frontend-url: ${FRONTEND_URL:http://localhost:4200}
+    frontend-url: ${FRONTEND_URL:http://localhost:4201}
   invite:
     expiration-days: ${INVITE_EXPIRATION_DAYS:14}
   stripe:
@@ -48,8 +48,8 @@ prandiumnutri:
     access-token: ${MP_ACCESS_TOKEN:}
     webhook-secret: ${MP_WEBHOOK_SECRET:}
   checkout:
-    success-url: ${CHECKOUT_SUCCESS_URL:http://localhost:4200/billing?checkout=success}
-    cancel-url: ${CHECKOUT_CANCEL_URL:http://localhost:4200/pricing?checkout=canceled}
+    success-url: ${CHECKOUT_SUCCESS_URL:http://localhost:4201/billing?checkout=success}
+    cancel-url: ${CHECKOUT_CANCEL_URL:http://localhost:4201/pricing?checkout=canceled}
   http:
     connect-timeout-seconds: ${HTTP_CONNECT_TIMEOUT_SECONDS:10}
     read-timeout-seconds: ${HTTP_READ_TIMEOUT_SECONDS:30}

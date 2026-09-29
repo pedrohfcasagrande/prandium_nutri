@@ -80,7 +80,7 @@ export GEMINI_API_KEY=sua-chave-gemini    # opcional (sem ela, sugestoes retorna
 mvn spring-boot:run
 ```
 - Perfil `dev` e o default. Flyway aplica migrations no startup.
-- API em `http://localhost:8080/api`
+- API em `http://localhost:8081/api`
 - Admin seed: `admin@admin.com` / `admin@123` (override: `ADMIN_EMAIL` / `ADMIN_PASSWORD`)
 - Pagamentos **mockados**: `createCheckout` ativa a subscription imediatamente e retorna uma URL `?mock=true`
 
@@ -103,7 +103,7 @@ cd frontend
 npm install
 npm start
 ```
-Abre em `http://localhost:4200`.
+Abre em `http://localhost:4201`.
 
 ## Rodando em sandbox / prod
 
@@ -126,8 +126,8 @@ mvn spring-boot:run
 ```
 
 Webhooks locais (test):
-- Stripe: `stripe listen --forward-to localhost:8080/api/webhooks/stripe`
-- MP: `ngrok http 8080` + configurar a URL publica no dashboard MP
+- Stripe: `stripe listen --forward-to localhost:8081/api/webhooks/stripe`
+- MP: `ngrok http 8081` + configurar a URL publica no dashboard MP
 
 Guias detalhados de setup e teste dos providers:
 - [`docs/PAGAMENTOS-SETUP.md`](docs/PAGAMENTOS-SETUP.md) — env vars, eventos a assinar, troubleshooting

@@ -42,7 +42,7 @@ SPRING_PROFILES_ACTIVE=sandbox mvn spring-boot:run
 
 Em outro terminal:
 ```bash
-stripe listen --forward-to localhost:8080/api/webhooks/stripe
+stripe listen --forward-to localhost:8081/api/webhooks/stripe
 ```
 
 O comando imprime algo como:
@@ -68,7 +68,7 @@ Use o cadastro público ou seed do dev. Anote o **user ID** (via `/api/users/me`
 # Autentique-se e pegue o JWT primeiro (via login)
 TOKEN="Bearer eyJ..."
 
-curl -X POST http://localhost:8080/api/checkout \
+curl -X POST http://localhost:8081/api/checkout \
   -H "Authorization: $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"planCode":"CLIENT_PLUS","currency":"USD"}'
@@ -94,12 +94,12 @@ Complete o pagamento. Stripe redireciona pra `CHECKOUT_SUCCESS_URL`.
 Você deve ver algo assim, na ordem:
 ```
 --> checkout.session.completed [evt_...]
-<--  [200] POST http://localhost:8080/api/webhooks/stripe [evt_...]
+<--  [200] POST http://localhost:8081/api/webhooks/stripe [evt_...]
 --> customer.subscription.created [evt_...]
-<--  [200] POST http://localhost:8080/api/webhooks/stripe [evt_...]
+<--  [200] POST http://localhost:8081/api/webhooks/stripe [evt_...]
 --> invoice.paid [evt_...]
 --> invoice.payment_succeeded [evt_...]
-<--  [200] POST http://localhost:8080/api/webhooks/stripe [evt_...]
+<--  [200] POST http://localhost:8081/api/webhooks/stripe [evt_...]
 ```
 
 Todos `200`? ✅ Passou.
@@ -204,7 +204,7 @@ ORDER BY started_at DESC LIMIT 1;
 
 Ou via API:
 ```bash
-curl -X POST "http://localhost:8080/api/checkout/cancel?atPeriodEnd=true" \
+curl -X POST "http://localhost:8081/api/checkout/cancel?atPeriodEnd=true" \
   -H "Authorization: $TOKEN"
 ```
 

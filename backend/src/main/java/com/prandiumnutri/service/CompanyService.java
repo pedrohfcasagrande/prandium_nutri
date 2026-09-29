@@ -35,7 +35,7 @@ public class CompanyService {
     @Value("${prandiumnutri.invite.expiration-days:14}")
     private int expirationDays;
 
-    @Value("${prandiumnutri.reset.frontend-url:http://localhost:4200}")
+    @Value("${prandiumnutri.reset.frontend-url:http://localhost:4201}")
     private String frontendUrl;
 
     // --- Consulta ---

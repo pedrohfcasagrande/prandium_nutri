@@ -29,7 +29,7 @@ public class PasswordResetService {
     @Value("${prandiumnutri.reset.expiration-hours:1}")
     private int expirationHours;
 
-    @Value("${prandiumnutri.reset.frontend-url:http://localhost:4200}")
+    @Value("${prandiumnutri.reset.frontend-url:http://localhost:4201}")
     private String frontendUrl;
 
     /**

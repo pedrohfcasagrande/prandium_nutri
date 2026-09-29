@@ -76,7 +76,7 @@ brew install stripe/stripe-cli/stripe
 stripe login
 
 # encaminha eventos do test mode pro backend rodando local
-stripe listen --forward-to localhost:8080/api/webhooks/stripe
+stripe listen --forward-to localhost:8081/api/webhooks/stripe
 # copia o whsec_... que aparece e usa como STRIPE_WEBHOOK_SECRET no dev
 
 # em outro terminal, dispara eventos sintéticos
@@ -117,7 +117,7 @@ O MP não tem CLI equivalente ao Stripe. Duas opções:
 **Opção A — expor local com ngrok** (mais realista):
 
 ```bash
-ngrok http 8080
+ngrok http 8081
 # copia a URL https://xxx.ngrok.io e configura no painel MP como webhook
 ```
 

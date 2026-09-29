@@ -69,8 +69,8 @@ class MockPaymentClientTest {
                 .findFirst().orElseThrow();
 
         var result = mock.createCheckout(user, plan, price,
-                "http://localhost:4200/billing?checkout=success",
-                "http://localhost:4200/pricing");
+                "http://localhost:4201/billing?checkout=success",
+                "http://localhost:4201/pricing");
 
         assertThat(result.checkoutUrl()).contains("mock=true");
         assertThat(result.providerSessionId()).startsWith("mock_sub_");

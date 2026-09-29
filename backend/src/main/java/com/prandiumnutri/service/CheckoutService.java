@@ -19,10 +19,10 @@ public class CheckoutService {
     private final PaymentProviderRegistry providerRegistry;
     private final CompanyRepository companyRepository;
 
-    @Value("${prandiumnutri.checkout.success-url:http://localhost:4200/billing?checkout=success}")
+    @Value("${prandiumnutri.checkout.success-url:http://localhost:4201/billing?checkout=success}")
     private String successUrl;
 
-    @Value("${prandiumnutri.checkout.cancel-url:http://localhost:4200/pricing?checkout=canceled}")
+    @Value("${prandiumnutri.checkout.cancel-url:http://localhost:4201/pricing?checkout=canceled}")
     private String cancelUrl;
 
     /**
