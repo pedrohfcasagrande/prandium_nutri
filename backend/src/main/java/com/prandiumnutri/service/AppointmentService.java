@@ -17,17 +17,33 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AppointmentService {
 
+    private static final String JITSI_BASE = "https://meet.jit.si/";
+    private static final String JITSI_ROOM_PREFIX = "PrandiumNutri-";
+
     private final AppointmentRepository repository;
     private final UserRepository userRepo;
     private final NutritionistPracticeRepository practiceRepo;
     private final NutritionistLinkService linkService;
     private final NotificationService notificationService;
+
+    /**
+     * Fase 9G-3: gera URL Jitsi Meet quando appointment e ONLINE e nao veio URL manual.
+     * Jitsi: sem conta, sem chave, sala criada on-demand. UUID no nome da sala garante que
+     * nao ha colisao e a URL nao e adivinhavel. Nutri/cliente que ja tenham URL propria
+     * (Zoom/Meet) podem enviar via meetingUrl.
+     */
+    private String ensureMeetingUrl(AppointmentLocation location, String meetingUrl) {
+        if (location != AppointmentLocation.ONLINE) return meetingUrl;
+        if (meetingUrl != null && !meetingUrl.isBlank()) return meetingUrl;
+        return JITSI_BASE + JITSI_ROOM_PREFIX + UUID.randomUUID();
+    }
 
     // -------------------- Listagens --------------------
 
@@ -74,7 +90,7 @@ public class AppointmentService {
                 .durationMinutes(durationMinutes != null ? durationMinutes : 60)
                 .location(location != null ? location : AppointmentLocation.ONLINE)
                 .locationDetails(locationDetails)
-                .meetingUrl(meetingUrl)
+                .meetingUrl(ensureMeetingUrl(location != null ? location : AppointmentLocation.ONLINE, meetingUrl))
                 .notes(notes)
                 .status(AppointmentStatus.REQUESTED)
                 .requestedBy(AppointmentActor.CLIENT)
@@ -105,7 +121,7 @@ public class AppointmentService {
                 .durationMinutes(durationMinutes != null ? durationMinutes : 60)
                 .location(location != null ? location : AppointmentLocation.ONLINE)
                 .locationDetails(locationDetails)
-                .meetingUrl(meetingUrl)
+                .meetingUrl(ensureMeetingUrl(location != null ? location : AppointmentLocation.ONLINE, meetingUrl))
                 .notes(notes)
                 .status(AppointmentStatus.REQUESTED)
                 .requestedBy(AppointmentActor.NUTRITIONIST)

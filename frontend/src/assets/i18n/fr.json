@@ -476,6 +476,20 @@
     "weightChange": "Évolution",
     "noProgress": "Aucune mesure enregistrée"
   },
+  "chat": {
+    "title": "Conversation",
+    "subtitle": "Messages directs entre vous et le professionnel",
+    "back": "Retour",
+    "loading": "Chargement de la conversation...",
+    "empty": "Aucun message pour le moment. Envoyez le premier !",
+    "placeholder": "Écrivez un message...",
+    "read": "Lu",
+    "sendError": "Échec de l'envoi. Réessayez.",
+    "loadError": "Échec du chargement des messages.",
+    "forbidden": "Vous n'avez pas accès à cette conversation.",
+    "openChat": "Ouvrir le chat",
+    "unread": "non lus"
+  },
   "meals": {
     "title": "Repas",
     "subtitle": "Enregistrez ce que vous avez mangé aujourd'hui",

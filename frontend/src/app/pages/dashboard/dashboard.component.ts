@@ -332,6 +332,11 @@ import { DatePickerComponent } from '../../components/date-picker.component';
             <a mat-stroked-button routerLink="/progress">
               <mat-icon>monitor_weight</mat-icon> {{ 'dashboard.logProgress' | translate }}
             </a>
+            @if (chatLinkId(); as cid) {
+              <a mat-stroked-button [routerLink]="['/chat', cid]">
+                <mat-icon>chat_bubble</mat-icon> {{ 'chat.openChat' | translate }}
+              </a>
+            }
           </mat-card-content>
         </mat-card>
       }
@@ -538,6 +543,7 @@ export class DashboardComponent implements OnInit {
   waterPresets = [200, 300, 500];
   streak = signal<StreakInfo | null>(null);
   checklist = signal<ClientChecklist | null>(null);
+  chatLinkId = signal<number | null>(null);
   date = new Date().toISOString().slice(0, 10);
 
   waterMl = computed<number>(() => {
@@ -591,6 +597,10 @@ export class DashboardComponent implements OnInit {
       this.api.listWaterIntakes(this.date).subscribe(w => this.waterIntakes.set(w));
       this.api.streakInfo().subscribe(s => this.streak.set(s));
       this.api.myChecklist().subscribe(c => this.checklist.set(c));
+      this.api.myNutritionists().subscribe(links => {
+        const active = links.find(l => l.status === 'ACTIVE');
+        this.chatLinkId.set(active?.id ?? null);
+      });
     } else {
       this.waterIntakes.set([]);
     }

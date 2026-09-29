@@ -329,6 +329,16 @@ export interface ClientChecklist {
   totalSteps: number;
 }
 
+export interface ChatMessage {
+  id: number;
+  linkId: number;
+  senderId: number;
+  senderName: string;
+  content: string;
+  createdAt: string;
+  readAt: string | null;
+}
+
 export interface ProgressEntry {
   id?: number;
   date: string;

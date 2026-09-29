@@ -6,6 +6,7 @@ import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
+  ChatMessage,
   ClientChecklist,
   Consultation,
   PdfChangeRequest, PdfChangeRequestStatus,
@@ -96,6 +97,23 @@ export class ApiService {
   /** Fase 10D: onboarding checklist do cliente. */
   myChecklist(): Observable<ClientChecklist> {
     return this.http.get<ClientChecklist>(`${this.base}/me/checklist`);
+  }
+
+  /** Fase 9G-1: chat cliente ↔ nutri (uma thread por linkId). */
+  listChat(linkId: number): Observable<ChatMessage[]> {
+    return this.http.get<ChatMessage[]>(`${this.base}/chat/${linkId}`);
+  }
+
+  sendChat(linkId: number, content: string): Observable<ChatMessage> {
+    return this.http.post<ChatMessage>(`${this.base}/chat/${linkId}`, { content });
+  }
+
+  markChatRead(linkId: number): Observable<{ updated: number }> {
+    return this.http.post<{ updated: number }>(`${this.base}/chat/${linkId}/read`, {});
+  }
+
+  chatUnreadTotal(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.base}/chat/unread`);
   }
 
   suggest(extraNotes?: string, scope: 'DAY' | 'WEEK' = 'DAY'): Observable<{ menu: string }> {

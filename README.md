@@ -612,4 +612,20 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - i18n: `dashboard.onboardingTitle/onboardingHint/onbStep1..4` em pt/en/fr.
   - Testes: `ClientChecklistServiceTest` (3 casos — usuário novo tem 0/4, health profile preenchido dá 1/4, todos os 4 passos completos dá 4/4). Suite backend em **149/149**, frontend em 60/60.
   - **Bloco 3 fechado.** Próximo alvo: **9G** (chat cliente↔nutri realtime + push).
+- **Fase 9G-1 (chat cliente↔nutri via SSE — 2026-09-29): OK**
+  - Migração V039: `chat_messages` (link_id, sender_id, content, created_at, read_at) — uma thread por `NutritionistClientLink`, sem tabela de conversation separada. Autorizacao piggy-back do link: nao-ACTIVE = ninguem le/escreve.
+  - Backend: entity `ChatMessage` + repo com `sumUnreadForReader`/`markReadForReader`. `ChatService` com `send`/`list`/`markRead`/`unreadCount`/`unreadTotal` + `subscribe` (SSE). Emitters ativos por linkId em `ConcurrentHashMap<Long, CopyOnWriteArrayList<SseEmitter>>`; broadcast so pra participantes do link, timeout 30min. Sem sticky sessions — pra scale-out (multi-instance) migrar pra Redis pub/sub (backlog).
+  - Endpoints: `GET/POST /api/chat/{linkId}` + `POST .../read` + `GET .../unread` + `GET /api/chat/unread` + `GET .../stream` (SSE). Notifica o outro lado via `NotificationService` (GENERIC + entityType='Chat' + entityId=linkId) → `notification-target` já sabe navegar pra `/chat/{linkId}`.
+  - Fix no `JwtAuthFilter`: EventSource nao aceita header custom, então filter aceita `?access_token=` **somente em `/stream`** pra minimizar exposição em access logs.
+  - Testes: `ChatServiceTest` (6 casos — send + unread contagem, list em ordem cronológica, markRead só do outro lado, bloqueia outsider, bloqueia link não-ACTIVE, rejeita conteúdo blank/>2000). Suite backend em **155/155**.
+- **Fase 9G-3 (video URL auto via Jitsi — 2026-09-29): OK**
+  - Backend: `AppointmentService.ensureMeetingUrl` — appointment ONLINE sem `meetingUrl` recebe URL `https://meet.jit.si/PrandiumNutri-{uuid}` gerada no save (`requestByClient` + `suggestByNutri`). Jitsi Meet é gratuito, sem conta, sem chave — sala criada on-demand. UUID no nome garante não-guessável.
+  - Nutri/cliente que ja tem URL própria (Zoom/Meet) podem enviar via `meetingUrl` e nós preservamos.
+  - Testes: `AppointmentMeetingUrlTest` (3 casos — ONLINE sem URL gera Jitsi, ONLINE com URL manual preserva, IN_PERSON não gera). Suite backend em **158/158**.
+- **Fase 9G-2 (chat frontend — 2026-09-29): OK**
+  - Novo `ChatComponent` em rota `/chat/:linkId` — thread única, bubbles alinhadas por remetente, ticks `done_all` no leitor da mensagem, autoscroll pra bottom (via `effect` sobre `messages()`), composer com `mat-form-field` + Enter/click send.
+  - `EventSource` conecta em `${apiUrl}/chat/{id}/stream?access_token=...` e mescla mensagens novas via `mergeIncoming` (dedup por id). Se SSE cair (proxy/timeout), **fallback pra polling** cada 5s.
+  - Entry points: (nutri) botão "Abrir chat" no `NutriClientsComponent` na row de cada cliente ACTIVE; (cliente) botão "Abrir chat" na `quickActions` do `DashboardComponent` quando `myNutritionists()` retorna algum ACTIVE. Notificação de nova mensagem já leva pro `/chat/{linkId}` via `notification-target`.
+  - i18n: bloco `chat.*` em pt/en/fr (title/subtitle/back/empty/placeholder/read/openChat/unread/send+load errors/forbidden).
+  - Backlog **9G-4**: push notifications reais (VAPID + service worker + `web-push` no backend).
 - Fase 8 (geolocalizacao restaurantes): backlog

@@ -36,9 +36,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        String token = null;
         String auth = request.getHeader("Authorization");
-        if (auth != null && auth.startsWith("Bearer ") && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String token = auth.substring(7);
+        if (auth != null && auth.startsWith("Bearer ")) {
+            token = auth.substring(7);
+        } else {
+            // Fase 9G-1: EventSource nao aceita header custom — fallback pra ?access_token=
+            // Aplica so ao SSE endpoint pra minimizar exposicao do token em access logs.
+            String uri = request.getRequestURI();
+            if (uri != null && uri.endsWith("/stream")) {
+                token = request.getParameter("access_token");
+            }
+        }
+        if (token != null && !token.isBlank() && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 Claims claims = jwtService.parse(token);
                 String email = claims.getSubject();

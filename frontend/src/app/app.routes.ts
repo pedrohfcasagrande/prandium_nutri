@@ -99,6 +99,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/notifications/notifications.component').then(m => m.NotificationsComponent)
   },
   {
+    path: 'chat/:linkId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/chat/chat.component').then(m => m.ChatComponent)
+  },
+  {
     path: 'find-nutritionist',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/find-nutritionist/find-nutritionist.component').then(m => m.FindNutritionistComponent)

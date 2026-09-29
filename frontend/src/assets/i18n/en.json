@@ -476,6 +476,20 @@
     "weightChange": "Change",
     "noProgress": "No measurements logged yet"
   },
+  "chat": {
+    "title": "Conversation",
+    "subtitle": "Direct messages between you and the professional",
+    "back": "Back",
+    "loading": "Loading conversation...",
+    "empty": "No messages yet. Send the first one!",
+    "placeholder": "Type a message...",
+    "read": "Read",
+    "sendError": "Failed to send. Try again.",
+    "loadError": "Failed to load messages.",
+    "forbidden": "You don't have access to this conversation.",
+    "openChat": "Open chat",
+    "unread": "unread"
+  },
   "meals": {
     "title": "Meals",
     "subtitle": "Log what you ate today",

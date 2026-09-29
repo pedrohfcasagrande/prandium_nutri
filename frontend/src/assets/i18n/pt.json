@@ -476,6 +476,20 @@
     "weightChange": "Variação",
     "noProgress": "Nenhuma medição registrada ainda"
   },
+  "chat": {
+    "title": "Conversa",
+    "subtitle": "Mensagens diretas entre você e o profissional",
+    "back": "Voltar",
+    "loading": "Carregando conversa...",
+    "empty": "Nenhuma mensagem ainda. Envie a primeira!",
+    "placeholder": "Escreva uma mensagem...",
+    "read": "Lida",
+    "sendError": "Falha ao enviar. Tente novamente.",
+    "loadError": "Falha ao carregar mensagens.",
+    "forbidden": "Você não tem acesso a esta conversa.",
+    "openChat": "Abrir chat",
+    "unread": "não lidas"
+  },
   "meals": {
     "title": "Refeições",
     "subtitle": "Registre o que você comeu hoje",

@@ -23,6 +23,10 @@ export function notificationTarget(n: AppNotification, role: Role | undefined): 
       if (role === 'NUTRITIONIST') return '/nutritionist/clients';
       return '/invitations';
 
+    case 'Chat':
+      // Fase 9G-1: notificacao de nova mensagem — abre thread direto.
+      return n.entityId ? `/chat/${n.entityId}` : null;
+
     default:
       return null;
   }
