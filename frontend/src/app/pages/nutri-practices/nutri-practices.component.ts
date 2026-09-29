@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
+import { PracticeService } from '../../services/practice.service';
 import { PdfCustomization, Practice } from '../../models/models';
 
 @Component({
@@ -64,14 +65,14 @@ import { PdfCustomization, Practice } from '../../models/models';
         </div>
       </mat-card>
 
-      @if (!practices().length) {
+      @if (!visiblePractices().length) {
         <div class="empty card-surface">
           <mat-icon>badge</mat-icon>
           <p>{{ 'nutriPractices.empty' | translate }}</p>
         </div>
       } @else {
         <div class="list">
-          @for (p of practices(); track p.id) {
+          @for (p of visiblePractices(); track p.id) {
             <mat-card class="practice-card"
                       [class.suspended]="p.status === 'SUSPENDED'"
                       [class.particular]="!p.companyName">
@@ -291,7 +292,24 @@ export class NutriPracticesComponent implements OnInit {
   private snack = inject(MatSnackBar);
   private translate = inject(TranslateService);
 
+  private practiceCtx = inject(PracticeService);
+
   practices = signal<Practice[]>([]);
+  /**
+   * Fase 9D-2-fix seguimento: a página respeita a practice ativa do PracticeSwitcher.
+   * Se nenhuma estiver selecionada (activePracticeId = null), mostra todas as practices
+   * do nutri (comportamento "gerenciar todos os perfis"). Se houver uma ativa,
+   * filtra pra exibir só ela — replicando a semântica de tenant do resto do app.
+   */
+  visiblePractices = computed(() => {
+    const active = this.practiceCtx.activePracticeId();
+    const all = this.practices();
+    if (active == null) return all;
+    const only = all.filter(p => p.id === active);
+    // Se a activePracticeId aponta pra uma practice que nao esta na lista (edge case),
+    // cai pra mostrar todas — melhor que mostrar tela vazia.
+    return only.length > 0 ? only : all;
+  });
   saving = signal(new Set<number>());
   signaturePreview = signal<string | null>(null);
 
@@ -309,11 +327,13 @@ export class NutriPracticesComponent implements OnInit {
     });
   }
 
-  /** Carrega a customizacao da practice apenas na primeira vez que o expansion abre. */
+  /** Carrega a customizacao da practice. Se falhar (ex.: backend antigo), inicializa vazio. */
   loadPdfFor(practiceId: number) {
     if (this.pdfDrafts()[practiceId]) return;
-    this.api.nutriGetPdfTemplate(practiceId).subscribe(t => {
-      this.pdfDrafts.update(m => ({ ...m, [practiceId]: { ...t } }));
+    this.api.nutriGetPdfTemplate(practiceId).subscribe({
+      next: t => this.pdfDrafts.update(m => ({ ...m, [practiceId]: { ...t } })),
+      error: () => this.pdfDrafts.update(m => ({ ...m, [practiceId]:
+          { pdfLogoBase64: null, pdfPrimaryColor: null, pdfHeaderText: null, pdfFooterText: null } }))
     });
   }
 
@@ -384,7 +404,13 @@ export class NutriPracticesComponent implements OnInit {
   }
 
   load() {
-    this.api.nutriMyPractices().subscribe(list => this.practices.set(list));
+    this.api.nutriMyPractices().subscribe(list => {
+      this.practices.set(list);
+      // Fase 9D-2-fix seguimento: pré-carrega customização de todas as practices.
+      // Antes fazia lazy no evento (opened) do mat-expansion, mas o evento
+      // podia não disparar em alguns cenários — resultado: painel abria vazio.
+      for (const p of list) this.loadPdfFor(p.id);
+    });
   }
 
   onSignaturePicked(ev: Event) {
