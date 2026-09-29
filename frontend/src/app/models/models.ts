@@ -527,6 +527,17 @@ export interface PdfChangeRequest {
   createdAt: string;
 }
 
+// Fase 10A: analise IA de foto de refeicao (Gemini vision)
+export interface PhotoAnalysisItem {
+  name: string;
+  portionGrams?: number | null;
+  calories?: number | null;
+  protein?: number | null;
+  carbs?: number | null;
+  fat?: number | null;
+  confidence?: number | null;
+}
+
 // Fase 9D-3: log de emissao do PDF (verificacao publica por hash)
 export interface PrescriptionIssuance {
   id: number;

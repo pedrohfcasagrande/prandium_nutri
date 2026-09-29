@@ -489,6 +489,18 @@
     "searchHint": "Type: chicken, rice, egg...",
     "grams": "Grams",
     "add": "Add",
+    "photo": {
+      "button": "Add by photo",
+      "hint": "Take or upload a photo of your plate — AI identifies the food.",
+      "analyzing": "Analyzing photo...",
+      "detected": "Detected foods",
+      "discard": "Discard",
+      "addSelected": "Add selected",
+      "applied": "Items added to meal",
+      "nothingFound": "No food identified in the photo.",
+      "err": "Failed to analyze photo",
+      "tooBig": "Image too large (max 5MB)"
+    },
     "save": "Save meal",
     "protein": "protein",
     "empty": "No meal logged for this date.",

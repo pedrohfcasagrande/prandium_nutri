@@ -489,6 +489,18 @@
     "searchHint": "Digite: frango, arroz, ovo...",
     "grams": "Gramas",
     "add": "Adicionar",
+    "photo": {
+      "button": "Adicionar por foto",
+      "hint": "Tire ou envie foto do prato — a IA identifica os alimentos.",
+      "analyzing": "Analisando foto...",
+      "detected": "Alimentos identificados",
+      "discard": "Descartar",
+      "addSelected": "Adicionar selecionados",
+      "applied": "Itens adicionados à refeição",
+      "nothingFound": "Nenhum alimento identificado na foto.",
+      "err": "Falha ao analisar a foto",
+      "tooBig": "Imagem muito grande (máx 5MB)"
+    },
     "save": "Salvar refeição",
     "protein": "proteína",
     "empty": "Nenhuma refeição registrada nessa data.",

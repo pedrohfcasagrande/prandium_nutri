@@ -489,6 +489,18 @@
     "searchHint": "Tapez : poulet, riz, œuf...",
     "grams": "Grammes",
     "add": "Ajouter",
+    "photo": {
+      "button": "Ajouter par photo",
+      "hint": "Prenez ou téléchargez une photo de votre assiette — l'IA identifie les aliments.",
+      "analyzing": "Analyse de la photo...",
+      "detected": "Aliments détectés",
+      "discard": "Ignorer",
+      "addSelected": "Ajouter la sélection",
+      "applied": "Éléments ajoutés au repas",
+      "nothingFound": "Aucun aliment identifié sur la photo.",
+      "err": "Échec de l'analyse de la photo",
+      "tooBig": "Image trop grande (max 5 Mo)"
+    },
     "save": "Enregistrer le repas",
     "protein": "protéines",
     "empty": "Aucun repas enregistré à cette date.",

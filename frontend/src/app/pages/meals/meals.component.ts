@@ -9,10 +9,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
-import { Food, Meal, MealType } from '../../models/models';
+import { Food, Meal, MealType, PhotoAnalysisItem } from '../../models/models';
 import { DatePickerComponent } from '../../components/date-picker.component';
 
 @Component({
@@ -23,6 +25,7 @@ import { DatePickerComponent } from '../../components/date-picker.component';
     MatCardModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatAutocompleteModule,
     MatDividerModule, MatButtonToggleModule, MatSnackBarModule, TranslateModule,
+    MatCheckboxModule, MatTooltipModule,
     DatePickerComponent
   ],
   template: `
@@ -113,6 +116,61 @@ import { DatePickerComponent } from '../../components/date-picker.component';
               <span>{{ 'meals.add' | translate }}</span>
             </button>
           </div>
+
+          <!-- Fase 10A: adicionar itens por foto (IA) -->
+          <div class="photo-row">
+            <button mat-stroked-button (click)="photoInput.click()" [disabled]="analyzingPhoto()">
+              <mat-icon>photo_camera</mat-icon>
+              {{ (analyzingPhoto() ? 'meals.photo.analyzing' : 'meals.photo.button') | translate }}
+            </button>
+            <input #photoInput type="file" accept="image/jpeg,image/png,image/webp"
+                   capture="environment" hidden (change)="onPhotoPicked($event)">
+            <span class="text-muted small">{{ 'meals.photo.hint' | translate }}</span>
+          </div>
+
+          @if (photoResults().length > 0) {
+            <div class="photo-results">
+              <div class="preview-header">
+                <span class="preview-label">
+                  <mat-icon class="small-icon">auto_awesome</mat-icon>
+                  {{ 'meals.photo.detected' | translate }}
+                </span>
+                <button mat-icon-button (click)="photoResults.set([])"
+                        [matTooltip]="'meals.photo.discard' | translate">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              @for (r of photoResults(); track $index) {
+                <div class="photo-item">
+                  <mat-checkbox [(ngModel)]="r.selected" color="primary"></mat-checkbox>
+                  <div class="photo-item-body">
+                    <div class="photo-item-name">
+                      <input type="text" [(ngModel)]="r.name" class="inline-input name-input">
+                      @if (r.confidence != null) {
+                        <span class="confidence-badge">{{ (r.confidence * 100) | number:'1.0-0' }}%</span>
+                      }
+                    </div>
+                    <div class="photo-item-meta">
+                      <label>
+                        {{ 'meals.grams' | translate }}
+                        <input type="number" [(ngModel)]="r.portionGrams" min="0" class="inline-input tiny">g
+                      </label>
+                      <span class="text-muted small">
+                        {{ r.calories | number:'1.0-0' }} kcal · P {{ r.protein | number:'1.0-1' }}g
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              }
+              <div class="save-row">
+                <button mat-flat-button color="primary" (click)="applyPhotoResults()"
+                        [disabled]="!hasSelectedPhotoResult()">
+                  <mat-icon>playlist_add</mat-icon>
+                  {{ 'meals.photo.addSelected' | translate }}
+                </button>
+              </div>
+            </div>
+          }
 
           @if (draft.items.length) {
             <div class="preview-block">
@@ -324,6 +382,33 @@ import { DatePickerComponent } from '../../components/date-picker.component';
     .save-row { display: flex; justify-content: flex-end; }
     .save-btn { height: 46px; padding: 0 24px; display: inline-flex; align-items: center; gap: 4px; }
 
+    /* Fase 10A: foto de refeicao */
+    .photo-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+    .photo-results {
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 14px 16px; margin-top: 8px;
+      background: var(--nt-primary-soft); border-radius: 10px;
+      border-left: 3px solid var(--nt-primary);
+    }
+    .photo-item { display: flex; gap: 10px; align-items: flex-start;
+      padding: 8px 10px; background: var(--nt-surface); border-radius: 8px; }
+    .photo-item-body { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .photo-item-name { display: flex; align-items: center; gap: 8px; }
+    .name-input { flex: 1; background: transparent; border: none; outline: none;
+      font-weight: 600; font-size: 0.95rem; padding: 2px 4px; border-radius: 4px;
+      &:focus { background: var(--nt-surface-2); } }
+    .inline-input.tiny { width: 60px; text-align: right; }
+    .inline-input { border: 1px solid var(--nt-border); border-radius: 4px;
+      padding: 2px 6px; background: var(--nt-surface); font-size: 0.9rem; }
+    .photo-item-meta { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; flex-wrap: wrap; }
+    .photo-item-meta label { display: inline-flex; align-items: center; gap: 4px; color: var(--nt-text-muted); }
+    .confidence-badge {
+      padding: 1px 8px; border-radius: 999px;
+      background: var(--nt-accent-soft); color: var(--nt-accent);
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .small-icon { font-size: 16px !important; width: 16px !important; height: 16px !important; }
+
     .history-header h2 {
       font-size: 1.35rem; margin: 0; font-weight: 600; letter-spacing: -0.01em;
       color: var(--nt-text);
@@ -368,6 +453,10 @@ export class MealsComponent implements OnInit {
   pendingFood: Food | null = null;
   pendingGrams: number | null = null;
   draft: Meal = this.blankDraft();
+
+  // Fase 10A: analise IA de foto
+  photoResults = signal<Array<PhotoAnalysisItem & { selected?: boolean }>>([]);
+  analyzingPhoto = signal(false);
 
   allTypes: MealType[] = ['BREAKFAST', 'LUNCH', 'SNACK', 'DINNER', 'OTHER'];
 
@@ -447,6 +536,87 @@ export class MealsComponent implements OnInit {
   itemProtein(it: any): number { return it.protein ?? 0; }
 
   removeItem(i: number) { this.draft.items.splice(i, 1); }
+
+  // Fase 10A: analise IA de foto de refeicao
+
+  hasSelectedPhotoResult(): boolean {
+    return this.photoResults().some(r => !!r.selected);
+  }
+
+  onPhotoPicked(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 5_000_000) {
+      this.snack.open(this.translate.instant('meals.photo.tooBig'), 'OK', { duration: 3000 });
+      input.value = '';
+      return;
+    }
+    this.analyzingPhoto.set(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const comma = dataUrl.indexOf(',');
+      const payload = comma > 0 ? dataUrl.substring(comma + 1) : dataUrl;
+      this.api.analyzeMealPhoto(payload, file.type).subscribe({
+        next: items => {
+          this.analyzingPhoto.set(false);
+          if (!items.length) {
+            this.snack.open(this.translate.instant('meals.photo.nothingFound'),
+                            'OK', { duration: 3500 });
+            return;
+          }
+          this.photoResults.set(items.map(i => ({ ...i, selected: true })));
+        },
+        error: () => {
+          this.analyzingPhoto.set(false);
+          this.snack.open(this.translate.instant('meals.photo.err'), 'OK', { duration: 3000 });
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  applyPhotoResults() {
+    const selected = this.photoResults().filter(r => r.selected);
+    if (!selected.length) return;
+    // Cada item vira um Food auto-criado (sem id) + item da meal.
+    // Reusa a rota de /foods pra persistir o alimento com dedupe por nome.
+    const toAdd = [...selected];
+    const addNext = () => {
+      const r = toAdd.shift();
+      if (!r) {
+        this.photoResults.set([]);
+        this.snack.open(this.translate.instant('meals.photo.applied'), 'OK', { duration: 2000 });
+        return;
+      }
+      const grams = r.portionGrams || 100;
+      // Per-100g: escala dos totais da porcao pra base 100g pra o Food catalogo
+      const per100 = 100 / grams;
+      const food: Food = {
+        name: r.name,
+        caloriesPer100g: (r.calories ?? 0) * per100,
+        proteinPer100g: (r.protein ?? 0) * per100,
+        carbsPer100g: (r.carbs ?? 0) * per100,
+        fatPer100g: (r.fat ?? 0) * per100
+      };
+      this.api.createFood(food).subscribe({
+        next: created => {
+          this.draft.items.push({
+            foodId: created.id!,
+            foodName: created.name,
+            grams,
+            calories: r.calories ?? 0,
+            protein: r.protein ?? 0
+          });
+          addNext();
+        },
+        error: () => addNext() // ignora erro individual pra nao travar o lote
+      });
+    };
+    addNext();
+  }
 
   save() {
     this.api.saveMeal(this.draft).subscribe({

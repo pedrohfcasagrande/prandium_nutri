@@ -9,7 +9,7 @@ import {
   Consultation,
   PdfChangeRequest, PdfChangeRequestStatus,
   PdfCustomization, PdfTemplateView,
-  PdfVerification, PrescriptionIssuance,
+  PdfVerification, PhotoAnalysisItem, PrescriptionIssuance,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
   NutriPublic, NutritionistLink,
@@ -58,6 +58,12 @@ export class ApiService {
 
   deleteMeal(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/meals/${id}`);
+  }
+
+  /** Fase 10A: envia foto do prato pra IA identificar alimentos. */
+  analyzeMealPhoto(imageBase64: string, mimeType: string): Observable<PhotoAnalysisItem[]> {
+    return this.http.post<PhotoAnalysisItem[]>(
+      `${this.base}/meals/analyze-photo`, { imageBase64, mimeType });
   }
 
   dashboard(date?: string): Observable<DailySummary> {
