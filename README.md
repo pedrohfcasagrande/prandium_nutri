@@ -433,7 +433,7 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
 
 **Presence tracking**: `JwtAuthFilter` atualiza `users.last_seen_at` no maximo 1x a cada 5min por user (throttle em-memoria). Base para metricas DAU/WAU/MAU.
 
-**MRR consolidado (Fase 4B)**: `AdminMetricsService` usa `FxRateService` que le a cotacao mais recente por moeda da tabela `daily_fx_rates`. Fallback fixo em memoria caso a moeda nao tenha registro. Ainda nao ha job de atualizacao automatica das cotacoes — seed inicial via migration; alterar via `INSERT` manual ou UI (backlog).
+**MRR consolidado (Fase 4B)**: `AdminMetricsService` usa `FxRateService` que le a cotacao mais recente por moeda da tabela `daily_fx_rates`. Fallback fixo em memoria caso a moeda nao tenha registro. **Fase 4B refino (2026-09-29)**: `FxRateSyncService` cron 06:30 puxa cotacoes de `open.er-api.com` (base USD, sem chave), converte USD/EUR → BRL e faz upsert por `(currency, date)`. Fallback continua para o caso da API cair. Override via `PRANDIUMNUTRI_FX_BASE_URL` / `PRANDIUMNUTRI_FX_ENABLED`.
 
 **Alerts (Fase 4B)**: `AlertService` avalia regras diariamente via `@Scheduled` e insere linhas em `alerts`. Cada dashboard renderiza `AlertBannerComponent` (info/warn/critical, dismissable). Novo tipo de alerta = adicionar metodo `evaluateXxx()` em `AlertService.evaluateAllRules()`.
 
