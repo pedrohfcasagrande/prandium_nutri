@@ -135,22 +135,27 @@ public class PrescriptionPdfService {
         v.put("primaryColor",     primary != null ? primary : DEFAULT_PRIMARY);
         v.put("primaryColorDark", primary != null ? darken(primary) : DEFAULT_PRIMARY_DARK);
         v.put("pdfLogoBase64", source != null ? source.getPdfLogoBase64() : null);
-
         v.put("headerLine", source != null ? blankToNull(source.getPdfHeaderLine()) : null);
-        v.put("footerAddress",   source != null ? blankToNull(source.getPdfFooterAddress())   : null);
-        v.put("footerContacts",  source != null ? buildContactList(source) : java.util.List.of());
-        v.put("footerNote",      source != null ? blankToNull(source.getPdfFooterNote())      : null);
+
+        // Fase 9H-2: fields modulares ordenados por position, formatados por tipo.
+        v.put("footerFields", source != null ? buildFooterFields(source) : java.util.List.of());
 
         return v;
     }
 
-    /** Lista pra render inline no rodape ("Tel · Email · Site · @insta"). */
-    private java.util.List<String> buildContactList(PdfTemplate t) {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        if (blankToNull(t.getPdfFooterPhone()) != null) out.add(t.getPdfFooterPhone());
-        if (blankToNull(t.getPdfFooterEmail()) != null) out.add(t.getPdfFooterEmail());
-        if (blankToNull(t.getPdfFooterWebsite()) != null) out.add(t.getPdfFooterWebsite());
-        if (blankToNull(t.getPdfFooterInstagram()) != null) out.add(t.getPdfFooterInstagram());
+    /** Lista pronta pra Thymeleaf iterar. Cada item = {value, isNote}. */
+    private java.util.List<java.util.Map<String, Object>> buildFooterFields(PdfTemplate t) {
+        java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
+        for (com.prandiumnutri.domain.PdfTemplateField f : pdfTemplateService.listFields(t.getId())) {
+            String val = blankToNull(f.getValue());
+            if (val == null) continue;
+            if (f.getType() == com.prandiumnutri.domain.PdfFieldType.INSTAGRAM
+                    && !val.startsWith("@")) val = "@" + val;
+            java.util.Map<String, Object> row = new java.util.HashMap<>();
+            row.put("value", val);
+            row.put("isNote", f.getType() == com.prandiumnutri.domain.PdfFieldType.TEXTAREA);
+            out.add(row);
+        }
         return out;
     }
 

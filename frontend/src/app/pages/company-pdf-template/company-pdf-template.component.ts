@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { PdfCustomization } from '../../models/models';
+import { PdfFieldsEditorComponent } from '../../components/pdf-fields-editor.component';
 
 /**
  * Fase 9H-1: admin da empresa personaliza o template PDF que sera usado
@@ -22,7 +23,7 @@ import { PdfCustomization } from '../../models/models';
   standalone: true,
   imports: [CommonModule, FormsModule, MatCardModule, MatFormFieldModule,
             MatInputModule, MatButtonModule, MatIconModule, MatSnackBarModule,
-            MatTooltipModule, TranslateModule],
+            MatTooltipModule, TranslateModule, PdfFieldsEditorComponent],
   template: `
     <div class="page">
       <div class="page-header">
@@ -83,44 +84,9 @@ import { PdfCustomization } from '../../models/models';
 
         <div class="section-sep">{{ 'nutriPractices.pdf.footerSection' | translate }}</div>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>{{ 'nutriPractices.pdf.address' | translate }}</mat-label>
-          <mat-icon matPrefix>place</mat-icon>
-          <input matInput [(ngModel)]="draft.pdfFooterAddress"
-                 [placeholder]="'nutriPractices.pdf.addressPlaceholder' | translate" maxlength="300">
-        </mat-form-field>
-        <div class="pdf-row">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>{{ 'nutriPractices.pdf.phone' | translate }}</mat-label>
-            <mat-icon matPrefix>call</mat-icon>
-            <input matInput [(ngModel)]="draft.pdfFooterPhone" maxlength="80">
-          </mat-form-field>
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>{{ 'nutriPractices.pdf.email' | translate }}</mat-label>
-            <mat-icon matPrefix>mail</mat-icon>
-            <input matInput type="email" [(ngModel)]="draft.pdfFooterEmail" maxlength="150">
-          </mat-form-field>
-        </div>
-        <div class="pdf-row">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>{{ 'nutriPractices.pdf.website' | translate }}</mat-label>
-            <mat-icon matPrefix>language</mat-icon>
-            <input matInput type="url" [(ngModel)]="draft.pdfFooterWebsite" maxlength="200"
-                   placeholder="https://...">
-          </mat-form-field>
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>{{ 'nutriPractices.pdf.instagram' | translate }}</mat-label>
-            <mat-icon matPrefix>photo_camera</mat-icon>
-            <input matInput [(ngModel)]="draft.pdfFooterInstagram" maxlength="80"
-                   placeholder="@usuario">
-          </mat-form-field>
-        </div>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>{{ 'nutriPractices.pdf.note' | translate }}</mat-label>
-          <textarea matInput rows="2" [(ngModel)]="draft.pdfFooterNote"
-                    [placeholder]="'nutriPractices.pdf.notePlaceholder' | translate" maxlength="500"></textarea>
-          <mat-hint>{{ 'nutriPractices.pdf.noteHint' | translate }}</mat-hint>
-        </mat-form-field>
+        <app-pdf-fields-editor
+            [fields]="draft.fields || []"
+            (fieldsChange)="draft.fields = $event"></app-pdf-fields-editor>
 
         <div class="pdf-actions">
           <button mat-stroked-button (click)="preview()" [disabled]="previewing()">

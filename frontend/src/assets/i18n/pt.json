@@ -1086,6 +1086,21 @@
     "title": "Template PDF da empresa",
     "subtitle": "Layout único usado por todos os nutricionistas vinculados a esta empresa."
   },
+  "pdfFields": {
+    "empty": "Nenhum campo no rodapé. Clique em \"Adicionar campo\" para incluir contatos.",
+    "add": "Adicionar campo",
+    "remove": "Remover campo",
+    "moveUp": "Mover para cima",
+    "moveDown": "Mover para baixo",
+    "type": {
+      "TEXT": "Texto",
+      "TEXTAREA": "Nota",
+      "URL": "Site",
+      "EMAIL": "E-mail",
+      "TEL": "Telefone",
+      "INSTAGRAM": "Instagram"
+    }
+  },
   "companyMembers": {
     "title": "Administradores da empresa",
     "subtitle": "Convide outros administradores para gerenciar sua empresa em conjunto.",

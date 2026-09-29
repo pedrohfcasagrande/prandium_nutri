@@ -242,6 +242,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V032      | move PDF customization de users → nutritionist_practices (por tenant); backfill copia pra practice particular; DROP colunas em users |
 | V033      | practices: substitui pdf_header_text/pdf_footer_text (HTML) por 7 campos estruturados (pdf_header_line + pdf_footer_{address,phone,email,website,instagram,note}) |
 | V034      | cria pdf_templates (owner_type COMPANY/PRACTICE + owner_id + 9 campos de layout); backfill de practices particulares; DROP das colunas em nutritionist_practices |
+| V035      | cria pdf_template_fields (label + field_type + field_value + position) para rodapé modular; backfill converte os 6 campos footer em rows; DROP das colunas de rodapé em pdf_templates |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -560,4 +561,11 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: nova rota `/company/pdf-template` + item de sidebar "PDF da empresa" pra COMPANY. `NutriPracticesComponent` mostra banner "Template herdado da empresa X" + `<fieldset disabled>` bloqueando edição + esconde botão Salvar quando `inheritedFromCompanyName != null`; botão "Pré-visualizar" continua ativo. Assinatura digital do nutri permanece livre (é do CRN pessoal).
   - Testes: `PdfTemplateServiceTest` (3 casos — resolve particular, resolve vinculada→COMPANY, ignora template PRACTICE quando practice é vinculada). Suite backend em **124/124**, frontend em 60/60.
   - Próximos: **9H-2** (campos modulares — nome e tipo escolhidos pelo dono do template); **9H-3** (fluxo de aprovação: nutri vinculado sugere mudança, admin aprova/rejeita).
+- **Fase 9H-2 (campos modulares do rodapé — 2026-09-29): OK**
+  - Migração V035: os 6 campos fixos do rodapé (`pdf_footer_address/phone/email/website/instagram/note`) viram rows em `pdf_template_fields` (label + field_type + field_value + position). Backfill preserva tudo que estava configurado. Nota: `value` é palavra reservada em H2, então as colunas são `field_type`/`field_value` — mapeadas via `@Column(name=...)` na entity.
+  - Backend: nova entity `PdfTemplateField` + enum `PdfFieldType` (TEXT/TEXTAREA/URL/EMAIL/TEL/INSTAGRAM) + repo; `PdfTemplateService.syncFields` faz CREATE/UPDATE/DELETE por diff da lista incoming vs. atual. Reorder usa "offset temporário" (position += 10000) pra evitar violação do unique(template_id, position) durante o swap. `PrescriptionPdfService.buildFooterFields` monta lista `{value, isNote}` — prefixa `@` em INSTAGRAM automaticamente; template Thymeleaf faz `th:each` renderizando 1 linha por field, TEXTAREA vira `.custom-footer-note` em itálico.
+  - DTO: `PdfCustomizationDto` perde os 6 campos footer e ganha `List<PdfTemplateFieldDto> fields`. `PdfTemplateFieldDto.id == null` sinaliza "campo novo" pro upsert.
+  - Frontend: novo componente reutilizável `PdfFieldsEditorComponent` (`src/app/components/pdf-fields-editor.component.ts`) — lista de fields com input inline pro label, ícone por tipo, botões up/down/remove; `<mat-menu>` "Adicionar campo" com os 6 tipos suportados. Usado em ambas as telas (`nutri-practices` e `company-pdf-template`) via `[fields]`/`(fieldsChange)` two-way binding. Respeita `[disabled]` quando template é herdado da empresa.
+  - Testes: novo caso `upsert_syncsFieldsCreateUpdateDelete` no `PdfTemplateServiceTest` (adiciona 3 fields → mantém 1 renomeado, remove 1, adiciona 1 novo em posição diferente). Suite backend em **125/125**, frontend em 60/60.
+  - Próximo: **9H-3** — nutri vinculado sugere mudança em vez de editar; admin da empresa aprova/rejeita.
 - Fase 8 (geolocalizacao restaurantes): backlog

@@ -308,16 +308,11 @@
             </td>
         </tr>
     </table>
-    <!-- V033: rodape a partir de campos estruturados (endereco + contatos + nota) -->
-    <div class="custom-footer"
-         th:if="${footerAddress != null or !#lists.isEmpty(footerContacts) or footerNote != null}">
-        <div th:if="${footerAddress != null}" th:text="${footerAddress}"></div>
-        <div th:if="${!#lists.isEmpty(footerContacts)}">
-            <span th:each="c, it : ${footerContacts}">
-                <span th:text="${c}"></span><span th:if="${!it.last}"> · </span>
-            </span>
-        </div>
-        <div th:if="${footerNote != null}" class="custom-footer-note" th:text="${footerNote}"
+    <!-- Fase 9H-2: rodape a partir de fields modulares. 1 linha por field, TEXTAREA em italico. -->
+    <div class="custom-footer" th:if="${!#lists.isEmpty(footerFields)}">
+        <div th:each="f : ${footerFields}"
+             th:class="${f.isNote} ? 'custom-footer-note' : ''"
+             th:text="${f.value}"
              style="white-space: pre-wrap;"></div>
     </div>
     <div class="disclaimer" th:text="#{pdf.prescription.disclaimer}">

@@ -88,9 +88,42 @@ class PdfTemplateServiceTest {
         assertThat(service.resolveEffectiveFor(linked)).isEmpty();
     }
 
+    @Test
+    void upsert_syncsFieldsCreateUpdateDelete() {
+        User nutri = createNutri();
+        NutritionistPractice particular = practiceRepo.save(NutritionistPractice.builder()
+                .nutritionist(nutri).company(null).acceptsNewClients(true).build());
+
+        // Cria com 3 fields
+        service.upsert(PdfTemplateOwnerType.PRACTICE, particular.getId(),
+                new PdfCustomizationDto(null, "#111", "H", java.util.List.of(
+                    new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Tel", PdfFieldType.TEL, "1"),
+                    new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Email", PdfFieldType.EMAIL, "a@x.com"),
+                    new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Obs", PdfFieldType.TEXTAREA, "note")
+                )));
+        var t = service.resolveEffectiveFor(particular).orElseThrow();
+        var current = service.listFields(t.getId());
+        assertThat(current).hasSize(3);
+        Long telId = current.get(0).getId();
+        Long emailId = current.get(1).getId();
+
+        // Update: mantem tel (novo valor), remove email, adiciona site
+        service.upsert(PdfTemplateOwnerType.PRACTICE, particular.getId(),
+                new PdfCustomizationDto(null, "#111", "H", java.util.List.of(
+                    new com.prandiumnutri.dto.PdfTemplateFieldDto(telId, "Tel principal", PdfFieldType.TEL, "2"),
+                    new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Site", PdfFieldType.URL, "https://x")
+                )));
+        current = service.listFields(t.getId());
+        assertThat(current).hasSize(2);
+        assertThat(current.get(0).getLabel()).isEqualTo("Tel principal");
+        assertThat(current.get(0).getValue()).isEqualTo("2");
+        assertThat(current.get(1).getType()).isEqualTo(PdfFieldType.URL);
+        // Email deve ter sido deletado
+        assertThat(current).noneMatch(f -> f.getId().equals(emailId));
+    }
+
     private PdfCustomizationDto dto(String color, String headerLine) {
-        return new PdfCustomizationDto(null, color, headerLine,
-                null, null, null, null, null, null);
+        return new PdfCustomizationDto(null, color, headerLine, java.util.List.of());
     }
 
     private User createNutri() {

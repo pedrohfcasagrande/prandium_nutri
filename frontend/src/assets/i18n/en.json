@@ -1086,6 +1086,21 @@
     "title": "Company PDF template",
     "subtitle": "Single layout used by every nutritionist linked to this company."
   },
+  "pdfFields": {
+    "empty": "No footer fields yet. Click \"Add field\" to include contacts.",
+    "add": "Add field",
+    "remove": "Remove field",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "type": {
+      "TEXT": "Text",
+      "TEXTAREA": "Note",
+      "URL": "Website",
+      "EMAIL": "Email",
+      "TEL": "Phone",
+      "INSTAGRAM": "Instagram"
+    }
+  },
   "companyMembers": {
     "title": "Company administrators",
     "subtitle": "Invite other administrators to manage your company together.",

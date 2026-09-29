@@ -1086,6 +1086,21 @@
     "title": "Modèle de PDF de l'entreprise",
     "subtitle": "Mise en page unique utilisée par tous les nutritionnistes rattachés à cette entreprise."
   },
+  "pdfFields": {
+    "empty": "Aucun champ dans le pied de page. Cliquez sur « Ajouter un champ » pour inclure des contacts.",
+    "add": "Ajouter un champ",
+    "remove": "Supprimer le champ",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "type": {
+      "TEXT": "Texte",
+      "TEXTAREA": "Note",
+      "URL": "Site",
+      "EMAIL": "E-mail",
+      "TEL": "Téléphone",
+      "INSTAGRAM": "Instagram"
+    }
+  },
   "companyMembers": {
     "title": "Administrateurs de l'entreprise",
     "subtitle": "Invitez d'autres administrateurs pour gérer votre entreprise ensemble.",

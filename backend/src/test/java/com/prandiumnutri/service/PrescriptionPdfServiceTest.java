@@ -172,10 +172,16 @@ class PrescriptionPdfServiceTest {
                 com.prandiumnutri.domain.PdfTemplateOwnerType.PRACTICE, practice.getId(),
                 new com.prandiumnutri.dto.PdfCustomizationDto(
                         null, "#ff5733", "Consultorio ficticio",
-                        "Rua X, 123 · Sao Paulo/SP",
-                        "(11) 99999-9999", "contato@x.com",
-                        null, null,
-                        "Aberto seg-sex 8h-18h"));
+                        java.util.List.of(
+                            new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Endereco",
+                                com.prandiumnutri.domain.PdfFieldType.TEXT, "Rua X, 123 · Sao Paulo/SP"),
+                            new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Telefone",
+                                com.prandiumnutri.domain.PdfFieldType.TEL, "(11) 99999-9999"),
+                            new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Email",
+                                com.prandiumnutri.domain.PdfFieldType.EMAIL, "contato@x.com"),
+                            new com.prandiumnutri.dto.PdfTemplateFieldDto(null, "Observacoes",
+                                com.prandiumnutri.domain.PdfFieldType.TEXTAREA, "Aberto seg-sex 8h-18h")
+                        )));
         User client = quickClient();
         client.setSex(Sex.MALE);
         client.setBirthDate(LocalDate.of(1985, 6, 15));

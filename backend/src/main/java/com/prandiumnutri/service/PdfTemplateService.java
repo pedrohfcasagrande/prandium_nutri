@@ -2,33 +2,30 @@ package com.prandiumnutri.service;
 
 import com.prandiumnutri.domain.*;
 import com.prandiumnutri.dto.PdfCustomizationDto;
+import com.prandiumnutri.dto.PdfTemplateFieldDto;
+import com.prandiumnutri.repository.PdfTemplateFieldRepository;
 import com.prandiumnutri.repository.PdfTemplateRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
- * Fase 9H-1: resolucao de template PDF por dono (empresa OU practice particular).
- *
- * Regras:
- * - Practice vinculada a empresa (company_id != null) → template da empresa.
- * - Practice particular → template proprio.
- * - Ninguem configurou → retorna null (PrescriptionPdfService usa defaults Prandium).
- *
- * Nao usa FK real (owner_id logico) pra permitir owner_type polimorfico sem exigir
- * herança JPA — dois inteiros num par unique. Trade-off aceito porque a semantica
- * do dono e stateless (nunca deletamos template, so o dono).
+ * Fase 9H-1 + 9H-2: template PDF por dono (COMPANY ou PRACTICE) com campos modulares.
  */
 @Service
 @RequiredArgsConstructor
 public class PdfTemplateService {
 
     private final PdfTemplateRepository repository;
+    private final PdfTemplateFieldRepository fieldRepository;
 
-    /** Template efetivo pra usar no PDF de uma practice. Nao cria; retorna vazio se nao configurado. */
+    /** Template efetivo pra usar no PDF de uma practice. Nao cria; vazio se nao configurado. */
     @Transactional(readOnly = true)
     public Optional<PdfTemplate> resolveEffectiveFor(NutritionistPractice practice) {
         if (practice == null) return Optional.empty();
@@ -40,7 +37,6 @@ public class PdfTemplateService {
                 PdfTemplateOwnerType.PRACTICE, practice.getId());
     }
 
-    /** Get-or-create do template do dono indicado (usado quando o admin abre a tela de edicao). */
     @Transactional
     public PdfTemplate getOrCreate(PdfTemplateOwnerType type, Long ownerId) {
         return repository.findByOwnerTypeAndOwnerId(type, ownerId)
@@ -48,7 +44,17 @@ public class PdfTemplateService {
                         .ownerType(type).ownerId(ownerId).build()));
     }
 
-    /** Atualiza template. Se nao existir, cria antes. */
+    /** Fase 9H-2: fields ordenados por position asc do template. */
+    @Transactional(readOnly = true)
+    public List<PdfTemplateField> listFields(Long templateId) {
+        return fieldRepository.findByTemplateIdOrderByPositionAsc(templateId);
+    }
+
+    /**
+     * Upsert do template + sincronizacao dos fields. A lista do DTO substitui a atual:
+     * ids ausentes viram delete; ids novos viram insert; ids existentes viram update com
+     * novo label/type/value e novo position (indice no array).
+     */
     @Transactional
     public PdfTemplate upsert(PdfTemplateOwnerType type, Long ownerId, PdfCustomizationDto dto) {
         PdfTemplate t = getOrCreate(type, ownerId);
@@ -58,13 +64,52 @@ public class PdfTemplateService {
         t.setPdfLogoBase64(blankToNull(dto.pdfLogoBase64()));
         t.setPdfPrimaryColor(blankToNull(dto.pdfPrimaryColor()));
         t.setPdfHeaderLine(blankToNull(dto.pdfHeaderLine()));
-        t.setPdfFooterAddress(blankToNull(dto.pdfFooterAddress()));
-        t.setPdfFooterPhone(blankToNull(dto.pdfFooterPhone()));
-        t.setPdfFooterEmail(blankToNull(dto.pdfFooterEmail()));
-        t.setPdfFooterWebsite(blankToNull(dto.pdfFooterWebsite()));
-        t.setPdfFooterInstagram(blankToNull(dto.pdfFooterInstagram()));
-        t.setPdfFooterNote(blankToNull(dto.pdfFooterNote()));
-        return repository.save(t);
+        t = repository.save(t);
+
+        syncFields(t, dto.fields());
+        return t;
+    }
+
+    private void syncFields(PdfTemplate template, List<PdfTemplateFieldDto> incoming) {
+        List<PdfTemplateField> current = fieldRepository.findByTemplateIdOrderByPositionAsc(template.getId());
+        Map<Long, PdfTemplateField> byId = new HashMap<>();
+        for (PdfTemplateField f : current) byId.put(f.getId(), f);
+
+        // Deletar primeiro os que sumiram da lista (libera slots de position).
+        List<Long> incomingIds = incoming.stream()
+                .map(PdfTemplateFieldDto::id).filter(java.util.Objects::nonNull).toList();
+        for (PdfTemplateField f : current) {
+            if (!incomingIds.contains(f.getId())) fieldRepository.delete(f);
+        }
+        // Fase 1: reposiciona os que sobreviveram pra posicoes altas (fora do range dos novos),
+        // pra evitar violacao do unique(template_id, position) durante reorder.
+        for (PdfTemplateField f : current) {
+            if (incomingIds.contains(f.getId())) {
+                f.setPosition(10_000 + f.getPosition());
+                fieldRepository.saveAndFlush(f);
+            }
+        }
+        // Fase 2: applica novo estado (position = indice no array) — update existentes, insert novos.
+        for (int i = 0; i < incoming.size(); i++) {
+            PdfTemplateFieldDto in = incoming.get(i);
+            if (in.type() == null || in.label() == null || in.label().isBlank()) continue;
+            if (in.id() != null && byId.containsKey(in.id())) {
+                PdfTemplateField existing = byId.get(in.id());
+                existing.setLabel(in.label().trim());
+                existing.setType(in.type());
+                existing.setValue(blankToNull(in.value()));
+                existing.setPosition(i);
+                fieldRepository.saveAndFlush(existing);
+            } else {
+                fieldRepository.save(PdfTemplateField.builder()
+                        .template(template)
+                        .label(in.label().trim())
+                        .type(in.type())
+                        .value(blankToNull(in.value()))
+                        .position(i)
+                        .build());
+            }
+        }
     }
 
     /** Le customizacao existente (sem criar). Retorna DTO vazio se nao houver template. */
@@ -72,17 +117,17 @@ public class PdfTemplateService {
     public PdfCustomizationDto readOrEmpty(PdfTemplateOwnerType type, Long ownerId) {
         return repository.findByOwnerTypeAndOwnerId(type, ownerId)
                 .map(this::toDto)
-                .orElseGet(() -> new PdfCustomizationDto(null, null, null,
-                        null, null, null, null, null, null));
+                .orElseGet(() -> new PdfCustomizationDto(null, null, null, List.of()));
     }
 
     public PdfCustomizationDto toDto(PdfTemplate t) {
+        List<PdfTemplateFieldDto> fields = fieldRepository.findByTemplateIdOrderByPositionAsc(t.getId())
+                .stream()
+                .map(f -> new PdfTemplateFieldDto(f.getId(), f.getLabel(), f.getType(), f.getValue()))
+                .toList();
         return new PdfCustomizationDto(
-                t.getPdfLogoBase64(), t.getPdfPrimaryColor(),
-                t.getPdfHeaderLine(),
-                t.getPdfFooterAddress(), t.getPdfFooterPhone(),
-                t.getPdfFooterEmail(), t.getPdfFooterWebsite(),
-                t.getPdfFooterInstagram(), t.getPdfFooterNote());
+                t.getPdfLogoBase64(), t.getPdfPrimaryColor(), t.getPdfHeaderLine(),
+                fields);
     }
 
     private static String blankToNull(String s) {

@@ -481,18 +481,21 @@ export interface Consultation {
   updatedAt?: string;
 }
 
-// Customizacao do PDF de prescricao (Fase 9D-2, refinado V033 + 9H-1).
-// Template pertence a uma COMPANY ou PRACTICE — ver PdfTemplateView.
+// Fase 9H-2: template com campos modulares.
+export type PdfFieldType = 'TEXT' | 'TEXTAREA' | 'URL' | 'EMAIL' | 'TEL' | 'INSTAGRAM';
+
+export interface PdfTemplateField {
+  id?: number | null;   // null = novo campo (server cria)
+  label: string;
+  type: PdfFieldType;
+  value?: string | null;
+}
+
 export interface PdfCustomization {
   pdfLogoBase64?: string | null;
   pdfPrimaryColor?: string | null;
   pdfHeaderLine?: string | null;
-  pdfFooterAddress?: string | null;
-  pdfFooterPhone?: string | null;
-  pdfFooterEmail?: string | null;
-  pdfFooterWebsite?: string | null;
-  pdfFooterInstagram?: string | null;
-  pdfFooterNote?: string | null;
+  fields?: PdfTemplateField[];
 }
 
 /**

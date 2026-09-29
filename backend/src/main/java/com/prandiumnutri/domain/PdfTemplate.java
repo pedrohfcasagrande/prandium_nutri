@@ -45,18 +45,7 @@ public class PdfTemplate {
     @Column(name = "pdf_header_line", length = 200)
     private String pdfHeaderLine;
 
-    @Column(name = "pdf_footer_address", length = 300)
-    private String pdfFooterAddress;
-    @Column(name = "pdf_footer_phone", length = 80)
-    private String pdfFooterPhone;
-    @Column(name = "pdf_footer_email", length = 150)
-    private String pdfFooterEmail;
-    @Column(name = "pdf_footer_website", length = 200)
-    private String pdfFooterWebsite;
-    @Column(name = "pdf_footer_instagram", length = 80)
-    private String pdfFooterInstagram;
-    @Column(name = "pdf_footer_note", length = 500)
-    private String pdfFooterNote;
+    // Fase 9H-2: campos do rodape agora sao rows em pdf_template_fields (modulares).
 
     @Column(name = "created_at", nullable = false)
     @Builder.Default

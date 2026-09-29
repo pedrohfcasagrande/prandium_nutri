@@ -1,22 +1,19 @@
 package com.prandiumnutri.dto;
 
+import java.util.List;
+
 /**
- * Fase 9D-2: customizacao do PDF de prescricao por practice.
- * V033: cabecalho/rodape passam a ser campos estruturados (sem HTML) —
- * nutricionista nao precisa saber marcacao pra montar seu proprio template.
+ * Fase 9H-2: template PDF com campos modulares.
+ * Header e uma linha simples; footer e uma lista ordenada de fields
+ * (label + tipo + valor) que o dono do template escolhe.
  */
 public record PdfCustomizationDto(
-        String pdfLogoBase64,       // data URL PNG/JPG; null pra remover
-        String pdfPrimaryColor,     // "#RRGGBB" ou "#RRGGBBAA"; null pra default (teal)
-
-        // Cabecalho — 1 linha simples
-        String pdfHeaderLine,
-
-        // Rodape — 5 campos de contato + 1 nota livre
-        String pdfFooterAddress,
-        String pdfFooterPhone,
-        String pdfFooterEmail,
-        String pdfFooterWebsite,
-        String pdfFooterInstagram,
-        String pdfFooterNote
-) {}
+        String pdfLogoBase64,       // data URL PNG/JPG
+        String pdfPrimaryColor,     // "#RRGGBB"; null pra default (teal)
+        String pdfHeaderLine,       // linha unica de cabecalho
+        List<PdfTemplateFieldDto> fields  // ordem visual (0-based); null == lista vazia
+) {
+    public List<PdfTemplateFieldDto> fields() {
+        return fields != null ? fields : List.of();
+    }
+}
