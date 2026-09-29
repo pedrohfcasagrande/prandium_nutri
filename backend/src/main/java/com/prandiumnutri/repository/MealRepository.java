@@ -12,6 +12,7 @@ import java.util.List;
 public interface MealRepository extends JpaRepository<Meal, Long> {
     List<Meal> findByUserIdAndDateOrderByTimeAsc(Long userId, LocalDate date);
     List<Meal> findByUserIdOrderByDateDescTimeDesc(Long userId);
+    long countByUserId(Long userId);
 
     @Query("select count(m) from Meal m where m.user.id in :userIds and m.date >= :since")
     long countByUserIdsSince(@Param("userIds") Collection<Long> userIds, @Param("since") LocalDate since);
@@ -21,4 +22,7 @@ public interface MealRepository extends JpaRepository<Meal, Long> {
 
     @Query("select max(m.date) from Meal m where m.user.id = :userId")
     LocalDate lastMealDate(@Param("userId") Long userId);
+
+    @Query("select distinct m.date from Meal m where m.user.id = :userId order by m.date desc")
+    List<LocalDate> distinctDatesDesc(@Param("userId") Long userId);
 }

@@ -6,10 +6,11 @@ import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
+  ClientChecklist,
   Consultation,
   PdfChangeRequest, PdfChangeRequestStatus,
   PdfCustomization, PdfTemplateView,
-  PdfVerification, PhotoAnalysisItem, PrescriptionIssuance,
+  PdfVerification, PhotoAnalysisItem, PrescriptionIssuance, StreakInfo, WaterIntake,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
   NutriPublic, NutritionistLink,
@@ -70,6 +71,31 @@ export class ApiService {
     let params = new HttpParams();
     if (date) params = params.set('date', date);
     return this.http.get<DailySummary>(`${this.base}/dashboard`, { params });
+  }
+
+  /** Fase 10B: hidratacao. */
+  listWaterIntakes(date?: string): Observable<WaterIntake[]> {
+    let params = new HttpParams();
+    if (date) params = params.set('date', date);
+    return this.http.get<WaterIntake[]>(`${this.base}/me/water`, { params });
+  }
+
+  logWater(amountMl: number): Observable<WaterIntake> {
+    return this.http.post<WaterIntake>(`${this.base}/me/water`, { amountMl });
+  }
+
+  deleteWater(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/me/water/${id}`);
+  }
+
+  /** Fase 10C: streak + badges. */
+  streakInfo(): Observable<StreakInfo> {
+    return this.http.get<StreakInfo>(`${this.base}/me/streaks`);
+  }
+
+  /** Fase 10D: onboarding checklist do cliente. */
+  myChecklist(): Observable<ClientChecklist> {
+    return this.http.get<ClientChecklist>(`${this.base}/me/checklist`);
   }
 
   suggest(extraNotes?: string, scope: 'DAY' | 'WEEK' = 'DAY'): Observable<{ menu: string }> {

@@ -12,4 +12,5 @@ public interface ProgressEntryRepository extends JpaRepository<ProgressEntry, Lo
     List<ProgressEntry> findByUserIdAndDateGreaterThanEqualOrderByDateAsc(Long userId, LocalDate since);
     Optional<ProgressEntry> findFirstByUserIdOrderByDateDesc(Long userId);
     Optional<ProgressEntry> findFirstByUserIdOrderByDateAsc(Long userId);
+    long countByUserId(Long userId);
 }

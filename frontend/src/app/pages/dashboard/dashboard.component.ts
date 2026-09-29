@@ -14,7 +14,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import type { ChartConfiguration } from 'chart.js';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
-import { DailySummary, MenuPlan, ProgressSummary } from '../../models/models';
+import { ClientChecklist, DailySummary, MenuPlan, ProgressSummary, StreakInfo, WaterIntake } from '../../models/models';
 import { DatePickerComponent } from '../../components/date-picker.component';
 
 @Component({
@@ -38,6 +38,39 @@ import { DatePickerComponent } from '../../components/date-picker.component';
       </div>
 
       @if (summary()) {
+        @if (checklist(); as ck) {
+          @if (ck.completedSteps < ck.totalSteps) {
+            <mat-card class="onboarding-card card-surface">
+              <div class="onb-head">
+                <mat-icon>rocket_launch</mat-icon>
+                <div>
+                  <div class="onb-title">{{ 'dashboard.onboardingTitle' | translate }}</div>
+                  <div class="text-muted">{{ 'dashboard.onboardingHint' | translate:{ done: ck.completedSteps, total: ck.totalSteps } }}</div>
+                </div>
+                <span class="onb-pct">{{ pct(ck.completedSteps, ck.totalSteps) }}%</span>
+              </div>
+              <mat-progress-bar mode="determinate" [value]="pct(ck.completedSteps, ck.totalSteps)" class="thin-bar"></mat-progress-bar>
+              <div class="onb-steps">
+                <a class="onb-step" [class.done]="ck.profileFilled" routerLink="/profile">
+                  <mat-icon>{{ ck.profileFilled ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  {{ 'dashboard.onbStep1' | translate }}
+                </a>
+                <a class="onb-step" [class.done]="ck.goalsPrescribed" routerLink="/my-assessment">
+                  <mat-icon>{{ ck.goalsPrescribed ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  {{ 'dashboard.onbStep2' | translate }}
+                </a>
+                <a class="onb-step" [class.done]="ck.firstMealLogged" routerLink="/meals">
+                  <mat-icon>{{ ck.firstMealLogged ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  {{ 'dashboard.onbStep3' | translate }}
+                </a>
+                <a class="onb-step" [class.done]="ck.firstProgressLogged" routerLink="/progress">
+                  <mat-icon>{{ ck.firstProgressLogged ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  {{ 'dashboard.onbStep4' | translate }}
+                </a>
+              </div>
+            </mat-card>
+          }
+        }
         @if (!hasGoals()) {
           <mat-card class="goals-cta card-surface">
             <mat-icon>flag</mat-icon>
@@ -51,12 +84,35 @@ import { DatePickerComponent } from '../../components/date-picker.component';
             </a>
           </mat-card>
         }
-        @if (summary()!.goalsSource === 'PRESCRIPTION') {
-          <div class="rx-badge">
-            <mat-icon>medical_services</mat-icon>
-            {{ 'dashboard.prescribedByNutri' | translate }}
-          </div>
-        }
+        <div class="badge-row">
+          @if (summary()!.goalsSource === 'PRESCRIPTION') {
+            <div class="rx-badge">
+              <mat-icon>medical_services</mat-icon>
+              {{ 'dashboard.prescribedByNutri' | translate }}
+            </div>
+          }
+          @if (streak(); as st) {
+            @if (st.currentStreak > 0) {
+              <div class="streak-badge" [class.hot]="st.currentStreak >= 7">
+                <mat-icon>local_fire_department</mat-icon>
+                <strong>{{ st.currentStreak }}</strong>
+                <span>{{ 'dashboard.streakDays' | translate }}</span>
+                @if (!st.todayLogged) {
+                  <span class="streak-nudge">· {{ 'dashboard.streakNudge' | translate }}</span>
+                }
+              </div>
+            }
+            @if (st.badges.length) {
+              <div class="badge-chips">
+                @for (b of st.badges; track b) {
+                  <span class="award-chip" [attr.title]="'dashboard.badgeTip' | translate:{ days: badgeDays(b) }">
+                    <mat-icon>emoji_events</mat-icon>{{ badgeDays(b) }}d
+                  </span>
+                }
+              </div>
+            }
+          }
+        </div>
         <div class="grid-cards">
           <mat-card class="stat-card">
             <div class="stat-header">
@@ -131,12 +187,6 @@ import { DatePickerComponent } from '../../components/date-picker.component';
             @if (summary()!.fatGoal) {
               <mat-progress-bar mode="determinate" [value]="pct(summary()!.fatConsumed, summary()!.fatGoal!)" class="thin-bar"></mat-progress-bar>
             }
-            @if (summary()!.waterGoalMl) {
-              <div class="macro-row">
-                <span class="text-muted"><mat-icon>local_drink</mat-icon> {{ 'dashboard.water' | translate }}</span>
-                <strong>{{ (summary()!.waterGoalMl! / 1000) | number:'1.1-1' }} L</strong>
-              </div>
-            }
             <div class="macro-row meals-count">
               <span class="text-muted">
                 <mat-icon>restaurant</mat-icon>
@@ -146,6 +196,53 @@ import { DatePickerComponent } from '../../components/date-picker.component';
             </div>
           </mat-card>
         </div>
+
+        <!-- Card de hidratação (Fase 10B) -->
+        @if (isToday()) {
+          <mat-card class="water-card">
+            <div class="water-head">
+              <div class="water-icon"><mat-icon>local_drink</mat-icon></div>
+              <div class="water-info">
+                <div class="p-label">{{ 'dashboard.water' | translate }}</div>
+                <div class="water-value">
+                  {{ waterMl() | number:'1.0-0' }} ml
+                  @if ((summary()!.waterGoalMl ?? 0) > 0) {
+                    <span class="stat-goal">/ {{ summary()!.waterGoalMl | number:'1.0-0' }} ml</span>
+                  }
+                </div>
+              </div>
+            </div>
+            @if ((summary()!.waterGoalMl ?? 0) > 0) {
+              <mat-progress-bar mode="determinate"
+                                [value]="pct(waterMl(), summary()!.waterGoalMl!)"
+                                class="thick-bar"></mat-progress-bar>
+            }
+            <div class="water-actions">
+              @for (preset of waterPresets; track preset) {
+                <button mat-stroked-button color="primary"
+                        [disabled]="loggingWater()"
+                        (click)="logWater(preset)">
+                  <mat-icon>add</mat-icon>+{{ preset }} ml
+                </button>
+              }
+            </div>
+            @if (waterIntakes().length) {
+              <div class="water-log">
+                @for (w of waterIntakes(); track w.id) {
+                  <div class="water-chip">
+                    <mat-icon>water_drop</mat-icon>
+                    <span>{{ w.amountMl }} ml</span>
+                    <span class="chip-time text-muted">{{ w.loggedAt | date:'HH:mm' }}</span>
+                    <button mat-icon-button (click)="removeWater(w.id)"
+                            [attr.aria-label]="'common.delete' | translate">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </mat-card>
+        }
 
         <!-- Card de evolução -->
         <mat-card class="progress-card">
@@ -269,12 +366,59 @@ import { DatePickerComponent } from '../../components/date-picker.component';
     .thick-bar { height: 10px !important; border-radius: 5px; overflow: hidden; }
     .thin-bar { height: 6px !important; border-radius: 3px; overflow: hidden; margin: 4px 0 8px; }
 
+    .onboarding-card {
+      padding: 16px 20px !important;
+      margin-bottom: 20px;
+      display: flex; flex-direction: column; gap: 12px;
+      border-left: 4px solid var(--nt-primary) !important;
+    }
+    .onb-head { display: flex; align-items: center; gap: 12px; }
+    .onb-head > mat-icon { color: var(--nt-primary); font-size: 28px; width: 28px; height: 28px; }
+    .onb-head > div { flex: 1; }
+    .onb-title { font-weight: 600; }
+    .onb-pct { font-weight: 700; color: var(--nt-primary-dark); font-size: 1.1rem; }
+    .onb-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+    .onb-step {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 12px; border-radius: 8px;
+      background: var(--nt-surface-2); color: var(--nt-text);
+      text-decoration: none; font-size: 0.9rem;
+      transition: background 0.15s;
+      &:hover { background: var(--nt-primary-soft); }
+      mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--nt-text-muted); }
+      &.done { color: var(--nt-text-muted); text-decoration: line-through; }
+      &.done mat-icon { color: #16a34a; }
+    }
+
+    .badge-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
     .rx-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 12px; margin-bottom: 12px;
+      padding: 6px 12px;
       background: var(--nt-primary-soft); color: var(--nt-primary-dark);
       border-radius: 999px; font-size: 0.85rem; font-weight: 500;
       mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    }
+    .streak-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #78350f;
+      border-radius: 999px; font-size: 0.85rem;
+      mat-icon { font-size: 18px; width: 18px; height: 18px; color: #ea580c; }
+      &.hot { background: linear-gradient(135deg, #fed7aa, #fb923c); color: #7c2d12; }
+      &.hot mat-icon { color: #b91c1c; }
+      strong { font-size: 1rem; font-weight: 700; }
+      .streak-nudge { color: #b45309; font-style: italic; }
+    }
+    .badge-chips { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+    .award-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--nt-surface-2); color: var(--nt-text);
+      font-size: 0.75rem; font-weight: 600;
+      mat-icon { font-size: 14px; width: 14px; height: 14px; color: #f59e0b; }
     }
     .stat-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 4px; }
     .macro-row {
@@ -294,6 +438,31 @@ import { DatePickerComponent } from '../../components/date-picker.component';
     .macro-row.meals-count mat-icon {
       font-size: 16px; width: 16px; height: 16px;
     }
+
+    .water-card {
+      padding: 20px !important;
+      display: flex; flex-direction: column; gap: 14px;
+      border-left: 4px solid #3b82f6 !important;
+    }
+    .water-head { display: flex; gap: 14px; align-items: center; }
+    .water-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: linear-gradient(135deg, #60a5fa, #2563eb); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .water-info { flex: 1; }
+    .water-value { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+    .water-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .water-actions mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 2px; }
+    .water-log { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid var(--nt-border); }
+    .water-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 4px 4px 12px; border-radius: 999px;
+      background: var(--nt-surface-2); font-size: 0.85rem;
+      mat-icon { font-size: 16px; width: 16px; height: 16px; color: #2563eb; }
+      button { transform: scale(0.7); }
+    }
+    .chip-time { font-size: 0.75rem; }
 
     .progress-card { padding: 0 !important; overflow: hidden; }
     .progress-head {
@@ -364,7 +533,19 @@ export class DashboardComponent implements OnInit {
   summary = signal<DailySummary | null>(null);
   progress = signal<ProgressSummary | null>(null);
   activePlan = signal<MenuPlan | null>(null);
+  waterIntakes = signal<WaterIntake[]>([]);
+  loggingWater = signal<boolean>(false);
+  waterPresets = [200, 300, 500];
+  streak = signal<StreakInfo | null>(null);
+  checklist = signal<ClientChecklist | null>(null);
   date = new Date().toISOString().slice(0, 10);
+
+  waterMl = computed<number>(() => {
+    const s = this.summary();
+    const fromDto = s?.waterConsumedMl ?? 0;
+    const fromList = this.waterIntakes().reduce((sum, w) => sum + w.amountMl, 0);
+    return Math.max(fromDto, fromList);
+  });
 
   chartData = computed<ChartConfiguration<'line'>['data']>(() => {
     const p = this.progress();
@@ -406,6 +587,35 @@ export class DashboardComponent implements OnInit {
     this.api.dashboard(this.date).subscribe(s => this.summary.set(s));
     this.api.progressSummary(30).subscribe(p => this.progress.set(p));
     this.api.activeMenuPlan().subscribe(p => this.activePlan.set(p));
+    if (this.isToday()) {
+      this.api.listWaterIntakes(this.date).subscribe(w => this.waterIntakes.set(w));
+      this.api.streakInfo().subscribe(s => this.streak.set(s));
+      this.api.myChecklist().subscribe(c => this.checklist.set(c));
+    } else {
+      this.waterIntakes.set([]);
+    }
+  }
+
+  badgeDays(code: string): number {
+    const n = Number(code.replace(/^streak_/, ''));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  logWater(amountMl: number) {
+    this.loggingWater.set(true);
+    this.api.logWater(amountMl).subscribe({
+      next: (w) => {
+        this.waterIntakes.set([...this.waterIntakes(), w]);
+        this.loggingWater.set(false);
+      },
+      error: () => this.loggingWater.set(false)
+    });
+  }
+
+  removeWater(id: number) {
+    this.api.deleteWater(id).subscribe(() => {
+      this.waterIntakes.set(this.waterIntakes().filter(w => w.id !== id));
+    });
   }
 
   pct(v: number, goal: number): number { return goal ? Math.min(100, Math.round((v / goal) * 100)) : 0; }

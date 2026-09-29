@@ -594,5 +594,22 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: no `MealsComponent`, botão **"Adicionar por foto"** + `<input type="file" accept="image/*" capture="environment">` (dispara câmera traseira no mobile). Após análise: lista editável com checkbox/nome/gramas + badge de confiança; usuário confirma → cria os alimentos no catálogo (se inéditos) e adiciona ao meal. Scaling per-100g na hora do apply (`per100 = 100 / grams`).
   - i18n: bloco `meals.photo.*` em pt/en/fr (button, hint, analyzing, detected, discard, addSelected, applied, nothingFound, err, tooBig).
   - Testes: `MealPhotoAnalysisServiceTest` (5 casos — parser aceita JSON limpo, remove cercas markdown, filtra inválidos, retorna vazio em garbage, `analyze` rejeita MIME não suportado). Suite backend em **137/137**, frontend em 60/60.
-  - Próximo do Bloco 3: chat cliente↔nutri realtime (9G) ou gamificação/streaks.
+  - Próximo do Bloco 3: hidratação, streak/badges, onboarding checklist.
+- **Fase 10B (hidratação — 2026-09-29): OK**
+  - Migração V038: `water_intakes` (user_id, date, amount_ml, logged_at) — rows pequenas, total diário via SUM. Sem tipo de bebida (só ml).
+  - Backend: `WaterIntake` entity + repo + `WaterIntakeService` (log/delete/listByDate/totalMl) + `WaterIntakeController` em `/api/me/water`. Validação: amountMl entre 1 e 3000. `DailySummaryDto` ganha `waterConsumedMl` e `DashboardService` usa `sumMlByUserAndDate` — cliente vê consumo vs meta `target_water_ml` da prescrição (Fase 9C).
+  - Frontend: novo card no dashboard (só quando `isToday()`) com quick-buttons **+200/+300/+500 ml**, progress bar vs meta, lista de intakes do dia com hora + botão remover. Meta antes ficava como texto solto no card de macros — agora tem tracker real.
+  - Testes: `WaterIntakeServiceTest` (5 casos — log persiste + soma, rejeita amount inválido, delete só do próprio, delete de outro bloqueado, total zerado quando vazio). Suite backend em **142/142**.
+- **Fase 10C (streak + badges — 2026-09-29): OK**
+  - Backend: `StreakService.compute(userId)` deriva tudo da tabela `meals` sem persistência. Retorna `{currentStreak, longestStreak, todayLogged, badges}`. Badges = marcos `streak_3/7/14/30/60/100` batidos pelo `longestStreak`. Endpoint `GET /api/me/streaks`.
+  - Query nova em `MealRepository.distinctDatesDesc` (SELECT DISTINCT date ORDER DESC). Current streak parte da data mais recente (hoje ou ontem — se ontem, "vivo") e conta pra trás. Longest é uma varredura O(n).
+  - Frontend: chip animado no topo do dashboard com `local_fire_department` + count + label; classe `.hot` (gradiente laranja) a partir de 7 dias. Se `!todayLogged`, mostra nudge inline. Award chips separados pra cada badge.
+  - Testes: `StreakServiceTest` (4 casos — histórico vazio, 3 dias consecutivos → badge 3d, gap quebra streak (current 2 mas longest 7), última refeição há 5 dias → current 0 mas longest preservado). Anotado `@Transactional` pra rollback per-test (evita poluir shared context H2 e quebrar `NutriDiscoveryFlowTest`).
+- **Fase 10D (onboarding checklist do cliente — 2026-09-29): OK — fecha Bloco 3.**
+  - Backend: `ClientChecklistService.compute` deriva 4 flags do estado atual (`profileFilled` = weight/height/goal preenchidos, `goalsPrescribed` = ficha com `targetCalories`, `firstMealLogged` = >=1 meal, `firstProgressLogged` = >=1 progress entry). Sem migration, sem tabela de "concluído" — se o cliente deletar tudo, os passos voltam. Trade-off: simplicidade > persistência.
+  - Endpoint `GET /api/me/checklist` retorna `ClientChecklistDto` com flags + `completedSteps`/`totalSteps`.
+  - Frontend: novo card no topo do dashboard (some quando 100%) com progress bar geral + 4 links que levam pra tela do passo (`/profile`, `/my-assessment`, `/meals`, `/progress`). Passo concluído fica riscado + ícone `check_circle` verde.
+  - i18n: `dashboard.onboardingTitle/onboardingHint/onbStep1..4` em pt/en/fr.
+  - Testes: `ClientChecklistServiceTest` (3 casos — usuário novo tem 0/4, health profile preenchido dá 1/4, todos os 4 passos completos dá 4/4). Suite backend em **149/149**, frontend em 60/60.
+  - **Bloco 3 fechado.** Próximo alvo: **9G** (chat cliente↔nutri realtime + push).
 - Fase 8 (geolocalizacao restaurantes): backlog

@@ -16,6 +16,8 @@ public record DailySummaryDto(
         Double fatConsumed,
         Double calorieRemaining,
         Double proteinRemaining,
+        /** Hidratacao consumida no dia (soma dos {@code water_intakes} da data). Null se nao ha registros. */
+        Integer waterConsumedMl,
         /** "PRESCRIPTION" quando as metas vem da ficha do nutri, "SELF" quando calculado do proprio user, null quando indefinido. */
         String goalsSource,
         List<MealDto> meals

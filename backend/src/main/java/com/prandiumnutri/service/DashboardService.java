@@ -5,6 +5,7 @@ import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.DailySummaryDto;
 import com.prandiumnutri.dto.MealDto;
 import com.prandiumnutri.repository.ClientAssessmentRepository;
+import com.prandiumnutri.repository.WaterIntakeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class DashboardService {
     private final MealService mealService;
     private final NutritionCalculator calculator;
     private final ClientAssessmentRepository assessmentRepository;
+    private final WaterIntakeRepository waterIntakeRepository;
 
     @Transactional(readOnly = true)
     public DailySummaryDto summary(Long userId, LocalDate date) {
@@ -65,10 +67,14 @@ public class DashboardService {
         Double calRemain = calGoal != null ? round(calGoal - cal) : null;
         Double protRemain = protGoal != null ? round(protGoal - prot) : null;
 
+        long waterMl = waterIntakeRepository.sumMlByUserAndDate(userId, date);
+        Integer waterConsumed = waterMl > 0 ? (int) waterMl : null;
+
         return new DailySummaryDto(date,
                 calGoal, protGoal, carbsGoal, fatGoal, waterGoal,
                 round(cal), round(prot), round(carb), round(fat),
                 calRemain, protRemain,
+                waterConsumed,
                 source,
                 meals);
     }

@@ -300,9 +300,33 @@ export interface DailySummary {
   fatConsumed: number;
   calorieRemaining: number | null;
   proteinRemaining: number | null;
+  waterConsumedMl?: number | null;
   /** 'PRESCRIPTION' quando as metas vem da ficha do nutri, 'SELF' quando do proprio HealthProfile. */
   goalsSource?: 'PRESCRIPTION' | 'SELF' | null;
   meals: Meal[];
+}
+
+export interface WaterIntake {
+  id: number;
+  date: string;
+  amountMl: number;
+  loggedAt: string;
+}
+
+export interface StreakInfo {
+  currentStreak: number;
+  longestStreak: number;
+  todayLogged: boolean;
+  badges: string[];
+}
+
+export interface ClientChecklist {
+  profileFilled: boolean;
+  goalsPrescribed: boolean;
+  firstMealLogged: boolean;
+  firstProgressLogged: boolean;
+  completedSteps: number;
+  totalSteps: number;
 }
 
 export interface ProgressEntry {
