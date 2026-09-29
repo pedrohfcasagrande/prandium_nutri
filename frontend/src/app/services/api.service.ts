@@ -7,6 +7,7 @@ import {
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
   Consultation,
+  PdfChangeRequest, PdfChangeRequestStatus,
   PdfCustomization, PdfTemplateView,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
@@ -561,6 +562,32 @@ export class ApiService {
   }
   companyPdfPreview(): Observable<Blob> {
     return this.http.get(`${this.base}/company/pdf-template/preview`, { responseType: 'blob' });
+  }
+
+  // Fase 9H-3: fluxo de aprovacao
+  nutriCreatePdfChangeRequest(practiceId: number, proposed: PdfCustomization,
+                                note: string | null): Observable<PdfChangeRequest> {
+    return this.http.post<PdfChangeRequest>(
+      `${this.base}/nutritionist/pdf-change-requests`,
+      { practiceId, proposed, note });
+  }
+  nutriMyPendingPdfChangeRequests(): Observable<PdfChangeRequest[]> {
+    return this.http.get<PdfChangeRequest[]>(
+      `${this.base}/nutritionist/pdf-change-requests/mine-pending`);
+  }
+  companyListPdfChangeRequests(status?: PdfChangeRequestStatus): Observable<PdfChangeRequest[]> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    return this.http.get<PdfChangeRequest[]>(
+      `${this.base}/company/pdf-change-requests`, { params });
+  }
+  companyApprovePdfChangeRequest(id: number, note: string | null): Observable<PdfChangeRequest> {
+    return this.http.post<PdfChangeRequest>(
+      `${this.base}/company/pdf-change-requests/${id}/approve`, { note });
+  }
+  companyRejectPdfChangeRequest(id: number, note: string | null): Observable<PdfChangeRequest> {
+    return this.http.post<PdfChangeRequest>(
+      `${this.base}/company/pdf-change-requests/${id}/reject`, { note });
   }
 
   // Fase 9E: consultas (prontuário)

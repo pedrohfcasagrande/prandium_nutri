@@ -153,6 +153,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/company-pdf-template/company-pdf-template.component').then(m => m.CompanyPdfTemplateComponent)
   },
   {
+    path: 'company/pdf-template/change-requests',
+    canActivate: [companyGuard],
+    loadComponent: () => import('./pages/company-pdf-change-requests/company-pdf-change-requests.component').then(m => m.CompanyPdfChangeRequestsComponent)
+  },
+  {
     path: 'admin/metrics',
     canActivate: [adminGuard],
     loadComponent: () => import('./pages/admin-metrics/admin-metrics.component').then(m => m.AdminMetricsComponent)

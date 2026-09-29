@@ -35,14 +35,14 @@ describe('NutriPracticesComponent', () => {
     ]);
     // Fase 9D: componente tambem le assinatura no init.
     http.expectOne(`${base}/nutritionist/me/signature`).flush({ signatureBase64: '' });
-    // Fase 9D-2-fix seguimento: componente pré-carrega o template PDF de cada practice
-    // no init pra evitar bug de "painel abre vazio" quando o evento (opened) nao dispara.
     http.expectOne(`${base}/nutritionist/practices/1/pdf-template`).flush({
-      pdfLogoBase64: null, pdfPrimaryColor: null, pdfHeaderText: null, pdfFooterText: null
+      template: {}, readOnly: false, inheritedFromCompanyName: null
     });
     http.expectOne(`${base}/nutritionist/practices/2/pdf-template`).flush({
-      pdfLogoBase64: null, pdfPrimaryColor: null, pdfHeaderText: null, pdfFooterText: null
+      template: {}, readOnly: false, inheritedFromCompanyName: null
     });
+    // Fase 9H-3: componente pré-carrega ids de sugestões PENDING
+    http.expectOne(`${base}/nutritionist/pdf-change-requests/mine-pending`).flush([]);
   });
 
   afterEach(() => http.verify());

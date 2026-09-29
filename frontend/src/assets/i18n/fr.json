@@ -16,6 +16,7 @@
       "companyMembers": "Administrateurs",
       "companyClients": "Clients de l'entreprise",
       "companyPdfTemplate": "PDF de l'entreprise",
+      "pdfChangeRequests": "Propositions de PDF",
       "adminCompanies": "Entreprises",
       "admin": "Utilisateurs",
       "adminMetrics": "Métriques",
@@ -1086,6 +1087,27 @@
     "title": "Modèle de PDF de l'entreprise",
     "subtitle": "Mise en page unique utilisée par tous les nutritionnistes rattachés à cette entreprise."
   },
+  "pdfChangeRequests": {
+    "title": "Propositions de modification du PDF",
+    "subtitle": "Les nutritionnistes rattachés peuvent proposer des modifications au modèle. L'approbation applique directement la mise en page.",
+    "empty": "Aucune demande pour ce filtre.",
+    "pending": "En attente",
+    "all": "Toutes",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "confirmReject": "Confirmer le rejet",
+    "rejectReason": "Motif (facultatif)",
+    "approvedOk": "Demande approuvée et modèle mis à jour.",
+    "rejectedOk": "Demande rejetée.",
+    "err": "Échec du traitement",
+    "fieldsProposed": "Champs proposés",
+    "reviewedBy": "Revu par {{name}} le {{date}}",
+    "status": {
+      "PENDING": "En attente",
+      "APPROVED": "Approuvée",
+      "REJECTED": "Rejetée"
+    }
+  },
   "pdfFields": {
     "empty": "Aucun champ dans le pied de page. Cliquez sur « Ajouter un champ » pour inclure des contacts.",
     "add": "Ajouter un champ",
@@ -1277,7 +1299,14 @@
       "saved": "Personnalisation enregistrée",
       "err": "Échec de l'enregistrement",
       "inheritedTitle": "Modèle hérité de l'entreprise",
-      "inheritedHint": "Vous exercez via {{company}} et utilisez la mise en page définie par l'admin de cette entreprise. Vous ne pouvez modifier que votre signature numérique."
+      "inheritedHint": "Vous exercez via {{company}} et utilisez la mise en page définie par l'admin de cette entreprise. Vous ne pouvez modifier que votre signature numérique.",
+      "suggestBtn": "Proposer une modification",
+      "suggestNote": "Raison de la proposition",
+      "suggestNoteHint": "Expliquez ce que vous aimeriez changer (facultatif).",
+      "sendSuggestion": "Envoyer la proposition",
+      "sending": "Envoi...",
+      "suggestionSent": "Proposition envoyée à l'admin de l'entreprise.",
+      "pendingSuggestion": "Proposition en revue"
     }
   },
   "nutriDashboard": {

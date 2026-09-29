@@ -156,6 +156,10 @@ import { effect } from '@angular/core';
                 <mat-icon matListItemIcon>palette</mat-icon>
                 <span matListItemTitle>{{ 'app.nav.companyPdfTemplate' | translate }}</span>
               </a>
+              <a mat-list-item routerLink="/company/pdf-template/change-requests" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>rate_review</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.pdfChangeRequests' | translate }}</span>
+              </a>
             }
             @if (auth.isAdmin()) {
               @if (showUserNav()) { <mat-divider></mat-divider> }

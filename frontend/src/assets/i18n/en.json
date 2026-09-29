@@ -16,6 +16,7 @@
       "companyMembers": "Administrators",
       "companyClients": "Company clients",
       "companyPdfTemplate": "Company PDF",
+      "pdfChangeRequests": "PDF suggestions",
       "adminCompanies": "Companies",
       "admin": "Users",
       "adminMetrics": "Metrics",
@@ -1086,6 +1087,27 @@
     "title": "Company PDF template",
     "subtitle": "Single layout used by every nutritionist linked to this company."
   },
+  "pdfChangeRequests": {
+    "title": "PDF change requests",
+    "subtitle": "Linked nutritionists can propose changes to the company template. Approving applies the layout directly.",
+    "empty": "No requests match this filter.",
+    "pending": "Pending",
+    "all": "All",
+    "approve": "Approve",
+    "reject": "Reject",
+    "confirmReject": "Confirm rejection",
+    "rejectReason": "Reason (optional)",
+    "approvedOk": "Request approved and template updated.",
+    "rejectedOk": "Request rejected.",
+    "err": "Failed to process",
+    "fieldsProposed": "Proposed fields",
+    "reviewedBy": "Reviewed by {{name}} on {{date}}",
+    "status": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    }
+  },
   "pdfFields": {
     "empty": "No footer fields yet. Click \"Add field\" to include contacts.",
     "add": "Add field",
@@ -1277,7 +1299,14 @@
       "saved": "Branding saved",
       "err": "Failed to save",
       "inheritedTitle": "Template inherited from company",
-      "inheritedHint": "You practice through {{company}} and use the layout defined by that company's admin. You can only edit your digital signature."
+      "inheritedHint": "You practice through {{company}} and use the layout defined by that company's admin. You can only edit your digital signature.",
+      "suggestBtn": "Suggest changes",
+      "suggestNote": "Reason for suggestion",
+      "suggestNoteHint": "Explain what you'd like to change (optional).",
+      "sendSuggestion": "Send suggestion",
+      "sending": "Sending...",
+      "suggestionSent": "Suggestion sent to the company admin.",
+      "pendingSuggestion": "Suggestion under review"
     }
   },
   "nutriDashboard": {

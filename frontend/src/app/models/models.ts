@@ -509,6 +509,24 @@ export interface PdfTemplateView {
   inheritedFromCompanyName?: string | null;
 }
 
+// Fase 9H-3: fluxo de aprovacao
+export type PdfChangeRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface PdfChangeRequest {
+  id: number;
+  templateId?: number | null;
+  requestedById?: number | null;
+  requestedByName?: string | null;
+  status: PdfChangeRequestStatus;
+  proposed: PdfCustomization;
+  note?: string | null;
+  reviewedById?: number | null;
+  reviewedByName?: string | null;
+  reviewedAt?: string | null;
+  reviewNote?: string | null;
+  createdAt: string;
+}
+
 // Snapshot imutavel de assessment (Fase 9A)
 export interface AssessmentSnapshot {
   id: number;

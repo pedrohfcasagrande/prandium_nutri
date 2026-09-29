@@ -243,6 +243,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V033      | practices: substitui pdf_header_text/pdf_footer_text (HTML) por 7 campos estruturados (pdf_header_line + pdf_footer_{address,phone,email,website,instagram,note}) |
 | V034      | cria pdf_templates (owner_type COMPANY/PRACTICE + owner_id + 9 campos de layout); backfill de practices particulares; DROP das colunas em nutritionist_practices |
 | V035      | cria pdf_template_fields (label + field_type + field_value + position) para rodapé modular; backfill converte os 6 campos footer em rows; DROP das colunas de rodapé em pdf_templates |
+| V036      | cria pdf_template_change_requests (status + estado completo proposto em JSON + note + review) — fluxo de aprovação de mudanças no template PDF por nutri vinculado |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -568,4 +569,12 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: novo componente reutilizável `PdfFieldsEditorComponent` (`src/app/components/pdf-fields-editor.component.ts`) — lista de fields com input inline pro label, ícone por tipo, botões up/down/remove; `<mat-menu>` "Adicionar campo" com os 6 tipos suportados. Usado em ambas as telas (`nutri-practices` e `company-pdf-template`) via `[fields]`/`(fieldsChange)` two-way binding. Respeita `[disabled]` quando template é herdado da empresa.
   - Testes: novo caso `upsert_syncsFieldsCreateUpdateDelete` no `PdfTemplateServiceTest` (adiciona 3 fields → mantém 1 renomeado, remove 1, adiciona 1 novo em posição diferente). Suite backend em **125/125**, frontend em 60/60.
   - Próximo: **9H-3** — nutri vinculado sugere mudança em vez de editar; admin da empresa aprova/rejeita.
+- **Fase 9H-3 (fluxo de aprovação nutri → admin — 2026-09-29): OK**
+  - Migração V036: `pdf_template_change_requests` com `status` (PENDING/APPROVED/REJECTED) + estado completo proposto (`proposed_header_line`, `proposed_primary_color`, `proposed_logo_base64`, `proposed_fields` JSON) + `note` (motivo do nutri) + `reviewed_by`/`reviewed_at`/`review_note`. Design: guardar **estado completo** em vez de diff — comparar antes vs depois na UI fica trivial, aplicar = overwrite.
+  - Backend: entity `PdfTemplateChangeRequest` + enum `PdfChangeRequestStatus` + repo + `PdfTemplateChangeRequestService` com `create` (nutri vinculado), `listForCompany`/`listOwnPending`, `approve` (aplica via `PdfTemplateService.upsert`) e `reject`. Autorização: reviewer precisa ser owner OU CompanyMember ACTIVE da empresa dona do template. `create` bloqueado pra practice particular. Notificações via `NotificationService` — todos CompanyMembers ACTIVE (+ owner) recebem no `create`; o requester recebe no `approve`/`reject` com motivo se houver.
+  - Endpoints:
+    - `POST /api/nutritionist/pdf-change-requests` (nutri) + `GET .../mine-pending`
+    - `GET /api/company/pdf-change-requests?status=` + `POST /{id}/approve` + `POST /{id}/reject` (COMPANY)
+  - Frontend: no `NutriPracticesComponent`, banner "Template herdado" ganha botão **"Sugerir mudança"** (oculto quando já tem PENDING deste nutri) — modo suggestion habilita o fieldset (com o mesmo `PdfFieldsEditorComponent`) + campo "Motivo da sugestão" + botões Cancelar/Enviar. Nova rota `/company/pdf-template/change-requests` + item de sidebar "Sugestões de PDF" pra COMPANY — toggle Pendentes/Todas, cada card mostra requester, status, note, header proposto, cor + swatch, lista de fields propostos (com type-chip); botões Aprovar (aplica direto) e Rejeitar (inline com input de motivo).
+  - Testes: `PdfTemplateChangeRequestServiceTest` (4 casos — approve aplica no template e notifica ambos os lados, reject grava motivo e notifica, outsider é bloqueado com AccessDeniedException, practice particular não pode usar o fluxo). Suite backend em **129/129**, frontend em 60/60.
 - Fase 8 (geolocalizacao restaurantes): backlog

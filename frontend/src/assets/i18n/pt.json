@@ -16,6 +16,7 @@
       "companyMembers": "Administradores",
       "companyClients": "Clientes da empresa",
       "companyPdfTemplate": "PDF da empresa",
+      "pdfChangeRequests": "Sugestões de PDF",
       "adminCompanies": "Empresas",
       "admin": "Usuários",
       "adminMetrics": "Métricas",
@@ -1086,6 +1087,27 @@
     "title": "Template PDF da empresa",
     "subtitle": "Layout único usado por todos os nutricionistas vinculados a esta empresa."
   },
+  "pdfChangeRequests": {
+    "title": "Sugestões de mudança no PDF",
+    "subtitle": "Nutricionistas vinculados podem propor alterações no template da empresa. Aprovar aplica direto no layout.",
+    "empty": "Nenhuma sugestão neste filtro.",
+    "pending": "Pendentes",
+    "all": "Todas",
+    "approve": "Aprovar",
+    "reject": "Rejeitar",
+    "confirmReject": "Confirmar rejeição",
+    "rejectReason": "Motivo (opcional)",
+    "approvedOk": "Sugestão aprovada e template atualizado.",
+    "rejectedOk": "Sugestão rejeitada.",
+    "err": "Falha ao processar",
+    "fieldsProposed": "Campos propostos",
+    "reviewedBy": "Revisado por {{name}} em {{date}}",
+    "status": {
+      "PENDING": "Pendente",
+      "APPROVED": "Aprovada",
+      "REJECTED": "Rejeitada"
+    }
+  },
   "pdfFields": {
     "empty": "Nenhum campo no rodapé. Clique em \"Adicionar campo\" para incluir contatos.",
     "add": "Adicionar campo",
@@ -1277,7 +1299,14 @@
       "saved": "Personalização salva",
       "err": "Falha ao salvar",
       "inheritedTitle": "Template herdado da empresa",
-      "inheritedHint": "Você atende por {{company}} e usa o layout definido pelo admin dessa empresa. Só pode editar sua assinatura digital."
+      "inheritedHint": "Você atende por {{company}} e usa o layout definido pelo admin dessa empresa. Só pode editar sua assinatura digital.",
+      "suggestBtn": "Sugerir mudança",
+      "suggestNote": "Motivo da sugestão",
+      "suggestNoteHint": "Explique o que gostaria de mudar (opcional).",
+      "sendSuggestion": "Enviar sugestão",
+      "sending": "Enviando...",
+      "suggestionSent": "Sugestão enviada ao admin da empresa.",
+      "pendingSuggestion": "Sugestão em análise"
     }
   },
   "nutriDashboard": {

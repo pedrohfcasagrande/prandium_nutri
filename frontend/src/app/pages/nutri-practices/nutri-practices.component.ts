@@ -131,9 +131,29 @@ import { PdfFieldsEditorComponent } from '../../components/pdf-fields-editor.com
                           {{ 'nutriPractices.pdf.inheritedHint' | translate:{ company: companyName } }}
                         </div>
                       </div>
+                      <span class="spacer"></span>
+                      @if (hasPendingSuggestion()) {
+                        <span class="pending-badge">
+                          <mat-icon>hourglass_top</mat-icon>
+                          {{ 'nutriPractices.pdf.pendingSuggestion' | translate }}
+                        </span>
+                      } @else if (!suggesting()[p.id]) {
+                        <button mat-stroked-button (click)="startSuggestion(p.id)">
+                          <mat-icon>edit_note</mat-icon>
+                          {{ 'nutriPractices.pdf.suggestBtn' | translate }}
+                        </button>
+                      }
                     </div>
+                    @if (suggesting()[p.id]) {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="suggest-note">
+                        <mat-label>{{ 'nutriPractices.pdf.suggestNote' | translate }}</mat-label>
+                        <textarea matInput rows="2" [(ngModel)]="suggestNotes[p.id]"
+                                  [placeholder]="'nutriPractices.pdf.suggestNoteHint' | translate"
+                                  maxlength="1000"></textarea>
+                      </mat-form-field>
+                    }
                   }
-                  <fieldset [disabled]="!!pdfInheritedFrom()[p.id]" class="pdf-fieldset">
+                  <fieldset [disabled]="!!pdfInheritedFrom()[p.id] && !suggesting()[p.id]" class="pdf-fieldset">
                   <div class="pdf-grid">
                     <div class="pdf-col">
                       <label class="pdf-label">{{ 'nutriPractices.pdf.logo' | translate }}</label>
@@ -200,6 +220,15 @@ import { PdfFieldsEditorComponent } from '../../components/pdf-fields-editor.com
                               [disabled]="savingPdf() === p.id">
                         <mat-icon>save</mat-icon>
                         {{ (savingPdf() === p.id ? 'app.actions.saving' : 'app.actions.save') | translate }}
+                      </button>
+                    } @else if (suggesting()[p.id]) {
+                      <button mat-stroked-button (click)="cancelSuggestion(p.id)">
+                        {{ 'app.actions.cancel' | translate }}
+                      </button>
+                      <button mat-flat-button color="primary" (click)="submitSuggestion(p.id)"
+                              [disabled]="savingPdf() === p.id">
+                        <mat-icon>send</mat-icon>
+                        {{ (savingPdf() === p.id ? 'nutriPractices.pdf.sending' : 'nutriPractices.pdf.sendSuggestion') | translate }}
                       </button>
                     }
                   </div>
@@ -339,6 +368,14 @@ import { PdfFieldsEditorComponent } from '../../components/pdf-fields-editor.com
       border: 0; padding: 0; margin: 0;
       &[disabled] { opacity: 0.7; }
     }
+    .pending-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--nt-accent-soft); color: var(--nt-accent);
+      font-size: 0.8rem; font-weight: 600;
+      mat-icon { font-size: 14px; width: 14px; height: 14px; }
+    }
+    .suggest-note { display: block; margin-top: 8px; }
   `]
 })
 export class NutriPracticesComponent implements OnInit {
@@ -374,10 +411,56 @@ export class NutriPracticesComponent implements OnInit {
   savingPdf = signal<number | null>(null);
   loadingPreview = signal<number | null>(null);
 
+  // 9H-3: modo "sugestão" — nutri vinculado edita cópia local e envia change_request
+  suggesting = signal<Record<number, boolean>>({});
+  suggestNotes: Record<number, string> = {};
+  pendingSuggestionIds = signal<Set<number>>(new Set());
+  hasPendingSuggestion = () => this.pendingSuggestionIds().size > 0;
+
   ngOnInit(): void {
     this.load();
     this.api.nutriGetSignature().subscribe(r => {
       if (r?.signatureBase64) this.signaturePreview.set(r.signatureBase64);
+    });
+    // 9H-3: pré-carrega ids das sugestões PENDING pra desabilitar botão de nova.
+    this.api.nutriMyPendingPdfChangeRequests().subscribe({
+      next: list => this.pendingSuggestionIds.set(new Set(list.map(r => r.id))),
+      error: () => {} // endpoint pode não existir em backend antigo
+    });
+  }
+
+  startSuggestion(practiceId: number) {
+    this.suggesting.update(m => ({ ...m, [practiceId]: true }));
+  }
+  cancelSuggestion(practiceId: number) {
+    this.suggesting.update(m => ({ ...m, [practiceId]: false }));
+    this.suggestNotes[practiceId] = '';
+    // Recarrega o draft pra descartar edições locais.
+    this.pdfDrafts.update(m => { const c = { ...m }; delete c[practiceId]; return c; });
+    this.loadPdfFor(practiceId);
+  }
+  submitSuggestion(practiceId: number) {
+    const draft = this.pdfDrafts()[practiceId];
+    if (!draft) return;
+    this.savingPdf.set(practiceId);
+    this.api.nutriCreatePdfChangeRequest(practiceId, draft,
+                                          this.suggestNotes[practiceId] || null).subscribe({
+      next: created => {
+        this.savingPdf.set(null);
+        this.suggesting.update(m => ({ ...m, [practiceId]: false }));
+        this.suggestNotes[practiceId] = '';
+        this.pendingSuggestionIds.update(s => new Set([...s, created.id]));
+        // Recarrega template pra mostrar o que a empresa tem hoje (não o proposto)
+        this.pdfDrafts.update(m => { const c = { ...m }; delete c[practiceId]; return c; });
+        this.loadPdfFor(practiceId);
+        this.snack.open(this.translate.instant('nutriPractices.pdf.suggestionSent'),
+                        'OK', { duration: 3000 });
+      },
+      error: err => {
+        this.savingPdf.set(null);
+        this.snack.open(err?.error?.error ?? this.translate.instant('nutriPractices.pdf.err'),
+                        'OK', { duration: 3000 });
+      }
     });
   }
 
