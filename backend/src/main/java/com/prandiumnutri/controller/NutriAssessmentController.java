@@ -30,6 +30,7 @@ public class NutriAssessmentController {
     private final PrescriptionPdfService pdfService;
     private final ClientAssessmentRepository assessmentRepository;
     private final UserRepository userRepository;
+    private final com.prandiumnutri.service.PrescriptionIssuanceService issuanceService;
     private final CurrentUser currentUser;
 
     @GetMapping("/client/{clientId}")
@@ -65,6 +66,19 @@ public class NutriAssessmentController {
         return service.listSnapshots(currentUser.getAuthenticatedId(), clientId, practiceId);
     }
 
+    /** Fase 9D-3: log de emissoes de PDF (hash SHA-256 + quem baixou) da ficha do cliente. */
+    @GetMapping("/client/{clientId}/issuances")
+    @PreAuthorize("hasRole('NUTRITIONIST')")
+    public List<com.prandiumnutri.dto.PrescriptionIssuanceDto> listIssuances(
+            @PathVariable Long clientId,
+            @RequestParam(required = false) Long practiceId) {
+        service.findByNutriAndClient(currentUser.getAuthenticatedId(), clientId, practiceId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Ficha nao encontrada"));
+        var ficha = assessmentRepository.findByNutritionistIdAndClientId(
+                currentUser.getAuthenticatedId(), clientId).orElseThrow();
+        return issuanceService.listForAssessment(ficha.getId());
+    }
+
     /** Fase 9D: PDF da prescricao. Nutri baixa a ficha do proprio cliente. */
     @GetMapping(value = "/client/{clientId}/prescription.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     @PreAuthorize("hasRole('NUTRITIONIST')")
@@ -80,10 +94,13 @@ public class NutriAssessmentController {
         User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente nao encontrado"));
 
-        byte[] pdf = pdfService.render(assessment, client, nutri, LocaleContextHolder.getLocale());
+        byte[] pdf = pdfService.render(assessment, client, nutri,
+                LocaleContextHolder.getLocale(), /* snapshot */ true, "NUTRITIONIST");
+        String hash = com.prandiumnutri.service.PrescriptionIssuanceService.sha256Hex(pdf);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "inline; filename=prescricao-" + clientId + ".pdf")
+                .header("X-Pdf-Sha256", hash)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }

@@ -123,6 +123,15 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/invitations/invitations.component').then(m => m.InvitationsComponent)
   },
   {
+    // Fase 9D-3: verificacao publica de PDF (sem autenticacao)
+    path: 'verify/:hash',
+    loadComponent: () => import('./pages/pdf-verify/pdf-verify.component').then(m => m.PdfVerifyComponent)
+  },
+  {
+    path: 'verify',
+    loadComponent: () => import('./pages/pdf-verify/pdf-verify.component').then(m => m.PdfVerifyComponent)
+  },
+  {
     path: 'company/dashboard',
     canActivate: [companyGuard],
     loadComponent: () => import('./pages/company-dashboard/company-dashboard.component').then(m => m.CompanyDashboardComponent)

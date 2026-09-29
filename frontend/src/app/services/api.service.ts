@@ -9,6 +9,7 @@ import {
   Consultation,
   PdfChangeRequest, PdfChangeRequestStatus,
   PdfCustomization, PdfTemplateView,
+  PdfVerification, PrescriptionIssuance,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
   NutriPublic, NutritionistLink,
@@ -514,6 +515,20 @@ export class ApiService {
   }
   myAssessmentSnapshots(): Observable<AssessmentSnapshot[]> {
     return this.http.get<AssessmentSnapshot[]>(`${this.base}/me/assessment/snapshots`);
+  }
+
+  // Fase 9D-3: log de emissoes de PDF + verificacao publica
+  nutriListIssuances(clientId: number, practiceId?: number | null): Observable<PrescriptionIssuance[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<PrescriptionIssuance[]>(
+      `${this.base}/nutritionist/assessments/client/${clientId}/issuances`, { params });
+  }
+  myIssuances(): Observable<PrescriptionIssuance[]> {
+    return this.http.get<PrescriptionIssuance[]>(`${this.base}/me/assessment/issuances`);
+  }
+  verifyPdf(hash: string): Observable<PdfVerification> {
+    return this.http.get<PdfVerification>(`${this.base}/pdf-verify/${hash}`);
   }
 
   // Self-fill (Fase 9A) — cliente atualiza campos safe da propria ficha

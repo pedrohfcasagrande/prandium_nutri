@@ -5,7 +5,9 @@ import com.prandiumnutri.domain.ClientAssessment;
 import com.prandiumnutri.domain.MenuPlan;
 import com.prandiumnutri.domain.NutritionistPractice;
 import com.prandiumnutri.domain.PdfTemplate;
+import com.prandiumnutri.domain.AssessmentSnapshot;
 import com.prandiumnutri.domain.User;
+import com.prandiumnutri.repository.AssessmentSnapshotRepository;
 import com.prandiumnutri.repository.MenuPlanRepository;
 import com.prandiumnutri.repository.NutritionistPracticeRepository;
 import com.prandiumnutri.support.CpfUtil;
@@ -40,6 +42,8 @@ public class PrescriptionPdfService {
     private final NutritionistPracticeRepository practiceRepository;
     private final PdfTemplateService pdfTemplateService;
     private final ClientAssessmentService assessmentService;
+    private final PrescriptionIssuanceService issuanceService;
+    private final AssessmentSnapshotRepository snapshotRepository;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TS_FMT   = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -49,12 +53,21 @@ public class PrescriptionPdfService {
     private static final String DEFAULT_PRIMARY_DARK = "#0a6c63";
 
     public byte[] render(ClientAssessment assessment, User client, User nutritionist, Locale locale) {
-        return render(assessment, client, nutritionist, locale, /* snapshot */ true);
+        return render(assessment, client, nutritionist, locale, /* snapshot */ true, /* requesterRole */ null);
     }
 
-    /** Sobrecarga para permitir preview (sem snapshot) e testes. */
+    /** Sobrecarga sem role — usado em callers que ainda nao migraram (grava issuance como NUTRITIONIST por padrao). */
     public byte[] render(ClientAssessment assessment, User client, User nutritionist,
                           Locale locale, boolean createSnapshot) {
+        return render(assessment, client, nutritionist, locale, createSnapshot, "NUTRITIONIST");
+    }
+
+    /**
+     * Sobrecarga completa. {@code requesterRole} controla o log de emissao:
+     *   NUTRITIONIST — nutri baixou; CLIENT — paciente baixou; null — nao grava (preview).
+     */
+    public byte[] render(ClientAssessment assessment, User client, User nutritionist,
+                          Locale locale, boolean createSnapshot, String requesterRole) {
         if (assessment.getTargetCalories() == null) {
             throw new IllegalStateException("Assessment nao tem prescricao (targetCalories=null)");
         }
@@ -77,18 +90,28 @@ public class PrescriptionPdfService {
         }
 
         // Auto-snapshot pra rastreabilidade: garante que "o PDF que o cliente recebeu em X"
-        // possa ser reconstituido mesmo depois da ficha mudar. So faz se o nutri estiver
-        // conhecido (via assessment.nutritionist) — no preview passa createSnapshot=false.
+        // possa ser reconstituido mesmo depois da ficha mudar. Fase 9D-3: acopla registro
+        // de issuance com hash SHA-256 pra verificacao publica de autenticidade.
+        // Preview (createSnapshot=false) nao gera snapshot NEM issuance.
+        AssessmentSnapshot snapshotEnt = null;
         if (createSnapshot && assessment.getNutritionist() != null && assessment.getClient() != null) {
             try {
-                assessmentService.createSnapshot(
+                var snapDto = assessmentService.createSnapshot(
                         assessment.getNutritionist(),
                         assessment.getClient().getId(),
                         null,
                         "PDF emitido em " + LocalDateTime.now().format(TS_FMT)
                 );
+                snapshotEnt = snapDto != null ? snapshotRepository.findById(snapDto.id()).orElse(null) : null;
             } catch (Exception ignore) {
                 // Snapshot falho nao pode bloquear o download.
+            }
+            if (requesterRole != null) {
+                try {
+                    issuanceService.record(assessment, client, nutritionist, snapshotEnt, pdf, requesterRole);
+                } catch (Exception ignore) {
+                    // Issuance falha nao bloqueia download; log ficara implicito no snapshot criado.
+                }
             }
         }
         return pdf;

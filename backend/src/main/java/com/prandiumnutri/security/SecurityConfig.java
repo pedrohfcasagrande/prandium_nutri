@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/pricing/**").permitAll()
                 .requestMatchers("/api/onboarding/**").permitAll()
+                .requestMatchers("/api/pdf-verify/**").permitAll()   // Fase 9D-3: verificacao publica de PDF
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",

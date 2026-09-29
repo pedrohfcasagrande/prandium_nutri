@@ -33,6 +33,7 @@ public class MyAssessmentController {
     private final ClientAssessmentService service;
     private final ConsultationService consultationService;
     private final PrescriptionPdfService pdfService;
+    private final com.prandiumnutri.service.PrescriptionIssuanceService issuanceService;
     private final ClientAssessmentRepository assessmentRepository;
     private final UserRepository userRepository;
     private final CurrentUser currentUser;
@@ -59,6 +60,12 @@ public class MyAssessmentController {
         return consultationService.listForClient(currentUser.getAuthenticatedId());
     }
 
+    /** Fase 9D-3: cliente vê próprio log de emissões (todas as vezes que o PDF foi baixado). */
+    @GetMapping("/issuances")
+    public List<com.prandiumnutri.dto.PrescriptionIssuanceDto> myIssuances() {
+        return issuanceService.listForClient(currentUser.getAuthenticatedId());
+    }
+
     @GetMapping(value = "/prescription.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> myPrescriptionPdf() {
         Long clientId = currentUser.getAuthenticatedId();
@@ -70,9 +77,12 @@ public class MyAssessmentController {
         User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario nao encontrado"));
 
-        byte[] pdf = pdfService.render(a, client, a.getNutritionist(), LocaleContextHolder.getLocale());
+        byte[] pdf = pdfService.render(a, client, a.getNutritionist(),
+                LocaleContextHolder.getLocale(), /* snapshot */ true, "CLIENT");
+        String hash = com.prandiumnutri.service.PrescriptionIssuanceService.sha256Hex(pdf);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=minha-prescricao.pdf")
+                .header("X-Pdf-Sha256", hash)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }

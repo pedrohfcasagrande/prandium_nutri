@@ -527,6 +527,32 @@ export interface PdfChangeRequest {
   createdAt: string;
 }
 
+// Fase 9D-3: log de emissao do PDF (verificacao publica por hash)
+export interface PrescriptionIssuance {
+  id: number;
+  assessmentId?: number | null;
+  snapshotId?: number | null;
+  snapshotVersion?: number | null;
+  nutriId?: number | null;
+  nutriName?: string | null;
+  clientId?: number | null;
+  clientName?: string | null;
+  requesterRole: 'NUTRITIONIST' | 'CLIENT';
+  pdfSha256: string;
+  pdfSizeBytes: number;
+  issuedAt: string;
+}
+
+export interface PdfVerification {
+  valid: boolean;
+  pdfSha256: string;
+  issuedAt?: string | null;
+  nutriName?: string | null;
+  nutriCrn?: string | null;
+  clientInitials?: string | null;
+  clientCpfMasked?: string | null;
+}
+
 // Snapshot imutavel de assessment (Fase 9A)
 export interface AssessmentSnapshot {
   id: number;

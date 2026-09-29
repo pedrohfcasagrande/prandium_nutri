@@ -698,6 +698,13 @@
       "defaultLabel": "Consulta",
       "untitled": "(sem nome)"
     },
+    "issuances": {
+      "title": "Emissões do PDF",
+      "by": {
+        "NUTRITIONIST": "Você",
+        "CLIENT": "Paciente"
+      }
+    },
     "stress": {
       "LOW": "Baixo",
       "MEDIUM": "Médio",
@@ -1086,6 +1093,21 @@
   "companyPdfTemplate": {
     "title": "Template PDF da empresa",
     "subtitle": "Layout único usado por todos os nutricionistas vinculados a esta empresa."
+  },
+  "pdfVerify": {
+    "title": "Verificar autenticidade do PDF",
+    "subtitle": "Cole o hash SHA-256 do documento para confirmar que foi emitido pelo Prandium Nutri.",
+    "hashLabel": "Hash SHA-256",
+    "hashHint": "Você encontra o hash no rodapé do próprio PDF ou no cabeçalho da resposta ao baixar.",
+    "check": "Verificar",
+    "checking": "Verificando...",
+    "valid": "PDF autêntico",
+    "invalid": "PDF não localizado",
+    "invalidHint": "Nenhum documento com esse hash foi emitido. Confirme se o hash está correto.",
+    "issuedAt": "Emitido em",
+    "by": "Por",
+    "forClient": "Para",
+    "footerNote": "A verificação pública prova que o documento passou pelo Prandium Nutri, sem revelar dados pessoais do paciente."
   },
   "pdfChangeRequests": {
     "title": "Sugestões de mudança no PDF",

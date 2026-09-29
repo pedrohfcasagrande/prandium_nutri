@@ -16,7 +16,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { PracticeService } from '../../services/practice.service';
-import { AssessmentSnapshot, ClientAssessment, ClientLink, Consultation, ConsultationType } from '../../models/models';
+import { AssessmentSnapshot, ClientAssessment, ClientLink, Consultation, ConsultationType, PrescriptionIssuance } from '../../models/models';
 import { deriveMetrics } from '../../util/assessment-metrics';
 import { ACTIVITY_FACTORS, derive as derivePrescription } from '../../util/nutrition-calculator';
 import { AssessmentTrendChartComponent } from '../../components/assessment-trend-chart.component';
@@ -612,6 +612,33 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
           </mat-card>
         }
 
+        @if (issuances().length > 0) {
+          <mat-card class="issuances-card">
+            <div class="issuances-header">
+              <mat-icon>verified</mat-icon>
+              <h3>{{ 'assessment.issuances.title' | translate }}</h3>
+              <span class="text-muted small">{{ issuances().length }}</span>
+            </div>
+            <ul class="issuances-list">
+              @for (i of issuances(); track i.id) {
+                <li>
+                  <span class="badge role-{{ i.requesterRole.toLowerCase() }}">
+                    {{ ('assessment.issuances.by.' + i.requesterRole) | translate }}
+                  </span>
+                  <span>{{ i.issuedAt | date:'short' }}</span>
+                  @if (i.snapshotVersion != null) {
+                    <span class="text-muted small">· v{{ i.snapshotVersion }}</span>
+                  }
+                  <span class="spacer"></span>
+                  <code class="hash" [matTooltip]="i.pdfSha256">
+                    {{ i.pdfSha256.slice(0, 12) }}…
+                  </code>
+                </li>
+              }
+            </ul>
+          </mat-card>
+        }
+
         <div class="footer">
           @if (d.updatedAt) {
             <span class="text-muted small">
@@ -743,6 +770,26 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
       padding: 2px 8px; border-radius: 8px;
       font-weight: 600; color: var(--nt-primary-dark);
     }
+    .issuances-card { margin-top: 16px; padding: 16px !important;
+      display: flex; flex-direction: column; gap: 10px; }
+    .issuances-header { display: flex; align-items: center; gap: 8px;
+      mat-icon { color: var(--nt-primary); }
+      h3 { margin: 0; font-size: 1rem; }
+      .small { margin-left: auto; }
+    }
+    .issuances-list { list-style: none; margin: 0; padding: 0;
+      display: flex; flex-direction: column; gap: 4px;
+      li { display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+        background: var(--nt-surface-2); border-radius: 8px; font-size: 0.85rem; }
+    }
+    .badge.role-nutritionist { background: var(--nt-primary-soft); color: var(--nt-primary-dark);
+      padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .badge.role-client { background: var(--nt-accent-soft); color: var(--nt-accent);
+      padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .hash { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+      background: var(--nt-surface); padding: 2px 6px; border-radius: 4px;
+      color: var(--nt-text-muted); }
+    .spacer { flex: 1; }
 
     .chart-card {
       margin-top: 20px; padding: 16px !important;
@@ -793,6 +840,7 @@ export class NutriAssessmentComponent implements OnInit {
   saving = signal(false);
   snapshots = signal<AssessmentSnapshot[]>([]);
   consultations = signal<Consultation[]>([]);
+  issuances = signal<PrescriptionIssuance[]>([]);
   snapshotting = signal(false);
   downloadingPdf = signal(false);
   timeline = computed(() => {
@@ -867,6 +915,8 @@ export class NutriAssessmentComponent implements OnInit {
       .subscribe({ next: list => this.snapshots.set(list) });
     this.api.nutriListConsultations(this.clientId, this.practiceCtx.activePracticeId())
       .subscribe({ next: list => this.consultations.set(list) });
+    this.api.nutriListIssuances(this.clientId, this.practiceCtx.activePracticeId())
+      .subscribe({ next: list => this.issuances.set(list) });
   }
 
   /** Cria consulta rapida (mesmo dia, tipo padrao RETURN, com auto-snapshot). */

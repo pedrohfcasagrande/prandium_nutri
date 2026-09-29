@@ -11,7 +11,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
-import { AssessmentSelfFill, AssessmentSnapshot, ClientAssessment, Consultation } from '../../models/models';
+import { AssessmentSelfFill, AssessmentSnapshot, ClientAssessment, Consultation, PrescriptionIssuance } from '../../models/models';
 import { EmptyStateComponent } from '../../components/empty-state.component';
 import { deriveMetrics } from '../../util/assessment-metrics';
 import { AssessmentTrendChartComponent } from '../../components/assessment-trend-chart.component';
@@ -322,6 +322,28 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
           </mat-card>
         }
 
+        @if (issuances().length > 0) {
+          <mat-card class="section issuances-card">
+            <div class="section-head">
+              <mat-icon>verified</mat-icon>
+              <h3>{{ 'assessment.issuances.title' | translate }}</h3>
+              <span class="text-muted small">{{ issuances().length }}</span>
+            </div>
+            <ul class="issuances-list">
+              @for (i of issuances(); track i.id) {
+                <li>
+                  <span class="badge role-{{ i.requesterRole.toLowerCase() }}">
+                    {{ ('assessment.issuances.by.' + i.requesterRole) | translate }}
+                  </span>
+                  <span>{{ i.issuedAt | date:'short' }}</span>
+                  <span class="spacer"></span>
+                  <code class="hash">{{ i.pdfSha256.slice(0, 12) }}…</code>
+                </li>
+              }
+            </ul>
+          </mat-card>
+        }
+
         <ng-template #fieldT let-label="label" let-value="value">
           @if (value) {
             <div class="field">
@@ -413,6 +435,20 @@ import { AssessmentTrendChartComponent } from '../../components/assessment-trend
       font-size: 0.75rem; font-weight: 600;
     }
     .cons-complaint { color: var(--nt-text); }
+    .issuances-card { }
+    .issuances-list { list-style: none; margin: 0; padding: 0;
+      display: flex; flex-direction: column; gap: 4px;
+      li { display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+        background: var(--nt-surface-2); border-radius: 8px; font-size: 0.85rem; }
+    }
+    .badge.role-nutritionist { background: var(--nt-primary-soft); color: var(--nt-primary-dark);
+      padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .badge.role-client { background: var(--nt-accent-soft); color: var(--nt-accent);
+      padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+    .hash { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+      background: var(--nt-surface); padding: 2px 6px; border-radius: 4px;
+      color: var(--nt-text-muted); }
+    .spacer { flex: 1; }
   `]
 })
 export class MyAssessmentComponent implements OnInit {
@@ -423,6 +459,7 @@ export class MyAssessmentComponent implements OnInit {
   assessment = signal<ClientAssessment | null>(null);
   snapshots = signal<AssessmentSnapshot[]>([]);
   consultations = signal<Consultation[]>([]);
+  issuances = signal<PrescriptionIssuance[]>([]);
   selfDraft: AssessmentSelfFill = {};
   savingSelf = signal(false);
   downloadingPdf = signal(false);
@@ -452,6 +489,7 @@ export class MyAssessmentComponent implements OnInit {
         };
         this.api.myAssessmentSnapshots().subscribe(s => this.snapshots.set(s));
         this.api.myConsultations().subscribe(c => this.consultations.set(c));
+        this.api.myIssuances().subscribe(i => this.issuances.set(i));
       }
     });
   }
