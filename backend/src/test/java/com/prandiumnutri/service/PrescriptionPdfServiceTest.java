@@ -33,6 +33,7 @@ class PrescriptionPdfServiceTest {
     @Autowired ClientAssessmentRepository assessmentRepo;
     @Autowired AssessmentSnapshotRepository snapshotRepo;
     @Autowired NutritionistClientLinkRepository linkRepo;
+    @Autowired NutritionistPracticeRepository practiceRepo;
     @Autowired SubscriptionService subscriptionService;
     @Autowired PlanRepository planRepo;
     @Autowired PlanPriceRepository priceRepo;
@@ -161,9 +162,13 @@ class PrescriptionPdfServiceTest {
     @Test
     void render_customPrimaryColorReachesOutput() {
         User nutri = quickNutri();
-        nutri.setPdfPrimaryColor("#ff5733");
-        nutri.setPdfFooterText("<b>consultorio</b> · <script>alert(1)</script>Rua X");
-        userRepo.save(nutri);
+        // Fase 9D-2-fix: customizacao esta na practice, nao no user
+        NutritionistPractice practice = practiceRepo.save(NutritionistPractice.builder()
+                .nutritionist(nutri).company(null)
+                .acceptsNewClients(true)
+                .pdfPrimaryColor("#ff5733")
+                .pdfFooterText("<b>consultorio</b> · <script>alert(1)</script>Rua X")
+                .build());
         User client = quickClient();
         client.setSex(Sex.MALE);
         client.setBirthDate(LocalDate.of(1985, 6, 15));
@@ -172,7 +177,7 @@ class PrescriptionPdfServiceTest {
         userRepo.save(client);
 
         ClientAssessment a = ClientAssessment.builder()
-                .client(client).nutritionist(nutri)
+                .client(client).nutritionist(nutri).practice(practice)
                 .assessmentDate(LocalDateTime.now())
                 .weightKg(80.0).heightCm(175)
                 .targetCalories(2000.0).targetProteinG(140.0)

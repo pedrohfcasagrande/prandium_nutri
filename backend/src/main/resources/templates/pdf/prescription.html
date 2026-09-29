@@ -166,9 +166,9 @@
     <table>
         <tr>
             <td>
-                <img th:if="${nutritionist.pdfLogoBase64 != null}"
-                     th:src="${nutritionist.pdfLogoBase64}" class="logo-custom" alt="Logo"/>
-                <div th:if="${nutritionist.pdfLogoBase64 == null}" class="brand">
+                <img th:if="${pdfLogoBase64 != null}"
+                     th:src="${pdfLogoBase64}" class="logo-custom" alt="Logo"/>
+                <div th:if="${pdfLogoBase64 == null}" class="brand">
                     <span class="leaf"></span>Prandium Nutri
                 </div>
                 <div th:if="${headerHtml != null}" class="doc-header-text" th:utext="${headerHtml}"></div>

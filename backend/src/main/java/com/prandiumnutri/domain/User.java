@@ -110,16 +110,5 @@ public class User {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String signatureBase64;
 
-    // ---- Fase 9D-2: customizacao do PDF de prescricao ----
-    @Column(columnDefinition = "MEDIUMTEXT")
-    private String pdfLogoBase64;
-
-    @Column(length = 9)
-    private String pdfPrimaryColor;
-
-    @Column(length = 500)
-    private String pdfHeaderText;
-
-    @Column(length = 1000)
-    private String pdfFooterText;
+    // Fase 9D-2 movida para NutritionistPractice na V032 (por practice em vez de por nutri).
 }

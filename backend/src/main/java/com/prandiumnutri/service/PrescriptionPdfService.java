@@ -3,8 +3,10 @@ package com.prandiumnutri.service;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.prandiumnutri.domain.ClientAssessment;
 import com.prandiumnutri.domain.MenuPlan;
+import com.prandiumnutri.domain.NutritionistPractice;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.repository.MenuPlanRepository;
+import com.prandiumnutri.repository.NutritionistPracticeRepository;
 import com.prandiumnutri.support.CpfUtil;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
@@ -36,6 +38,7 @@ public class PrescriptionPdfService {
 
     private final TemplateEngine templateEngine;
     private final MenuPlanRepository menuPlanRepository;
+    private final NutritionistPracticeRepository practiceRepository;
     private final ClientAssessmentService assessmentService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -123,12 +126,20 @@ public class PrescriptionPdfService {
                 .orElse(null);
         v.put("activeMenu", active);
 
-        // Fase 9D-2: customizacao do nutri
-        String primary = validColorOrNull(nutri.getPdfPrimaryColor());
+        // Fase 9D-2-fix: customizacao por practice (tenant).
+        // Preferencia: practice do assessment (contexto do atendimento).
+        // Fallback: particular do nutri (quando ficha nao tem practice ligada).
+        NutritionistPractice source = a.getPractice();
+        if (source == null && nutri != null) {
+            source = practiceRepository.findParticular(nutri.getId()).orElse(null);
+        }
+
+        String primary = source != null ? validColorOrNull(source.getPdfPrimaryColor()) : null;
         v.put("primaryColor",     primary != null ? primary : DEFAULT_PRIMARY);
         v.put("primaryColorDark", primary != null ? darken(primary) : DEFAULT_PRIMARY_DARK);
-        v.put("headerHtml", sanitize(nutri.getPdfHeaderText()));
-        v.put("footerHtml", sanitize(nutri.getPdfFooterText()));
+        v.put("headerHtml", source != null ? sanitize(source.getPdfHeaderText()) : null);
+        v.put("footerHtml", source != null ? sanitize(source.getPdfFooterText()) : null);
+        v.put("pdfLogoBase64", source != null ? source.getPdfLogoBase64() : null);
 
         return v;
     }

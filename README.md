@@ -239,6 +239,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V029      | users.pdf_logo_base64/pdf_primary_color/pdf_header_text/pdf_footer_text (customizacao PDF — Fase 9D-2) |
 | V030      | client_assessments.nutri_notes + tabela consultations (prontuario — Fase 9E) |
 | V031      | appointments.meeting_url + reminder_sent_at + index (Fase 9F: link videochamada + lembretes 24h) |
+| V032      | move PDF customization de users → nutritionist_practices (por tenant); backfill copia pra practice particular; DROP colunas em users |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -532,4 +533,11 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Frontend: dialog ganha campo condicional "Link da videochamada" quando `location=ONLINE`; reschedule pré-carrega. Card lista ganha botão **"Entrar na sala"** (link externo direto) quando `canJoinRoom()` — appointment CONFIRMED com URL e faltando ≤60min pro início até 15min depois do fim. Toggle **Lista/Semana** no header; view Semana com grid 7 colunas, navegação anterior/hoje/próxima (`weekOffset` signal), cards clicáveis (abrem reschedule), destaque do dia atual, ícone `videocam` no canto quando URL preenchida. CSS Grid responsivo (7→3→1 col por breakpoint).
   - Testes: `AppointmentReminderTest` (3 casos — envia + marca timestamp, dedup respeita `reminder_sent_at`, ignora REQUESTED e fora da janela). Suite backend em **121/121**, frontend em 60/60.
   - Backlog Fase 9G: chat integrado nutri↔cliente (Server-Sent Events), push notifications reais, integração Daily.co/Zoom SDK pra gerar URL automática.
+- **Fase 9D-2-fix (customização do PDF por practice — 2026-09-29): OK**
+  - Bug arquitetural corrigido: as 4 colunas de PDF customization (`pdf_logo_base64`, `pdf_primary_color`, `pdf_header_text`, `pdf_footer_text`) estavam em `users` (por-nutri), mas um mesmo nutri pode ter várias practices (particular + N empresas) — cada tenant tem identidade visual própria.
+  - Migração V032 move as colunas para `nutritionist_practices`; SQL de backfill copia os valores atuais para a practice particular do nutri (não perde configuração feita antes); `DROP COLUMN` em `users`.
+  - Assinatura digital (`signature_base64`) permanece em `users` porque representa o CRN pessoal do profissional, válido em qualquer atendimento.
+  - Backend: `NutritionistPractice` entity ganha os 4 campos; `NutritionistPracticeService.getOwnedByNutri()`/`updatePdfCustomization()` novos métodos validando ownership. Endpoints migram: `GET/PUT/preview` de `/nutritionist/me/pdf-template` → `/nutritionist/practices/{practiceId}/pdf-template`. `PrescriptionPdfService` agora lê da `assessment.getPractice()` (contexto do atendimento); fallback para `findParticular` do nutri quando ficha não tem practice ligada.
+  - Frontend: card global "Personalização do PDF" removido do topo; sub-`mat-expansion-panel` "Personalização do PDF" adicionado dentro de cada `practice-card` — lazy load do template ao abrir (evita N requests no init). Signals `pdfDrafts` (map por practice.id), `savingPdf` e `loadingPreview` armazenam o practice.id em curso pra rastrear estado por card.
+  - Testes: `PrescriptionPdfServiceTest.render_customPrimaryColorReachesOutput` ajustado pra criar `NutritionistPractice` com customização e linká-la ao `ClientAssessment` em vez de setar campos no `User`. Spec do `NutriPracticesComponent` não mocka mais `/me/pdf-template` (comportamento lazy). Backend 121/121, frontend 60/60.
 - Fase 8 (geolocalizacao restaurantes): backlog

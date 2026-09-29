@@ -120,4 +120,31 @@ public class NutritionistPracticeService {
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
                         "Practice not found: " + practiceId));
     }
+
+    /** Fase 9D-2-fix: garante que a practice pertence ao nutri antes de expor. */
+    @Transactional(readOnly = true)
+    public NutritionistPractice getOwnedByNutri(Long nutritionistId, Long practiceId) {
+        NutritionistPractice p = getOrThrow(practiceId);
+        if (p.getNutritionist() == null || !p.getNutritionist().getId().equals(nutritionistId)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Practice pertence a outro nutricionista");
+        }
+        return p;
+    }
+
+    /** Fase 9D-2-fix: persiste customizacao do PDF na practice (nao no user). */
+    @Transactional
+    public void updatePdfCustomization(Long nutritionistId, Long practiceId,
+                                        com.prandiumnutri.dto.PdfCustomizationDto dto) {
+        NutritionistPractice p = getOwnedByNutri(nutritionistId, practiceId);
+        p.setPdfLogoBase64(blankToNull(dto.pdfLogoBase64()));
+        p.setPdfPrimaryColor(blankToNull(dto.pdfPrimaryColor()));
+        p.setPdfHeaderText(blankToNull(dto.pdfHeaderText()));
+        p.setPdfFooterText(blankToNull(dto.pdfFooterText()));
+        repository.save(p);
+    }
+
+    private static String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
+    }
 }

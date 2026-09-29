@@ -1,6 +1,7 @@
 package com.prandiumnutri.controller;
 
 import com.prandiumnutri.domain.ClientAssessment;
+import com.prandiumnutri.domain.NutritionistPractice;
 import com.prandiumnutri.domain.Sex;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.ClientLinkDto;
@@ -9,6 +10,7 @@ import com.prandiumnutri.dto.PdfCustomizationDto;
 import com.prandiumnutri.repository.UserRepository;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.NutritionistLinkService;
+import com.prandiumnutri.service.NutritionistPracticeService;
 import com.prandiumnutri.service.PrescriptionPdfService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import java.util.Map;
 public class NutritionistController {
 
     private final NutritionistLinkService linkService;
+    private final NutritionistPracticeService practiceService;
     private final UserRepository userRepository;
     private final PrescriptionPdfService pdfService;
     private final CurrentUser currentUser;
@@ -104,36 +107,34 @@ public class NutritionistController {
         userRepository.save(u);
     }
 
-    // Fase 9D-2: customizacao do PDF (logo, cor, header/footer text)
+    // Fase 9D-2-fix: customizacao do PDF por practice (tenant)
 
-    @GetMapping("/me/pdf-template")
+    @GetMapping("/practices/{practiceId}/pdf-template")
     @PreAuthorize("hasRole('NUTRITIONIST')")
-    public PdfCustomizationDto getPdfTemplate() {
-        User u = currentUser.getAuthenticated();
+    public PdfCustomizationDto getPdfTemplate(@PathVariable Long practiceId) {
+        NutritionistPractice p = practiceService.getOwnedByNutri(
+                currentUser.getAuthenticatedId(), practiceId);
         return new PdfCustomizationDto(
-                u.getPdfLogoBase64(), u.getPdfPrimaryColor(),
-                u.getPdfHeaderText(), u.getPdfFooterText());
+                p.getPdfLogoBase64(), p.getPdfPrimaryColor(),
+                p.getPdfHeaderText(), p.getPdfFooterText());
     }
 
-    @PutMapping("/me/pdf-template")
+    @PutMapping("/practices/{practiceId}/pdf-template")
     @PreAuthorize("hasRole('NUTRITIONIST')")
-    public void putPdfTemplate(@RequestBody PdfCustomizationDto dto) {
+    public void putPdfTemplate(@PathVariable Long practiceId,
+                                @RequestBody PdfCustomizationDto dto) {
         if (dto.pdfLogoBase64() != null && dto.pdfLogoBase64().length() > 2_800_000) {
             throw new IllegalArgumentException("Logo muito grande (> 2MB)");
         }
-        User u = currentUser.getAuthenticated();
-        u.setPdfLogoBase64(blankToNull(dto.pdfLogoBase64()));
-        u.setPdfPrimaryColor(blankToNull(dto.pdfPrimaryColor()));
-        u.setPdfHeaderText(blankToNull(dto.pdfHeaderText()));
-        u.setPdfFooterText(blankToNull(dto.pdfFooterText()));
-        userRepository.save(u);
+        practiceService.updatePdfCustomization(currentUser.getAuthenticatedId(), practiceId, dto);
     }
 
-    /** Preview PDF: usa dados fake do proprio nutri como paciente ficticio; nao gera snapshot. */
-    @GetMapping(value = "/me/pdf-preview", produces = MediaType.APPLICATION_PDF_VALUE)
+    /** Preview PDF: renderiza com a customizacao da practice indicada; nao gera snapshot. */
+    @GetMapping(value = "/practices/{practiceId}/pdf-preview", produces = MediaType.APPLICATION_PDF_VALUE)
     @PreAuthorize("hasRole('NUTRITIONIST')")
-    public ResponseEntity<byte[]> previewPdf() {
+    public ResponseEntity<byte[]> previewPdf(@PathVariable Long practiceId) {
         User nutri = currentUser.getAuthenticated();
+        NutritionistPractice p = practiceService.getOwnedByNutri(nutri.getId(), practiceId);
         User fakeClient = User.builder()
                 .name("Maria Souza (preview)")
                 .cpf("12345678901")
@@ -141,7 +142,7 @@ public class NutritionistController {
                 .weightKg(65.0).heightCm(165.0)
                 .build();
         ClientAssessment fake = ClientAssessment.builder()
-                .client(fakeClient).nutritionist(nutri)
+                .client(fakeClient).nutritionist(nutri).practice(p)
                 .assessmentDate(LocalDateTime.now())
                 .weightKg(65.0).heightCm(165)
                 .tmbFormula("MIFFLIN")

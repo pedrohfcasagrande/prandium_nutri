@@ -539,15 +539,19 @@ export class ApiService {
     return this.http.put<void>(`${this.base}/nutritionist/me/signature`, { signatureBase64 });
   }
 
-  // Fase 9D-2: customizacao do PDF (logo, cor, header/footer text) + preview
-  nutriGetPdfTemplate(): Observable<PdfCustomization> {
-    return this.http.get<PdfCustomization>(`${this.base}/nutritionist/me/pdf-template`);
+  // Fase 9D-2-fix: customizacao do PDF por practice (tenant)
+  nutriGetPdfTemplate(practiceId: number): Observable<PdfCustomization> {
+    return this.http.get<PdfCustomization>(
+      `${this.base}/nutritionist/practices/${practiceId}/pdf-template`);
   }
-  nutriPutPdfTemplate(dto: PdfCustomization): Observable<void> {
-    return this.http.put<void>(`${this.base}/nutritionist/me/pdf-template`, dto);
+  nutriPutPdfTemplate(practiceId: number, dto: PdfCustomization): Observable<void> {
+    return this.http.put<void>(
+      `${this.base}/nutritionist/practices/${practiceId}/pdf-template`, dto);
   }
-  nutriPdfPreview(): Observable<Blob> {
-    return this.http.get(`${this.base}/nutritionist/me/pdf-preview`, { responseType: 'blob' });
+  nutriPdfPreview(practiceId: number): Observable<Blob> {
+    return this.http.get(
+      `${this.base}/nutritionist/practices/${practiceId}/pdf-preview`,
+      { responseType: 'blob' });
   }
 
   // Fase 9E: consultas (prontuário)
