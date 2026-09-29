@@ -90,6 +90,14 @@ export interface AppointmentDialogData {
           <input matInput [(ngModel)]="locationDetails"
                  [placeholder]="location === 'ONLINE' ? 'Google Meet, Zoom, ...' : 'Rua, cidade, sala...'">
         </mat-form-field>
+        @if (location === 'ONLINE') {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ 'appointments.meetingUrl' | translate }}</mat-label>
+            <input matInput type="url" [(ngModel)]="meetingUrl"
+                   placeholder="https://meet.google.com/...">
+            <mat-hint>{{ 'appointments.meetingUrlHint' | translate }}</mat-hint>
+          </mat-form-field>
+        }
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>{{ 'appointments.notesLabel' | translate }}</mat-label>
           <textarea matInput [(ngModel)]="notes" rows="3"
@@ -124,6 +132,7 @@ export class AppointmentDialogComponent {
   durationMinutes = 60;
   location: AppointmentLocation = 'ONLINE';
   locationDetails = '';
+  meetingUrl = '';
   notes = '';
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: AppointmentDialogData) {
@@ -136,6 +145,8 @@ export class AppointmentDialogComponent {
       const ap = new Date(data.appointment.scheduledAt);
       this.date = ap.toISOString().slice(0, 10);
       this.time = ap.toTimeString().slice(0, 5);
+      this.meetingUrl = data.appointment.meetingUrl ?? '';
+      this.locationDetails = data.appointment.locationDetails ?? '';
     }
   }
 
@@ -157,6 +168,7 @@ export class AppointmentDialogComponent {
       durationMinutes: this.durationMinutes,
       location: this.location,
       locationDetails: this.locationDetails || null,
+      meetingUrl: this.meetingUrl || null,
       notes: this.notes || null
     };
     this.ref.close(req);

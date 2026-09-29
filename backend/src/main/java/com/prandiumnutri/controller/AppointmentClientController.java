@@ -34,6 +34,7 @@ public class AppointmentClientController {
                 req.durationMinutes(),
                 req.location(),
                 req.locationDetails(),
+                req.meetingUrl(),
                 req.notes());
     }
 

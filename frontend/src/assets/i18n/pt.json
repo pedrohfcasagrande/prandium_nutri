@@ -832,6 +832,15 @@
       "IN_PERSON": "Presencial"
     },
     "locationDetails": "Detalhes (link, endereço...)",
+    "meetingUrl": "Link da videochamada",
+    "meetingUrlHint": "URL completa (Google Meet, Zoom, Whereby...) — habilita o botão \"Entrar na sala\"",
+    "joinRoom": "Entrar na sala",
+    "hasMeetingUrl": "Consulta com link de videochamada",
+    "view": {
+      "list": "Lista",
+      "week": "Semana",
+      "today": "Hoje"
+    },
     "notesLabel": "Observações",
     "notesHint": "Assuntos a tratar, exames, dúvidas...",
     "save": "Enviar",

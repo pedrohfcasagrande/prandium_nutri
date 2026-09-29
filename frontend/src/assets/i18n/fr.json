@@ -832,6 +832,15 @@
       "IN_PERSON": "Sur place"
     },
     "locationDetails": "Détails (lien, adresse...)",
+    "meetingUrl": "Lien de visioconférence",
+    "meetingUrlHint": "URL complète (Google Meet, Zoom, Whereby...) — active le bouton « Rejoindre »",
+    "joinRoom": "Rejoindre la salle",
+    "hasMeetingUrl": "Consultation avec lien de visioconférence",
+    "view": {
+      "list": "Liste",
+      "week": "Semaine",
+      "today": "Aujourd'hui"
+    },
     "notesLabel": "Notes",
     "notesHint": "Sujets à discuter, examens, questions...",
     "save": "Envoyer",

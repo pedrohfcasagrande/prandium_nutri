@@ -45,6 +45,13 @@ public class Appointment {
     @Column(length = 500)
     private String locationDetails;
 
+    /** Fase 9F: URL de videochamada (Google Meet, Zoom, Whereby...). Substitui poluir locationDetails. */
+    @Column(length = 500)
+    private String meetingUrl;
+
+    /** Fase 9F: marca timestamp quando o job de lembrete disparou pra evitar reenvio. */
+    private LocalDateTime reminderSentAt;
+
     @Column(length = 2000)
     private String notes;
 

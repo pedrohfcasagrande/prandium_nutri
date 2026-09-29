@@ -7,6 +7,8 @@ import com.prandiumnutri.repository.NutritionistPracticeRepository;
 import com.prandiumnutri.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AppointmentService {
 
     private final AppointmentRepository repository;
@@ -58,7 +61,7 @@ public class AppointmentService {
     public AppointmentDto requestByClient(User client, Long nutritionistId,
                                           LocalDateTime scheduledAt, Integer durationMinutes,
                                           AppointmentLocation location, String locationDetails,
-                                          String notes) {
+                                          String meetingUrl, String notes) {
         NutritionistClientLink link = findActiveLink(client.getId(), nutritionistId);
         User nutri = userRepo.findById(nutritionistId)
                 .orElseThrow(() -> new EntityNotFoundException("Nutricionista nao encontrado"));
@@ -71,6 +74,7 @@ public class AppointmentService {
                 .durationMinutes(durationMinutes != null ? durationMinutes : 60)
                 .location(location != null ? location : AppointmentLocation.ONLINE)
                 .locationDetails(locationDetails)
+                .meetingUrl(meetingUrl)
                 .notes(notes)
                 .status(AppointmentStatus.REQUESTED)
                 .requestedBy(AppointmentActor.CLIENT)
@@ -88,7 +92,7 @@ public class AppointmentService {
     public AppointmentDto suggestByNutri(User nutri, Long clientId, Long practiceId,
                                           LocalDateTime scheduledAt, Integer durationMinutes,
                                           AppointmentLocation location, String locationDetails,
-                                          String notes) {
+                                          String meetingUrl, String notes) {
         NutritionistClientLink link = findActiveLinkForNutri(nutri.getId(), clientId, practiceId);
         User client = userRepo.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente nao encontrado"));
@@ -101,6 +105,7 @@ public class AppointmentService {
                 .durationMinutes(durationMinutes != null ? durationMinutes : 60)
                 .location(location != null ? location : AppointmentLocation.ONLINE)
                 .locationDetails(locationDetails)
+                .meetingUrl(meetingUrl)
                 .notes(notes)
                 .status(AppointmentStatus.REQUESTED)
                 .requestedBy(AppointmentActor.NUTRITIONIST)
@@ -244,6 +249,53 @@ public class AppointmentService {
                 .orElseThrow(() -> new AccessDeniedException("Voce nao atende este cliente nesta practice."));
     }
 
+    // -------------------- Fase 9F: lembretes automaticos --------------------
+
+    /**
+     * Job horario: busca appointments CONFIRMED que ocorrem nas proximas 24h
+     * e ainda nao receberam lembrete. Dispara notificacao in-app + email pra
+     * cliente e nutri; marca {@code reminderSentAt} pra evitar reenvio.
+     *
+     * A janela e [agora, agora+24h] com margem inferior de 1h pra dar tempo
+     * de agendar na noite anterior sem lembrete duplo (executa a cada hora).
+     */
+    @Scheduled(cron = "0 5 * * * *") // 5min apos cada hora
+    @Transactional
+    public void sendReminders() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime windowEnd = now.plusHours(24);
+        List<Appointment> due = repository.findConfirmedDueForReminder(
+                AppointmentStatus.CONFIRMED, now, windowEnd);
+        if (due.isEmpty()) return;
+        log.info("Enviando {} lembretes de consulta ({} a {})", due.size(), now, windowEnd);
+        for (Appointment ap : due) {
+            try {
+                String when = fmt(ap.getScheduledAt());
+                if (ap.getClient() != null) {
+                    notify(ap.getClient().getId(),
+                            "Lembrete: consulta amanha",
+                            "Voce tem consulta com " + safeName(ap.getNutritionist()) + " em " + when + ".",
+                            ap.getId());
+                }
+                if (ap.getNutritionist() != null) {
+                    notify(ap.getNutritionist().getId(),
+                            "Lembrete: consulta amanha",
+                            "Voce tem consulta com " + safeName(ap.getClient()) + " em " + when + ".",
+                            ap.getId());
+                }
+                ap.setReminderSentAt(now);
+                repository.save(ap);
+            } catch (Exception e) {
+                // Falha em um nao pode parar o job
+                log.warn("Falha ao enviar lembrete de appointment {}: {}", ap.getId(), e.getMessage());
+            }
+        }
+    }
+
+    private String safeName(User u) {
+        return u != null && u.getName() != null ? u.getName() : "(usuario)";
+    }
+
     private void notify(Long userId, String title, String body, Long appointmentId) {
         notificationService.notify(userId, NotificationType.GENERIC, title, body, "Appointment", appointmentId);
     }
@@ -276,6 +328,8 @@ public class AppointmentService {
                 a.getDurationMinutes(),
                 a.getLocation(),
                 a.getLocationDetails(),
+                a.getMeetingUrl(),
+                a.getReminderSentAt(),
                 a.getNotes(),
                 a.getStatus(),
                 a.getRequestedBy(),

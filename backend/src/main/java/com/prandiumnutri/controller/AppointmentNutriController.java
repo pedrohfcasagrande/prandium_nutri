@@ -38,6 +38,7 @@ public class AppointmentNutriController {
                 req.durationMinutes(),
                 req.location(),
                 req.locationDetails(),
+                req.meetingUrl(),
                 req.notes());
     }
 

@@ -537,6 +537,9 @@ export interface Appointment {
   durationMinutes: number;
   location: AppointmentLocation;
   locationDetails?: string | null;
+  // Fase 9F: URL de videochamada (Google Meet, Zoom, Whereby...)
+  meetingUrl?: string | null;
+  reminderSentAt?: string | null;
   notes?: string | null;
   status: AppointmentStatus;
   requestedBy: AppointmentActor;
@@ -557,6 +560,7 @@ export interface AppointmentRequest {
   durationMinutes?: number | null;
   location?: AppointmentLocation;
   locationDetails?: string | null;
+  meetingUrl?: string | null;
   notes?: string | null;
 }
 

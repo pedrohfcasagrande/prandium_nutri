@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -29,7 +30,7 @@ type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
     CommonModule, FormsModule,
     MatCardModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatSnackBarModule, MatDialogModule, MatTooltipModule,
+    MatSnackBarModule, MatDialogModule, MatTooltipModule, MatButtonToggleModule,
     TranslateModule, EmptyStateComponent
   ],
   template: `
@@ -39,15 +40,63 @@ type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
           <h1>{{ 'appointments.title' | translate }}</h1>
           <p>{{ ('appointments.subtitle.' + mode) | translate }}</p>
         </div>
-        @if (canRequest()) {
-          <button mat-flat-button color="primary" (click)="openDialog()">
-            <mat-icon>event</mat-icon>
-            {{ (mode === 'CLIENT' ? 'appointments.request' : 'appointments.suggest') | translate }}
-          </button>
-        }
+        <div class="header-actions">
+          <mat-button-toggle-group [(ngModel)]="viewMode" hideSingleSelectionIndicator>
+            <mat-button-toggle value="LIST">
+              <mat-icon>view_list</mat-icon>
+              {{ 'appointments.view.list' | translate }}
+            </mat-button-toggle>
+            <mat-button-toggle value="WEEK">
+              <mat-icon>calendar_view_week</mat-icon>
+              {{ 'appointments.view.week' | translate }}
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+          @if (canRequest()) {
+            <button mat-flat-button color="primary" (click)="openDialog()">
+              <mat-icon>event</mat-icon>
+              {{ (mode === 'CLIENT' ? 'appointments.request' : 'appointments.suggest') | translate }}
+            </button>
+          }
+        </div>
       </div>
 
-      @if (appointments().length === 0) {
+      @if (viewMode === 'WEEK') {
+        <mat-card class="week-nav">
+          <button mat-icon-button (click)="shiftWeek(-1)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span class="week-label">{{ weekLabel() }}</span>
+          <button mat-icon-button (click)="shiftWeek(1)">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+          <span class="spacer"></span>
+          <button mat-stroked-button (click)="resetWeek()">{{ 'appointments.view.today' | translate }}</button>
+        </mat-card>
+        <div class="week-grid">
+          @for (day of weekDays(); track day.iso) {
+            <div class="week-col">
+              <div class="week-head" [class.today]="day.isToday">
+                <div class="wd-name">{{ day.name }}</div>
+                <div class="wd-num">{{ day.num }}</div>
+              </div>
+              <div class="week-slots">
+                @for (a of day.items; track a.id) {
+                  <div class="slot-card" [class]="'status-' + a.status.toLowerCase()"
+                       (click)="openDialog(a, 'RESCHEDULE')">
+                    <div class="slot-time">{{ a.scheduledAt | date:'HH:mm' }}</div>
+                    <div class="slot-name">
+                      {{ mode === 'CLIENT' ? a.nutritionistName : a.clientName }}
+                    </div>
+                    @if (a.meetingUrl) {
+                      <mat-icon class="slot-vc" [matTooltip]="'appointments.hasMeetingUrl' | translate">videocam</mat-icon>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (appointments().length === 0) {
         <app-empty-state type="appointments"
                          [title]="'appointments.empty' | translate"
                          [description]="('appointments.subtitle.' + mode) | translate"></app-empty-state>
@@ -109,6 +158,11 @@ type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
               </div>
               @if (mode !== 'COMPANY') {
                 <div class="actions">
+                  @if (canJoinRoom(a)) {
+                    <a mat-flat-button color="primary" [href]="a.meetingUrl!" target="_blank" rel="noopener">
+                      <mat-icon>videocam</mat-icon>{{ 'appointments.joinRoom' | translate }}
+                    </a>
+                  }
                   @if (canConfirm(a)) {
                     <button mat-flat-button color="primary" (click)="confirm(a)">
                       <mat-icon>check</mat-icon>{{ 'appointments.confirm' | translate }}
@@ -198,6 +252,46 @@ type Mode = 'CLIENT' | 'NUTRI' | 'COMPANY';
       .ap-card { grid-template-columns: auto 1fr; }
       .actions { grid-column: 1 / -1; justify-self: end; }
     }
+
+    /* Fase 9F: view Semana */
+    .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .week-nav {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px !important; margin-bottom: 12px;
+      .spacer { flex: 1; }
+      .week-label { font-weight: 600; font-size: 1rem; min-width: 140px; text-align: center; }
+    }
+    .week-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+      @media (max-width: 900px) { grid-template-columns: repeat(3, 1fr); }
+      @media (max-width: 600px) { grid-template-columns: repeat(1, 1fr); }
+    }
+    .week-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .week-head {
+      text-align: center; padding: 8px 4px;
+      background: var(--nt-surface-2); border-radius: 10px;
+    }
+    .week-head.today {
+      background: var(--nt-primary);
+      color: #fff;
+    }
+    .wd-name { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85; }
+    .wd-num { font-size: 1.4rem; font-weight: 700; margin-top: 2px; }
+    .week-slots { display: flex; flex-direction: column; gap: 4px; min-height: 40px; }
+    .slot-card {
+      padding: 8px 10px; border-radius: 8px;
+      background: var(--nt-surface); border: 1px solid var(--nt-border);
+      cursor: pointer; transition: box-shadow 0.15s;
+      display: flex; flex-direction: column; gap: 2px; position: relative;
+      &:hover { box-shadow: var(--nt-shadow); }
+    }
+    .slot-card.status-confirmed { border-left: 3px solid var(--nt-primary); }
+    .slot-card.status-requested { border-left: 3px solid var(--nt-accent); }
+    .slot-card.status-reschedule_requested { border-left: 3px solid #8b5cf6; }
+    .slot-card.status-canceled, .slot-card.status-no_show { opacity: 0.6; }
+    .slot-time { font-weight: 700; font-size: 0.85rem; color: var(--nt-primary-dark); font-variant-numeric: tabular-nums; }
+    .slot-name { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .slot-vc { position: absolute; top: 4px; right: 4px; font-size: 14px !important; width: 14px !important; height: 14px !important; color: var(--nt-primary); }
   `]
 })
 export class AppointmentsComponent implements OnInit {
@@ -215,8 +309,60 @@ export class AppointmentsComponent implements OnInit {
   nutritionists = signal<NutriPublic[]>([]);
 
   mode: Mode = 'CLIENT';
+  viewMode: 'LIST' | 'WEEK' = 'LIST';
+  weekOffset = signal(0); // 0 = semana atual; -1 = anterior; +1 = próxima
 
   canRequest = computed(() => this.mode !== 'COMPANY');
+
+  /** Retorna se pode entrar na sala agora: appointment CONFIRMED com URL e faltando <60min (ou já rolando). */
+  canJoinRoom(a: Appointment): boolean {
+    if (!a.meetingUrl || a.status !== 'CONFIRMED') return false;
+    const start = new Date(a.scheduledAt).getTime();
+    const end = start + a.durationMinutes * 60_000;
+    const now = Date.now();
+    return now >= start - 60 * 60_000 && now <= end + 15 * 60_000;
+  }
+
+  private weekStart = computed(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    const day = d.getDay(); // 0=domingo
+    // Segunda como inicio da semana
+    const diff = (day === 0 ? -6 : 1) - day;
+    d.setDate(d.getDate() + diff + this.weekOffset() * 7);
+    return d;
+  });
+
+  weekLabel = computed(() => {
+    const s = this.weekStart();
+    const e = new Date(s); e.setDate(e.getDate() + 6);
+    const fmt = (d: Date) => d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
+    return `${fmt(s)} – ${fmt(e)}`;
+  });
+
+  weekDays = computed(() => {
+    const s = this.weekStart();
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const days: Array<{ iso: string; name: string; num: string; isToday: boolean; items: Appointment[] }> = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(s); d.setDate(s.getDate() + i);
+      const iso = d.toISOString().slice(0, 10);
+      const items = this.appointments()
+        .filter(a => a.scheduledAt.startsWith(iso))
+        .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+      days.push({
+        iso,
+        name: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        num: String(d.getDate()),
+        isToday: d.getTime() === today.getTime(),
+        items
+      });
+    }
+    return days;
+  });
+
+  shiftWeek(delta: number) { this.weekOffset.update(v => v + delta); }
+  resetWeek() { this.weekOffset.set(0); }
 
   private firstLoad = true;
   constructor() {

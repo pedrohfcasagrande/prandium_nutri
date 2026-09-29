@@ -832,6 +832,15 @@
       "IN_PERSON": "In person"
     },
     "locationDetails": "Details (link, address...)",
+    "meetingUrl": "Video call link",
+    "meetingUrlHint": "Full URL (Google Meet, Zoom, Whereby...) — enables the \"Join room\" button",
+    "joinRoom": "Join room",
+    "hasMeetingUrl": "Appointment with video call link",
+    "view": {
+      "list": "List",
+      "week": "Week",
+      "today": "Today"
+    },
     "notesLabel": "Notes",
     "notesHint": "Topics to discuss, exams, questions...",
     "save": "Send",

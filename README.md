@@ -238,6 +238,7 @@ Em `backend/src/main/resources/db/migration/`. Nomenclatura `V<n>__<descricao>.s
 | V028      | users.signature_base64 (assinatura digital do nutri pra PDF de prescricao — Fase 9D) |
 | V029      | users.pdf_logo_base64/pdf_primary_color/pdf_header_text/pdf_footer_text (customizacao PDF — Fase 9D-2) |
 | V030      | client_assessments.nutri_notes + tabela consultations (prontuario — Fase 9E) |
+| V031      | appointments.meeting_url + reminder_sent_at + index (Fase 9F: link videochamada + lembretes 24h) |
 
 JPA em `ddl-auto: validate` (dev/sandbox/prod): drift entre entity e schema quebra o startup.
 
@@ -525,4 +526,10 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
     - `GET /api/me/assessment/consultations` (cliente vê próprias consultas, sem `nutriNotes`)
   - Frontend: `NutriAssessmentComponent` ganha seção "Notas privadas" (expansion panel com ícone cadeado) + card "Prontuário" com timeline unificada (consultas + snapshots por data desc, cor teal p/ consultas e âmbar p/ snapshots) + botão "Nova consulta" (prompt de queixa + auto-snapshot). `MyAssessmentComponent` ganha card "Consultas com meu nutricionista" read-only.
   - Testes: `ConsultationServiceTest` (5 casos — persistência, snapshot linkado, filtragem por nutri, autorização de update, listagem cross-nutri pro cliente). Ajuste no `ClientAssessmentServiceTest` pra passar o `nutriNotes` novo. Suite backend em **118/118**, frontend em 60/60.
+- **Fase 9F (agenda + lembretes 24h + link de videochamada — 2026-09-28): OK**
+  - Migração V031: `appointments.meeting_url` (VARCHAR(500), URL dedicada da videochamada em vez de poluir `locationDetails`) + `reminder_sent_at` (DATETIME, populado pelo job pra dedup) + índice `idx_appointments_reminder` em (status, scheduled_at, reminder_sent_at) pra scan rápido.
+  - Backend: `AppointmentService.sendReminders()` com `@Scheduled(cron = "0 5 * * * *")` (5min após cada hora). Busca CONFIRMED em janela [now, now+24h] com `reminder_sent_at IS NULL`, dispara notificação in-app + email pra cliente e nutri via `NotificationService`, marca timestamp. Try/catch por appointment pra que falha isolada não pare o job. `requestByClient`/`suggestByNutri` ganham parâmetro `meetingUrl`; `AppointmentRequestDto` e `AppointmentDto` atualizados.
+  - Frontend: dialog ganha campo condicional "Link da videochamada" quando `location=ONLINE`; reschedule pré-carrega. Card lista ganha botão **"Entrar na sala"** (link externo direto) quando `canJoinRoom()` — appointment CONFIRMED com URL e faltando ≤60min pro início até 15min depois do fim. Toggle **Lista/Semana** no header; view Semana com grid 7 colunas, navegação anterior/hoje/próxima (`weekOffset` signal), cards clicáveis (abrem reschedule), destaque do dia atual, ícone `videocam` no canto quando URL preenchida. CSS Grid responsivo (7→3→1 col por breakpoint).
+  - Testes: `AppointmentReminderTest` (3 casos — envia + marca timestamp, dedup respeita `reminder_sent_at`, ignora REQUESTED e fora da janela). Suite backend em **121/121**, frontend em 60/60.
+  - Backlog Fase 9G: chat integrado nutri↔cliente (Server-Sent Events), push notifications reais, integração Daily.co/Zoom SDK pra gerar URL automática.
 - Fase 8 (geolocalizacao restaurantes): backlog

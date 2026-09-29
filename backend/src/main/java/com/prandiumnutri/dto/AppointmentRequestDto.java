@@ -13,5 +13,6 @@ public record AppointmentRequestDto(
         Integer durationMinutes,
         AppointmentLocation location,
         String locationDetails,
+        String meetingUrl,    // Fase 9F
         String notes
 ) {}

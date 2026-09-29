@@ -20,6 +20,8 @@ public record AppointmentDto(
         Integer durationMinutes,
         AppointmentLocation location,
         String locationDetails,
+        String meetingUrl,           // Fase 9F
+        LocalDateTime reminderSentAt, // Fase 9F
         String notes,
         AppointmentStatus status,
         AppointmentActor requestedBy,
