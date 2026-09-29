@@ -481,12 +481,29 @@ export interface Consultation {
   updatedAt?: string;
 }
 
-// Customizacao do PDF de prescricao por nutri (Fase 9D-2)
+// Customizacao do PDF de prescricao (Fase 9D-2, refinado V033 + 9H-1).
+// Template pertence a uma COMPANY ou PRACTICE — ver PdfTemplateView.
 export interface PdfCustomization {
   pdfLogoBase64?: string | null;
   pdfPrimaryColor?: string | null;
-  pdfHeaderText?: string | null;
-  pdfFooterText?: string | null;
+  pdfHeaderLine?: string | null;
+  pdfFooterAddress?: string | null;
+  pdfFooterPhone?: string | null;
+  pdfFooterEmail?: string | null;
+  pdfFooterWebsite?: string | null;
+  pdfFooterInstagram?: string | null;
+  pdfFooterNote?: string | null;
+}
+
+/**
+ * Fase 9H-1: envelope de leitura de template.
+ * `readOnly=true` + `inheritedFromCompanyName` != null => nutri vinculado
+ * a empresa; o template vem da empresa e ele nao pode editar direto.
+ */
+export interface PdfTemplateView {
+  template: PdfCustomization;
+  readOnly: boolean;
+  inheritedFromCompanyName?: string | null;
 }
 
 // Snapshot imutavel de assessment (Fase 9A)

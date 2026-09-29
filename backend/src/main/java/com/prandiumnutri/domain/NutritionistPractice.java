@@ -44,18 +44,8 @@ public class NutritionistPractice {
     @Builder.Default
     private PracticeStatus status = PracticeStatus.ACTIVE;
 
-    // ---- Fase 9D-2-fix: customizacao do PDF por practice (movido de users) ----
-    @Column(name = "pdf_logo_base64", columnDefinition = "MEDIUMTEXT")
-    private String pdfLogoBase64;
-
-    @Column(name = "pdf_primary_color", length = 9)
-    private String pdfPrimaryColor;
-
-    @Column(name = "pdf_header_text", length = 500)
-    private String pdfHeaderText;
-
-    @Column(name = "pdf_footer_text", length = 1000)
-    private String pdfFooterText;
+    // Fase 9H-1 (V034): customizacao do PDF foi movida pra tabela pdf_templates.
+    // Practices vinculadas a empresa herdam o template da empresa; particulares tem o seu.
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

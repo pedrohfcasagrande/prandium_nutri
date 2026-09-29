@@ -15,6 +15,7 @@
       "companyNutris": "Nutritionnistes",
       "companyMembers": "Administrateurs",
       "companyClients": "Clients de l'entreprise",
+      "companyPdfTemplate": "PDF de l'entreprise",
       "adminCompanies": "Entreprises",
       "admin": "Utilisateurs",
       "adminMetrics": "Métriques",
@@ -67,6 +68,7 @@
       "companyNutris": "Nutritionnistes",
       "companyMembers": "Administrateurs",
       "companyClients": "Clients",
+      "companyPdfTemplate": "Modèle de PDF",
       "adminCompanies": "Entreprises",
       "admin": "Utilisateurs",
       "adminMetrics": "Métriques de la plateforme",
@@ -1080,6 +1082,10 @@
       "acceptFail": "Impossible d'accepter l'invitation."
     }
   },
+  "companyPdfTemplate": {
+    "title": "Modèle de PDF de l'entreprise",
+    "subtitle": "Mise en page unique utilisée par tous les nutritionnistes rattachés à cette entreprise."
+  },
   "companyMembers": {
     "title": "Administrateurs de l'entreprise",
     "subtitle": "Invitez d'autres administrateurs pour gérer votre entreprise ensemble.",
@@ -1232,21 +1238,31 @@
     },
     "pdf": {
       "title": "Personnalisation du PDF de prescription",
-      "hint": "Remplace la marque Prandium par votre cabinet. Chaque nutritionniste a son propre modèle.",
+      "hint": "Remplace la marque Prandium par votre cabinet. Chaque profil a son propre modèle.",
       "logo": "Logo",
       "logoEmpty": "Sans logo — utilise la marque Prandium",
       "uploadLogo": "Envoyer un logo",
       "color": "Couleur principale",
       "resetColor": "Revenir au défaut",
-      "headerText": "Texte d'en-tête",
-      "headerPlaceholder": "ex. : Cabinet Vida Ativa · SIRET 000000000",
-      "footerText": "Texte de pied de page",
-      "footerPlaceholder": "ex. : Rue X, 123 · +33 1 23 45 67 89 · <a href=\"https://\">site</a>",
-      "htmlAllowed": "HTML de base autorisé : <b>, <i>, <br>, <a>",
+      "headerLine": "En-tête",
+      "headerPlaceholder": "Nom du cabinet, clinique ou identifiant",
+      "headerHint": "Apparaît sous le logo, en haut du PDF.",
+      "footerSection": "Contact — apparaît en pied de page",
+      "address": "Adresse",
+      "addressPlaceholder": "Rue, numéro, quartier, ville",
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "website": "Site web",
+      "instagram": "Instagram",
+      "note": "Notes du pied de page",
+      "notePlaceholder": "ex. : ouvert lun-ven 8h-18h",
+      "noteHint": "Texte libre, en italique dans le pied de page.",
       "preview": "Prévisualiser le PDF",
       "previewLoading": "Génération...",
       "saved": "Personnalisation enregistrée",
-      "err": "Échec de l'enregistrement"
+      "err": "Échec de l'enregistrement",
+      "inheritedTitle": "Modèle hérité de l'entreprise",
+      "inheritedHint": "Vous exercez via {{company}} et utilisez la mise en page définie par l'admin de cette entreprise. Vous ne pouvez modifier que votre signature numérique."
     }
   },
   "nutriDashboard": {

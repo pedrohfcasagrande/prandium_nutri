@@ -13,7 +13,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { PracticeService } from '../../services/practice.service';
-import { PdfCustomization, Practice } from '../../models/models';
+import { PdfCustomization, PdfTemplateView, Practice } from '../../models/models';
 
 @Component({
   selector: 'app-nutri-practices',
@@ -120,6 +120,18 @@ import { PdfCustomization, Practice } from '../../models/models';
                 </mat-expansion-panel-header>
 
                 @if (pdfDrafts()[p.id]; as draft) {
+                  @if (pdfInheritedFrom()[p.id]; as companyName) {
+                    <div class="pdf-inherit-banner">
+                      <mat-icon>corporate_fare</mat-icon>
+                      <div class="pib-text">
+                        <strong>{{ 'nutriPractices.pdf.inheritedTitle' | translate }}</strong>
+                        <div class="text-muted small">
+                          {{ 'nutriPractices.pdf.inheritedHint' | translate:{ company: companyName } }}
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  <fieldset [disabled]="!!pdfInheritedFrom()[p.id]" class="pdf-fieldset">
                   <div class="pdf-grid">
                     <div class="pdf-col">
                       <label class="pdf-label">{{ 'nutriPractices.pdf.logo' | translate }}</label>
@@ -161,28 +173,69 @@ import { PdfCustomization, Practice } from '../../models/models';
                     </div>
                   </div>
                   <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>{{ 'nutriPractices.pdf.headerText' | translate }}</mat-label>
-                    <textarea matInput rows="2" [(ngModel)]="draft.pdfHeaderText"
-                              [placeholder]="'nutriPractices.pdf.headerPlaceholder' | translate"></textarea>
-                    <mat-hint>{{ 'nutriPractices.pdf.htmlAllowed' | translate }}</mat-hint>
+                    <mat-label>{{ 'nutriPractices.pdf.headerLine' | translate }}</mat-label>
+                    <input matInput [(ngModel)]="draft.pdfHeaderLine"
+                           [placeholder]="'nutriPractices.pdf.headerPlaceholder' | translate"
+                           maxlength="200">
+                    <mat-hint>{{ 'nutriPractices.pdf.headerHint' | translate }}</mat-hint>
                   </mat-form-field>
+
+                  <div class="pdf-section-label">{{ 'nutriPractices.pdf.footerSection' | translate }}</div>
+
                   <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>{{ 'nutriPractices.pdf.footerText' | translate }}</mat-label>
-                    <textarea matInput rows="3" [(ngModel)]="draft.pdfFooterText"
-                              [placeholder]="'nutriPractices.pdf.footerPlaceholder' | translate"></textarea>
-                    <mat-hint>{{ 'nutriPractices.pdf.htmlAllowed' | translate }}</mat-hint>
+                    <mat-label>{{ 'nutriPractices.pdf.address' | translate }}</mat-label>
+                    <mat-icon matPrefix>place</mat-icon>
+                    <input matInput [(ngModel)]="draft.pdfFooterAddress"
+                           [placeholder]="'nutriPractices.pdf.addressPlaceholder' | translate"
+                           maxlength="300">
                   </mat-form-field>
+                  <div class="pdf-row">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>{{ 'nutriPractices.pdf.phone' | translate }}</mat-label>
+                      <mat-icon matPrefix>call</mat-icon>
+                      <input matInput [(ngModel)]="draft.pdfFooterPhone" maxlength="80">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>{{ 'nutriPractices.pdf.email' | translate }}</mat-label>
+                      <mat-icon matPrefix>mail</mat-icon>
+                      <input matInput type="email" [(ngModel)]="draft.pdfFooterEmail" maxlength="150">
+                    </mat-form-field>
+                  </div>
+                  <div class="pdf-row">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>{{ 'nutriPractices.pdf.website' | translate }}</mat-label>
+                      <mat-icon matPrefix>language</mat-icon>
+                      <input matInput type="url" [(ngModel)]="draft.pdfFooterWebsite" maxlength="200"
+                             placeholder="https://...">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>{{ 'nutriPractices.pdf.instagram' | translate }}</mat-label>
+                      <mat-icon matPrefix>photo_camera</mat-icon>
+                      <input matInput [(ngModel)]="draft.pdfFooterInstagram" maxlength="80"
+                             placeholder="@usuario">
+                    </mat-form-field>
+                  </div>
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>{{ 'nutriPractices.pdf.note' | translate }}</mat-label>
+                    <textarea matInput rows="2" [(ngModel)]="draft.pdfFooterNote"
+                              [placeholder]="'nutriPractices.pdf.notePlaceholder' | translate"
+                              maxlength="500"></textarea>
+                    <mat-hint>{{ 'nutriPractices.pdf.noteHint' | translate }}</mat-hint>
+                  </mat-form-field>
+                  </fieldset>
                   <div class="pdf-actions">
                     <button mat-stroked-button (click)="previewPdf(p.id)"
                             [disabled]="loadingPreview() === p.id">
                       <mat-icon>visibility</mat-icon>
                       {{ (loadingPreview() === p.id ? 'nutriPractices.pdf.previewLoading' : 'nutriPractices.pdf.preview') | translate }}
                     </button>
-                    <button mat-flat-button color="primary" (click)="savePdf(p.id)"
-                            [disabled]="savingPdf() === p.id">
-                      <mat-icon>save</mat-icon>
-                      {{ (savingPdf() === p.id ? 'app.actions.saving' : 'app.actions.save') | translate }}
-                    </button>
+                    @if (!pdfInheritedFrom()[p.id]) {
+                      <button mat-flat-button color="primary" (click)="savePdf(p.id)"
+                              [disabled]="savingPdf() === p.id">
+                        <mat-icon>save</mat-icon>
+                        {{ (savingPdf() === p.id ? 'app.actions.saving' : 'app.actions.save') | translate }}
+                      </button>
+                    }
                   </div>
                 }
               </mat-expansion-panel>
@@ -284,7 +337,42 @@ import { PdfCustomization, Practice } from '../../models/models';
       border: 1px solid var(--nt-border);
     }
     .color-code { font-family: 'JetBrains Mono', monospace; }
-    .pdf-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .pdf-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+    /* Padding interno do expansion panel + espacamento consistente entre campos */
+    :host ::ng-deep .pdf-panel .mat-expansion-panel-body {
+      padding: 12px 20px 20px !important;
+    }
+    :host ::ng-deep .pdf-panel .mat-mdc-form-field { display: block; margin-top: 14px; }
+    :host ::ng-deep .pdf-panel .mat-mdc-form-field:first-of-type { margin-top: 8px; }
+
+    .pdf-section-label {
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--nt-text-muted); font-weight: 600;
+      margin: 22px 0 -2px; padding-top: 4px;
+      border-top: 1px solid var(--nt-border);
+      padding-top: 18px;
+    }
+    .pdf-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      @media (max-width: 600px) { grid-template-columns: 1fr; }
+    }
+    :host ::ng-deep .pdf-panel .pdf-row .mat-mdc-form-field { margin-top: 0; }
+
+    /* 9H-1: banner e fieldset quando template herda de empresa */
+    .pdf-inherit-banner {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; margin-bottom: 12px;
+      background: var(--nt-primary-soft);
+      border-left: 3px solid var(--nt-primary);
+      border-radius: 8px;
+      mat-icon { color: var(--nt-primary-dark); font-size: 22px; width: 22px; height: 22px; }
+    }
+    .pib-text strong { display: block; color: var(--nt-primary-dark); }
+    .pdf-fieldset {
+      border: 0; padding: 0; margin: 0;
+      &[disabled] { opacity: 0.7; }
+    }
   `]
 })
 export class NutriPracticesComponent implements OnInit {
@@ -313,10 +401,10 @@ export class NutriPracticesComponent implements OnInit {
   saving = signal(new Set<number>());
   signaturePreview = signal<string | null>(null);
 
-  // Fase 9D-2-fix: customizacao do PDF por practice.
-  // Signal com map practiceId -> customizacao carregada lazy no expansion open.
+  // Fase 9D-2-fix + 9H-1: customizacao do PDF por practice.
   pdfDrafts = signal<Record<number, PdfCustomization>>({});
-  // Signals de status "por practice" — armazenam o id da practice em curso, ou null.
+  // 9H-1: guarda nome da empresa (se practice herda) — driver do read-only + banner.
+  pdfInheritedFrom = signal<Record<number, string | null>>({});
   savingPdf = signal<number | null>(null);
   loadingPreview = signal<number | null>(null);
 
@@ -327,13 +415,15 @@ export class NutriPracticesComponent implements OnInit {
     });
   }
 
-  /** Carrega a customizacao da practice. Se falhar (ex.: backend antigo), inicializa vazio. */
+  /** Carrega template efetivo (incluindo o herdado da empresa quando practice for vinculada). */
   loadPdfFor(practiceId: number) {
     if (this.pdfDrafts()[practiceId]) return;
     this.api.nutriGetPdfTemplate(practiceId).subscribe({
-      next: t => this.pdfDrafts.update(m => ({ ...m, [practiceId]: { ...t } })),
-      error: () => this.pdfDrafts.update(m => ({ ...m, [practiceId]:
-          { pdfLogoBase64: null, pdfPrimaryColor: null, pdfHeaderText: null, pdfFooterText: null } }))
+      next: (view: PdfTemplateView) => {
+        this.pdfDrafts.update(m => ({ ...m, [practiceId]: { ...view.template } }));
+        this.pdfInheritedFrom.update(m => ({ ...m, [practiceId]: view.inheritedFromCompanyName ?? null }));
+      },
+      error: () => this.pdfDrafts.update(m => ({ ...m, [practiceId]: {} }))
     });
   }
 

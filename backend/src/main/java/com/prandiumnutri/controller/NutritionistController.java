@@ -2,15 +2,18 @@ package com.prandiumnutri.controller;
 
 import com.prandiumnutri.domain.ClientAssessment;
 import com.prandiumnutri.domain.NutritionistPractice;
+import com.prandiumnutri.domain.PdfTemplateOwnerType;
 import com.prandiumnutri.domain.Sex;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.ClientLinkDto;
 import com.prandiumnutri.dto.InviteClientRequest;
 import com.prandiumnutri.dto.PdfCustomizationDto;
+import com.prandiumnutri.dto.PdfTemplateView;
 import com.prandiumnutri.repository.UserRepository;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.NutritionistLinkService;
 import com.prandiumnutri.service.NutritionistPracticeService;
+import com.prandiumnutri.service.PdfTemplateService;
 import com.prandiumnutri.service.PrescriptionPdfService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,7 @@ public class NutritionistController {
 
     private final NutritionistLinkService linkService;
     private final NutritionistPracticeService practiceService;
+    private final PdfTemplateService pdfTemplateService;
     private final UserRepository userRepository;
     private final PrescriptionPdfService pdfService;
     private final CurrentUser currentUser;
@@ -107,26 +111,37 @@ public class NutritionistController {
         userRepository.save(u);
     }
 
-    // Fase 9D-2-fix: customizacao do PDF por practice (tenant)
+    // Fase 9H-1: PDF template com resolucao COMPANY vs PRACTICE.
+    // Practice vinculada -> le template da empresa (readOnly=true).
+    // Practice particular -> le/edita template proprio.
 
     @GetMapping("/practices/{practiceId}/pdf-template")
     @PreAuthorize("hasRole('NUTRITIONIST')")
-    public PdfCustomizationDto getPdfTemplate(@PathVariable Long practiceId) {
+    public PdfTemplateView getPdfTemplate(@PathVariable Long practiceId) {
         NutritionistPractice p = practiceService.getOwnedByNutri(
                 currentUser.getAuthenticatedId(), practiceId);
-        return new PdfCustomizationDto(
-                p.getPdfLogoBase64(), p.getPdfPrimaryColor(),
-                p.getPdfHeaderText(), p.getPdfFooterText());
+        if (p.getCompany() != null) {
+            return new PdfTemplateView(
+                    pdfTemplateService.readOrEmpty(PdfTemplateOwnerType.COMPANY, p.getCompany().getId()),
+                    true,
+                    p.getCompany().getName());
+        }
+        return new PdfTemplateView(
+                pdfTemplateService.readOrEmpty(PdfTemplateOwnerType.PRACTICE, p.getId()),
+                false, null);
     }
 
     @PutMapping("/practices/{practiceId}/pdf-template")
     @PreAuthorize("hasRole('NUTRITIONIST')")
     public void putPdfTemplate(@PathVariable Long practiceId,
                                 @RequestBody PdfCustomizationDto dto) {
-        if (dto.pdfLogoBase64() != null && dto.pdfLogoBase64().length() > 2_800_000) {
-            throw new IllegalArgumentException("Logo muito grande (> 2MB)");
+        NutritionistPractice p = practiceService.getOwnedByNutri(
+                currentUser.getAuthenticatedId(), practiceId);
+        if (p.getCompany() != null) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Practice vinculada a empresa — edicao via /api/company/pdf-template pelo admin");
         }
-        practiceService.updatePdfCustomization(currentUser.getAuthenticatedId(), practiceId, dto);
+        pdfTemplateService.upsert(PdfTemplateOwnerType.PRACTICE, p.getId(), dto);
     }
 
     /** Preview PDF: renderiza com a customizacao da practice indicada; nao gera snapshot. */

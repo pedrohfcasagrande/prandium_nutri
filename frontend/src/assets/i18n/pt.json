@@ -15,6 +15,7 @@
       "companyNutris": "Nutricionistas",
       "companyMembers": "Administradores",
       "companyClients": "Clientes da empresa",
+      "companyPdfTemplate": "PDF da empresa",
       "adminCompanies": "Empresas",
       "admin": "Usuários",
       "adminMetrics": "Métricas",
@@ -67,6 +68,7 @@
       "companyNutris": "Nutricionistas",
       "companyMembers": "Administradores",
       "companyClients": "Clientes",
+      "companyPdfTemplate": "Template do PDF",
       "adminCompanies": "Empresas",
       "admin": "Usuários",
       "adminMetrics": "Métricas da plataforma",
@@ -1080,6 +1082,10 @@
       "acceptFail": "Não foi possível aceitar o convite."
     }
   },
+  "companyPdfTemplate": {
+    "title": "Template PDF da empresa",
+    "subtitle": "Layout único usado por todos os nutricionistas vinculados a esta empresa."
+  },
   "companyMembers": {
     "title": "Administradores da empresa",
     "subtitle": "Convide outros administradores para gerenciar sua empresa em conjunto.",
@@ -1232,21 +1238,31 @@
     },
     "pdf": {
       "title": "Personalização do PDF de prescrição",
-      "hint": "Substitui a marca Prandium pelo seu consultório. Cada nutri tem seu próprio template.",
+      "hint": "Substitui a marca Prandium pelo seu consultório. Cada perfil tem seu próprio template.",
       "logo": "Logo",
       "logoEmpty": "Sem logo — usa a marca Prandium",
       "uploadLogo": "Enviar logo",
       "color": "Cor principal",
       "resetColor": "Voltar ao padrão",
-      "headerText": "Texto do cabeçalho",
-      "headerPlaceholder": "ex.: Clínica Vida Ativa · CNPJ 00.000.000/0001-00",
-      "footerText": "Texto do rodapé",
-      "footerPlaceholder": "ex.: Rua X, 123 · (11) 99999-9999 · <a href=\"https://\">site</a>",
-      "htmlAllowed": "HTML básico permitido: <b>, <i>, <br>, <a>",
+      "headerLine": "Cabeçalho",
+      "headerPlaceholder": "Nome do consultório, clínica ou identificador",
+      "headerHint": "Aparece abaixo do logo, no topo do PDF.",
+      "footerSection": "Contato — aparece no rodapé",
+      "address": "Endereço",
+      "addressPlaceholder": "Rua, número, bairro, cidade/UF",
+      "phone": "Telefone",
+      "email": "E-mail",
+      "website": "Site",
+      "instagram": "Instagram",
+      "note": "Observações do rodapé",
+      "notePlaceholder": "ex.: aberto seg-sex 8h-18h",
+      "noteHint": "Texto livre, aparece em itálico no rodapé.",
       "preview": "Pré-visualizar PDF",
       "previewLoading": "Gerando pré-visualização...",
       "saved": "Personalização salva",
-      "err": "Falha ao salvar"
+      "err": "Falha ao salvar",
+      "inheritedTitle": "Template herdado da empresa",
+      "inheritedHint": "Você atende por {{company}} e usa o layout definido pelo admin dessa empresa. Só pode editar sua assinatura digital."
     }
   },
   "nutriDashboard": {

@@ -148,6 +148,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/company-members/company-members.component').then(m => m.CompanyMembersComponent)
   },
   {
+    path: 'company/pdf-template',
+    canActivate: [companyGuard],
+    loadComponent: () => import('./pages/company-pdf-template/company-pdf-template.component').then(m => m.CompanyPdfTemplateComponent)
+  },
+  {
     path: 'admin/metrics',
     canActivate: [adminGuard],
     loadComponent: () => import('./pages/admin-metrics/admin-metrics.component').then(m => m.AdminMetricsComponent)

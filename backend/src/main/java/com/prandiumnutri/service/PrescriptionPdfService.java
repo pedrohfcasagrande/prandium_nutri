@@ -4,13 +4,12 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.prandiumnutri.domain.ClientAssessment;
 import com.prandiumnutri.domain.MenuPlan;
 import com.prandiumnutri.domain.NutritionistPractice;
+import com.prandiumnutri.domain.PdfTemplate;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.repository.MenuPlanRepository;
 import com.prandiumnutri.repository.NutritionistPracticeRepository;
 import com.prandiumnutri.support.CpfUtil;
 import lombok.RequiredArgsConstructor;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -39,6 +38,7 @@ public class PrescriptionPdfService {
     private final TemplateEngine templateEngine;
     private final MenuPlanRepository menuPlanRepository;
     private final NutritionistPracticeRepository practiceRepository;
+    private final PdfTemplateService pdfTemplateService;
     private final ClientAssessmentService assessmentService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -47,11 +47,6 @@ public class PrescriptionPdfService {
     // Cor teal Prandium (default quando nutri nao personaliza)
     private static final String DEFAULT_PRIMARY      = "#0e8f83";
     private static final String DEFAULT_PRIMARY_DARK = "#0a6c63";
-
-    // Whitelist para os campos custom header/footer — apenas formatacao basica + links
-    private static final Safelist HTML_SAFELIST = Safelist.basicWithImages()
-            .removeTags("img") // sem <img> aqui (logo tem campo proprio)
-            .addAttributes("a", "href", "title", "target");
 
     public byte[] render(ClientAssessment assessment, User client, User nutritionist, Locale locale) {
         return render(assessment, client, nutritionist, locale, /* snapshot */ true);
@@ -126,22 +121,41 @@ public class PrescriptionPdfService {
                 .orElse(null);
         v.put("activeMenu", active);
 
-        // Fase 9D-2-fix: customizacao por practice (tenant).
-        // Preferencia: practice do assessment (contexto do atendimento).
-        // Fallback: particular do nutri (quando ficha nao tem practice ligada).
-        NutritionistPractice source = a.getPractice();
-        if (source == null && nutri != null) {
-            source = practiceRepository.findParticular(nutri.getId()).orElse(null);
+        // Fase 9H-1: template resolvido por dono (COMPANY se practice vinculada, PRACTICE se particular).
+        // Fallback: particular do nutri quando ficha nao tem practice ligada.
+        NutritionistPractice sourcePractice = a.getPractice();
+        if (sourcePractice == null && nutri != null) {
+            sourcePractice = practiceRepository.findParticular(nutri.getId()).orElse(null);
         }
+        PdfTemplate source = sourcePractice != null
+                ? pdfTemplateService.resolveEffectiveFor(sourcePractice).orElse(null)
+                : null;
 
         String primary = source != null ? validColorOrNull(source.getPdfPrimaryColor()) : null;
         v.put("primaryColor",     primary != null ? primary : DEFAULT_PRIMARY);
         v.put("primaryColorDark", primary != null ? darken(primary) : DEFAULT_PRIMARY_DARK);
-        v.put("headerHtml", source != null ? sanitize(source.getPdfHeaderText()) : null);
-        v.put("footerHtml", source != null ? sanitize(source.getPdfFooterText()) : null);
         v.put("pdfLogoBase64", source != null ? source.getPdfLogoBase64() : null);
 
+        v.put("headerLine", source != null ? blankToNull(source.getPdfHeaderLine()) : null);
+        v.put("footerAddress",   source != null ? blankToNull(source.getPdfFooterAddress())   : null);
+        v.put("footerContacts",  source != null ? buildContactList(source) : java.util.List.of());
+        v.put("footerNote",      source != null ? blankToNull(source.getPdfFooterNote())      : null);
+
         return v;
+    }
+
+    /** Lista pra render inline no rodape ("Tel · Email · Site · @insta"). */
+    private java.util.List<String> buildContactList(PdfTemplate t) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        if (blankToNull(t.getPdfFooterPhone()) != null) out.add(t.getPdfFooterPhone());
+        if (blankToNull(t.getPdfFooterEmail()) != null) out.add(t.getPdfFooterEmail());
+        if (blankToNull(t.getPdfFooterWebsite()) != null) out.add(t.getPdfFooterWebsite());
+        if (blankToNull(t.getPdfFooterInstagram()) != null) out.add(t.getPdfFooterInstagram());
+        return out;
+    }
+
+    private static String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s;
     }
 
     private String formatAgeSex(User client) {
@@ -155,12 +169,6 @@ public class PrescriptionPdfService {
             sb.append(client.getSex().name().charAt(0));
         }
         return sb.length() == 0 ? null : sb.toString();
-    }
-
-    /** Limpa HTML pra evitar tags perigosas — mantem so <b> <i> <a href> <br> <p>. */
-    private String sanitize(String raw) {
-        if (raw == null || raw.isBlank()) return null;
-        return Jsoup.clean(raw, HTML_SAFELIST);
     }
 
     /** Aceita "#RRGGBB" ou "#RRGGBBAA". Retorna null (usa default) se invalido. */

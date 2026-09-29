@@ -15,6 +15,7 @@
       "companyNutris": "Nutritionists",
       "companyMembers": "Administrators",
       "companyClients": "Company clients",
+      "companyPdfTemplate": "Company PDF",
       "adminCompanies": "Companies",
       "admin": "Users",
       "adminMetrics": "Metrics",
@@ -67,6 +68,7 @@
       "companyNutris": "Nutritionists",
       "companyMembers": "Administrators",
       "companyClients": "Clients",
+      "companyPdfTemplate": "PDF template",
       "adminCompanies": "Companies",
       "admin": "Users",
       "adminMetrics": "Platform metrics",
@@ -1080,6 +1082,10 @@
       "acceptFail": "Could not accept the invite."
     }
   },
+  "companyPdfTemplate": {
+    "title": "Company PDF template",
+    "subtitle": "Single layout used by every nutritionist linked to this company."
+  },
   "companyMembers": {
     "title": "Company administrators",
     "subtitle": "Invite other administrators to manage your company together.",
@@ -1232,21 +1238,31 @@
     },
     "pdf": {
       "title": "Prescription PDF branding",
-      "hint": "Replaces the Prandium brand with your practice. Each nutritionist has their own template.",
+      "hint": "Replaces the Prandium brand with your practice. Each profile has its own template.",
       "logo": "Logo",
       "logoEmpty": "No logo — uses Prandium brand",
       "uploadLogo": "Upload logo",
       "color": "Primary color",
       "resetColor": "Reset to default",
-      "headerText": "Header text",
-      "headerPlaceholder": "e.g.: Vida Ativa Clinic · Tax ID 00.000.000/0001-00",
-      "footerText": "Footer text",
-      "footerPlaceholder": "e.g.: 123 X Street · +55 11 99999-9999 · <a href=\"https://\">site</a>",
-      "htmlAllowed": "Basic HTML allowed: <b>, <i>, <br>, <a>",
+      "headerLine": "Header",
+      "headerPlaceholder": "Practice, clinic name or identifier",
+      "headerHint": "Shown below the logo, at the top of the PDF.",
+      "footerSection": "Contact — shown in the footer",
+      "address": "Address",
+      "addressPlaceholder": "Street, number, neighborhood, city",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
+      "instagram": "Instagram",
+      "note": "Footer notes",
+      "notePlaceholder": "e.g. open Mon-Fri 8am-6pm",
+      "noteHint": "Free text, appears in italics at the footer.",
       "preview": "Preview PDF",
       "previewLoading": "Generating preview...",
       "saved": "Branding saved",
-      "err": "Failed to save"
+      "err": "Failed to save",
+      "inheritedTitle": "Template inherited from company",
+      "inheritedHint": "You practice through {{company}} and use the layout defined by that company's admin. You can only edit your digital signature."
     }
   },
   "nutriDashboard": {

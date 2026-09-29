@@ -132,19 +132,6 @@ public class NutritionistPracticeService {
         return p;
     }
 
-    /** Fase 9D-2-fix: persiste customizacao do PDF na practice (nao no user). */
-    @Transactional
-    public void updatePdfCustomization(Long nutritionistId, Long practiceId,
-                                        com.prandiumnutri.dto.PdfCustomizationDto dto) {
-        NutritionistPractice p = getOwnedByNutri(nutritionistId, practiceId);
-        p.setPdfLogoBase64(blankToNull(dto.pdfLogoBase64()));
-        p.setPdfPrimaryColor(blankToNull(dto.pdfPrimaryColor()));
-        p.setPdfHeaderText(blankToNull(dto.pdfHeaderText()));
-        p.setPdfFooterText(blankToNull(dto.pdfFooterText()));
-        repository.save(p);
-    }
-
-    private static String blankToNull(String s) {
-        return (s == null || s.isBlank()) ? null : s;
-    }
+    // Fase 9H-1: updatePdfCustomization foi movido pra PdfTemplateService (template
+    // agora vive numa tabela propria, com owner COMPANY ou PRACTICE).
 }

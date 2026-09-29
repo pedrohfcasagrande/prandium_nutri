@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PrescriptionPdfServiceTest {
 
     @Autowired PrescriptionPdfService pdfService;
+    @Autowired PdfTemplateService pdfTemplateService;
     @Autowired UserRepository userRepo;
     @Autowired ClientAssessmentRepository assessmentRepo;
     @Autowired AssessmentSnapshotRepository snapshotRepo;
@@ -162,13 +163,19 @@ class PrescriptionPdfServiceTest {
     @Test
     void render_customPrimaryColorReachesOutput() {
         User nutri = quickNutri();
-        // Fase 9D-2-fix: customizacao esta na practice, nao no user
+        // Fase 9H-1: customizacao vive em pdf_templates com owner PRACTICE (particular).
         NutritionistPractice practice = practiceRepo.save(NutritionistPractice.builder()
                 .nutritionist(nutri).company(null)
                 .acceptsNewClients(true)
-                .pdfPrimaryColor("#ff5733")
-                .pdfFooterText("<b>consultorio</b> · <script>alert(1)</script>Rua X")
                 .build());
+        pdfTemplateService.upsert(
+                com.prandiumnutri.domain.PdfTemplateOwnerType.PRACTICE, practice.getId(),
+                new com.prandiumnutri.dto.PdfCustomizationDto(
+                        null, "#ff5733", "Consultorio ficticio",
+                        "Rua X, 123 · Sao Paulo/SP",
+                        "(11) 99999-9999", "contato@x.com",
+                        null, null,
+                        "Aberto seg-sex 8h-18h"));
         User client = quickClient();
         client.setSex(Sex.MALE);
         client.setBirthDate(LocalDate.of(1985, 6, 15));
@@ -187,7 +194,5 @@ class PrescriptionPdfServiceTest {
         byte[] pdf = pdfService.render(a, client, nutri,
                 Locale.forLanguageTag("pt-BR"), /* snapshot */ false);
         assertThat(pdf).isNotEmpty();
-        // Sanity: pdf gerado sem exception (nao verifica bytes internos —
-        // jsoup deve ter removido o <script> pra evitar XSS ate mesmo no PDF).
     }
 }

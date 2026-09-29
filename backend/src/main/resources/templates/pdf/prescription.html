@@ -147,9 +147,15 @@
             font-size: 9pt;
             color: #64748b;
             text-align: center;
-            line-height: 1.5;
+            line-height: 1.6;
         }
-        .custom-footer a { color: [[${primaryColorDark}]]; text-decoration: none; }
+        .custom-footer > div { margin: 2px 0; }
+        .custom-footer-note {
+            font-style: italic;
+            color: #94a3b8;
+            font-size: 8.5pt;
+            margin-top: 4px !important;
+        }
         .disclaimer {
             margin-top: 12px;
             font-size: 8pt;
@@ -171,7 +177,7 @@
                 <div th:if="${pdfLogoBase64 == null}" class="brand">
                     <span class="leaf"></span>Prandium Nutri
                 </div>
-                <div th:if="${headerHtml != null}" class="doc-header-text" th:utext="${headerHtml}"></div>
+                <div th:if="${headerLine != null}" class="doc-header-text" th:text="${headerLine}"></div>
             </td>
             <td class="doc-title">
                 Documento
@@ -302,7 +308,18 @@
             </td>
         </tr>
     </table>
-    <div th:if="${footerHtml != null}" class="custom-footer" th:utext="${footerHtml}"></div>
+    <!-- V033: rodape a partir de campos estruturados (endereco + contatos + nota) -->
+    <div class="custom-footer"
+         th:if="${footerAddress != null or !#lists.isEmpty(footerContacts) or footerNote != null}">
+        <div th:if="${footerAddress != null}" th:text="${footerAddress}"></div>
+        <div th:if="${!#lists.isEmpty(footerContacts)}">
+            <span th:each="c, it : ${footerContacts}">
+                <span th:text="${c}"></span><span th:if="${!it.last}"> · </span>
+            </span>
+        </div>
+        <div th:if="${footerNote != null}" class="custom-footer-note" th:text="${footerNote}"
+             style="white-space: pre-wrap;"></div>
+    </div>
     <div class="disclaimer" th:text="#{pdf.prescription.disclaimer}">
         Documento gerado eletronicamente. Este plano é individual e não substitui consulta presencial.
     </div>

@@ -152,6 +152,10 @@ import { effect } from '@angular/core';
                 <mat-icon matListItemIcon>event</mat-icon>
                 <span matListItemTitle>{{ 'app.nav.appointments' | translate }}</span>
               </a>
+              <a mat-list-item routerLink="/company/pdf-template" routerLinkActive="active" (click)="onNavClick(drawer)">
+                <mat-icon matListItemIcon>palette</mat-icon>
+                <span matListItemTitle>{{ 'app.nav.companyPdfTemplate' | translate }}</span>
+              </a>
             }
             @if (auth.isAdmin()) {
               @if (showUserNav()) { <mat-divider></mat-divider> }
@@ -477,6 +481,7 @@ export class AppComponent {
       if (url.startsWith('/company/metrics')) return 'app.pageTitle.companyMetrics';
       if (url.startsWith('/company/nutritionists')) return 'app.pageTitle.companyNutris';
       if (url.startsWith('/company/members')) return 'app.pageTitle.companyMembers';
+      if (url.startsWith('/company/pdf-template')) return 'app.pageTitle.companyPdfTemplate';
       if (url.startsWith('/company/clients')) return 'app.pageTitle.companyClients';
       if (url.startsWith('/admin/companies')) return 'app.pageTitle.adminCompanies';
       if (url.startsWith('/invitations')) return 'app.pageTitle.invitations';

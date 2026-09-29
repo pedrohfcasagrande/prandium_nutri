@@ -7,7 +7,7 @@ import {
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
   Consultation,
-  PdfCustomization,
+  PdfCustomization, PdfTemplateView,
   CompanyMetricsOverview, CompanyNutriLink, CompanyOverview, DailySummary, Food,
   HealthProfile, Meal, MenuPlan, NutriCompany, NutriMetricsOverview, NutriProfileMe,
   NutriPublic, NutritionistLink,
@@ -539,9 +539,9 @@ export class ApiService {
     return this.http.put<void>(`${this.base}/nutritionist/me/signature`, { signatureBase64 });
   }
 
-  // Fase 9D-2-fix: customizacao do PDF por practice (tenant)
-  nutriGetPdfTemplate(practiceId: number): Observable<PdfCustomization> {
-    return this.http.get<PdfCustomization>(
+  // Fase 9H-1: template PDF resolvido por dono (COMPANY ou PRACTICE)
+  nutriGetPdfTemplate(practiceId: number): Observable<PdfTemplateView> {
+    return this.http.get<PdfTemplateView>(
       `${this.base}/nutritionist/practices/${practiceId}/pdf-template`);
   }
   nutriPutPdfTemplate(practiceId: number, dto: PdfCustomization): Observable<void> {
@@ -552,6 +552,15 @@ export class ApiService {
     return this.http.get(
       `${this.base}/nutritionist/practices/${practiceId}/pdf-preview`,
       { responseType: 'blob' });
+  }
+  companyGetPdfTemplate(): Observable<PdfTemplateView> {
+    return this.http.get<PdfTemplateView>(`${this.base}/company/pdf-template`);
+  }
+  companyPutPdfTemplate(dto: PdfCustomization): Observable<void> {
+    return this.http.put<void>(`${this.base}/company/pdf-template`, dto);
+  }
+  companyPdfPreview(): Observable<Blob> {
+    return this.http.get(`${this.base}/company/pdf-template/preview`, { responseType: 'blob' });
   }
 
   // Fase 9E: consultas (prontuário)
