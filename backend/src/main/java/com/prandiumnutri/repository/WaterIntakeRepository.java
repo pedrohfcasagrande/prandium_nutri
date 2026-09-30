@@ -12,6 +12,8 @@ public interface WaterIntakeRepository extends JpaRepository<WaterIntake, Long> 
 
     List<WaterIntake> findByUserIdAndDateOrderByLoggedAtAsc(Long userId, LocalDate date);
 
+    List<WaterIntake> findByUserIdOrderByLoggedAtDesc(Long userId);
+
     @Query("select coalesce(sum(w.amountMl), 0) from WaterIntake w where w.user.id = :userId and w.date = :date")
     long sumMlByUserAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 }

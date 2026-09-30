@@ -126,6 +126,11 @@ export class ApiService {
     return this.http.get<ConversationSummary[]>(`${this.base}/chat/conversations`, { params });
   }
 
+  /** LGPD Art. 18 II: baixa ZIP com todos os dados pessoais do user. */
+  exportMyData(): Observable<Blob> {
+    return this.http.get(`${this.base}/me/export`, { responseType: 'blob' });
+  }
+
   suggest(extraNotes?: string, scope: 'DAY' | 'WEEK' = 'DAY'): Observable<{ menu: string }> {
     return this.http.post<{ menu: string }>(`${this.base}/suggestions`, { extraNotes, scope });
   }

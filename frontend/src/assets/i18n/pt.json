@@ -410,7 +410,14 @@
     "saveFail": "Erro ao salvar",
     "passwordChanged": "Senha alterada!",
     "passwordChangeFail": "Erro ao alterar senha",
-    "fillBothPasswords": "Preencha ambos os campos"
+    "fillBothPasswords": "Preencha ambos os campos",
+    "lgpdCard": "Meus dados (LGPD)",
+    "lgpdSubtitle": "Direito à portabilidade — Art. 18 II da LGPD",
+    "lgpdHint": "Baixe um arquivo ZIP com todos os dados pessoais que temos sobre você (perfil, refeições, progresso, hidratação, ficha clínica, notificações e mensagens enviadas). Cada domínio vira um JSON separado.",
+    "lgpdDownload": "Baixar meus dados",
+    "lgpdExporting": "Preparando arquivo...",
+    "lgpdDownloaded": "Export gerado!",
+    "lgpdError": "Falha ao gerar export"
   },
   "health": {
     "sex": "Sexo",

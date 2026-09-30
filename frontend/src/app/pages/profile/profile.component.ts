@@ -176,6 +176,23 @@ import { DatePickerComponent } from '../../components/date-picker.component';
           </button>
         </mat-card-actions>
       </mat-card>
+
+      <!-- LGPD: portabilidade de dados -->
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{ 'profile.lgpdCard' | translate }}</mat-card-title>
+          <mat-card-subtitle>{{ 'profile.lgpdSubtitle' | translate }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="text-muted">{{ 'profile.lgpdHint' | translate }}</p>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-stroked-button (click)="exportData()" [disabled]="exporting()">
+            <mat-icon>{{ exporting() ? 'hourglass_empty' : 'download' }}</mat-icon>
+            {{ (exporting() ? 'profile.lgpdExporting' : 'profile.lgpdDownload') | translate }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
     </div>
   `,
   styles: [`
@@ -209,6 +226,7 @@ export class ProfileComponent implements OnInit {
   };
   currentPassword = '';
   newPassword = '';
+  exporting = signal<boolean>(false);
 
   ngOnInit(): void {
     this.api.me().subscribe(u => {
@@ -245,6 +263,28 @@ export class ProfileComponent implements OnInit {
       },
       error: err => this.snack.open(err?.error?.error ?? this.translate.instant('profile.passwordChangeFail'),
                                    'OK', { duration: 3000 })
+    });
+  }
+
+  exportData() {
+    this.exporting.set(true);
+    this.api.exportMyData().subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `prandium-nutri-export-${new Date().toISOString().slice(0, 10)}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.exporting.set(false);
+        this.snack.open(this.translate.instant('profile.lgpdDownloaded'), 'OK', { duration: 2500 });
+      },
+      error: () => {
+        this.exporting.set(false);
+        this.snack.open(this.translate.instant('profile.lgpdError'), 'OK', { duration: 3000 });
+      }
     });
   }
 }

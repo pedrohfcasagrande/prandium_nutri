@@ -10,4 +10,5 @@ public interface PrescriptionIssuanceRepository extends JpaRepository<Prescripti
     List<PrescriptionIssuance> findByAssessmentIdOrderByIssuedAtDesc(Long assessmentId);
     List<PrescriptionIssuance> findByClientIdOrderByIssuedAtDesc(Long clientId);
     Optional<PrescriptionIssuance> findFirstByPdfSha256(String hash);
+    List<PrescriptionIssuance> findByNutriIdOrderByIssuedAtDesc(Long nutriId);
 }
