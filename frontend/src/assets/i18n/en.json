@@ -170,7 +170,13 @@
     "viewAll": "View all notifications",
     "pageTitle": "Notifications",
     "pageSubtitle": "Your messages and updates",
-    "new": "New"
+    "new": "New",
+    "pushTitle": "Push notifications on this device",
+    "pushOn": "Active — you'll receive alerts even with the tab closed.",
+    "pushOff": "Disabled on this device.",
+    "pushDenied": "Blocked by the browser. Adjust in the site settings.",
+    "pushEnable": "Enable",
+    "pushDisable": "Disable"
   },
   "pendingMenus": {
     "title": "Menus pending approval",

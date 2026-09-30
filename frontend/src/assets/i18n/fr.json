@@ -170,7 +170,13 @@
     "viewAll": "Voir toutes les notifications",
     "pageTitle": "Notifications",
     "pageSubtitle": "Vos messages et mises à jour",
-    "new": "Nouveau"
+    "new": "Nouveau",
+    "pushTitle": "Notifications push sur cet appareil",
+    "pushOn": "Actives — vous recevrez les alertes même l'onglet fermé.",
+    "pushOff": "Désactivées sur cet appareil.",
+    "pushDenied": "Bloquées par le navigateur. Ajustez dans les paramètres du site.",
+    "pushEnable": "Activer",
+    "pushDisable": "Désactiver"
   },
   "pendingMenus": {
     "title": "Menus en attente d'approbation",

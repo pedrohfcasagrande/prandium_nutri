@@ -21,6 +21,7 @@ public class NotificationService {
     private final NotificationRepository repository;
     private final UserRepository userRepository;
     private final MailService mailService;
+    private final PushSender pushSender;
 
     /**
      * Grava a notificacao in-app e envia email para o mesmo user.
@@ -43,6 +44,12 @@ public class NotificationService {
                     mailService.send(u.getEmail(), title, body == null ? "" : body));
         } catch (Exception e) {
             log.warn("Falha ao enviar email da notificacao {}: {}", n.getId(), e.getMessage());
+        }
+        // Fase 9G-4: dispara push criptografado @Async — nao bloqueia o commit.
+        try {
+            pushSender.sendToUser(userId, title, body, entityType, entityId);
+        } catch (Exception e) {
+            log.warn("Falha ao disparar push da notificacao {}: {}", n.getId(), e.getMessage());
         }
         return n;
     }

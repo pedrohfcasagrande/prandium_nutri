@@ -628,4 +628,12 @@ Acoes instrumentadas: `LOGIN`, `REGISTER`, `MEAL_LOGGED`, `MEAL_DELETED`, `SUGGE
   - Entry points: (nutri) botão "Abrir chat" no `NutriClientsComponent` na row de cada cliente ACTIVE; (cliente) botão "Abrir chat" na `quickActions` do `DashboardComponent` quando `myNutritionists()` retorna algum ACTIVE. Notificação de nova mensagem já leva pro `/chat/{linkId}` via `notification-target`.
   - i18n: bloco `chat.*` em pt/en/fr (title/subtitle/back/empty/placeholder/read/openChat/unread/send+load errors/forbidden).
   - Backlog **9G-4**: push notifications reais (VAPID + service worker + `web-push` no backend).
+- **Fase 9G-4 (push notifications Web Push — 2026-09-29): OK**
+  - Backend: deps `nl.martijndwars:web-push:5.1.1` + `bcprov-jdk18on:1.78.1`. Migration V040 `push_subscriptions` (user_id, endpoint UNIQUE, p256dh, auth, user_agent) — 1 row por browser+device por user. `WebPushConfig` cria bean `PushService` só se `PRANDIUMNUTRI_PUSH_VAPID_PUBLIC_KEY/_PRIVATE_KEY` presentes; caso contrário, o `PushSender` no-opa (in-app + email continuam).
+  - `PushSubscriptionService`: upsert por endpoint (idempotente — mesmo browser reregistrando vira update). `PushSender.sendToUser` é `@Async` — não bloqueia o commit do `NotificationService.notify`. Se um endpoint responde 404/410 no send, a row é removida na hora.
+  - Payload JSON: `{ title, body, frontendUrl, entityType?, entityId? }` — SW mapeia `entityType`+`entityId` pra rota (espelha `notification-target.ts` do frontend).
+  - Endpoints: `GET /api/me/push-subscriptions/config` (retorna VAPID public + `enabled`), `POST /api/me/push-subscriptions` (upsert), `DELETE ?endpoint=...` (unsubscribe).
+  - Frontend: `PushService` (Angular) registra `/sw.js` no bootstrap do `AppComponent`; sinais `supported`/`permission`/`subscribed`. `NotificationsComponent` ganha card com toggle "Ativar/Desativar" (respeita `permission==='denied'` — mostra hint pra ajustar no browser). `src/sw.js` publicado no root via `angular.json.assets` glob.
+  - Testes: `PushSubscriptionServiceTest` (5 casos — persiste, idempotente por endpoint, rejeita incompleto, unsubscribe remove, listForUser isola). Suite backend em **169/169**, frontend em 60/60.
+  - Ops: `.env.example` documenta `PRANDIUMNUTRI_PUSH_VAPID_*`. Gerar par com `npx web-push generate-vapid-keys`.
 - Fase 8 (geolocalizacao restaurantes): backlog

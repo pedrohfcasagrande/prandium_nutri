@@ -9,6 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../services/api.service';
 import { NotificationPollService } from '../../services/notification-poll.service';
 import { AuthService } from '../../services/auth.service';
+import { PushService } from '../../services/push.service';
 import { AppNotification } from '../../models/models';
 import { notificationTarget } from '../../services/notification-target';
 
@@ -33,6 +34,36 @@ import { notificationTarget } from '../../services/notification-target';
           </button>
         }
       </div>
+
+      @if (push.supported()) {
+        <mat-card class="push-card card-surface">
+          <mat-icon>{{ push.subscribed() ? 'notifications_active' : 'notifications_off' }}</mat-icon>
+          <div class="push-text">
+            <strong>{{ 'notifications.pushTitle' | translate }}</strong>
+            <div class="text-muted">
+              @if (push.subscribed()) {
+                {{ 'notifications.pushOn' | translate }}
+              } @else if (push.permission() === 'denied') {
+                {{ 'notifications.pushDenied' | translate }}
+              } @else {
+                {{ 'notifications.pushOff' | translate }}
+              }
+            </div>
+          </div>
+          @if (push.subscribed()) {
+            <button mat-stroked-button (click)="disablePush()">
+              <mat-icon>notifications_off</mat-icon>
+              {{ 'notifications.pushDisable' | translate }}
+            </button>
+          } @else if (push.permission() !== 'denied') {
+            <button mat-flat-button color="primary" (click)="enablePush()"
+                    [disabled]="working()">
+              <mat-icon>notifications_active</mat-icon>
+              {{ 'notifications.pushEnable' | translate }}
+            </button>
+          }
+        </mat-card>
+      }
 
       @if (items().length === 0) {
         <div class="empty card-surface">
@@ -79,6 +110,14 @@ import { notificationTarget } from '../../services/notification-target';
     .icon-rejected { color: #ef4444; }
     .icon-submitted { color: #3b82f6; }
     .icon-generic { color: var(--nt-text-muted); }
+    .push-card {
+      padding: 14px 20px !important;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 14px;
+      border-left: 4px solid var(--nt-primary) !important;
+      > mat-icon { font-size: 28px; width: 28px; height: 28px; color: var(--nt-primary); flex-shrink: 0; }
+      .push-text { flex: 1; min-width: 0; }
+    }
   `]
 })
 export class NotificationsComponent implements OnInit {
@@ -86,11 +125,25 @@ export class NotificationsComponent implements OnInit {
   private router = inject(Router);
   private auth = inject(AuthService);
   polls = inject(NotificationPollService);
+  push = inject(PushService);
+  working = signal<boolean>(false);
 
   items = signal<AppNotification[]>([]);
 
   ngOnInit() {
     this.load();
+  }
+
+  async enablePush() {
+    this.working.set(true);
+    await this.push.subscribe();
+    this.working.set(false);
+  }
+
+  async disablePush() {
+    this.working.set(true);
+    await this.push.unsubscribe();
+    this.working.set(false);
   }
 
   load() {

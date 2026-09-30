@@ -20,6 +20,7 @@ import { NotificationPollService } from './services/notification-poll.service';
 import { NotificationBellComponent } from './components/notification-bell.component';
 import { PracticeSwitcherComponent } from './components/practice-switcher.component';
 import { PracticeService } from './services/practice.service';
+import { PushService } from './services/push.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { effect } from '@angular/core';
 
@@ -422,8 +423,12 @@ export class AppComponent {
   private router = inject(Router);
   private notif = inject(NotificationPollService);
   private practices = inject(PracticeService);
+  private push = inject(PushService);
 
   constructor() {
+    // Fase 9G-4: registra SW cedo pra o browser ja ter o registration ativo
+    // quando o user clicar "Ativar notificacoes"
+    this.push.init();
     // liga o polling de notificacoes assim que o user esta autenticado
     effect(() => {
       if (this.auth.isAuthenticated()) this.notif.start();

@@ -170,7 +170,13 @@
     "viewAll": "Ver todas as notificações",
     "pageTitle": "Notificações",
     "pageSubtitle": "Suas mensagens e atualizações",
-    "new": "Nova"
+    "new": "Nova",
+    "pushTitle": "Notificações push neste dispositivo",
+    "pushOn": "Ativas — você receberá alertas mesmo com a aba fechada.",
+    "pushOff": "Desativadas neste dispositivo.",
+    "pushDenied": "Bloqueado pelo navegador. Ajuste nas configurações do site.",
+    "pushEnable": "Ativar",
+    "pushDisable": "Desativar"
   },
   "pendingMenus": {
     "title": "Cardápios pendentes de aprovação",
