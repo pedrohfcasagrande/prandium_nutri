@@ -13,6 +13,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     List<ChatMessage> findByLinkIdOrderByCreatedAtAsc(Long linkId);
 
+    java.util.Optional<ChatMessage> findFirstByLinkIdOrderByCreatedAtDesc(Long linkId);
+
     @Query("select count(m) from ChatMessage m where m.link.id = :linkId " +
            "and m.sender.id <> :readerId and m.readAt is null")
     long countUnreadForReader(@Param("linkId") Long linkId, @Param("readerId") Long readerId);

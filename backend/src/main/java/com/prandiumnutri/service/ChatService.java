@@ -7,6 +7,7 @@ import com.prandiumnutri.domain.NutritionistClientLink;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.ChatMessageDto;
 import com.prandiumnutri.dto.ChatMetaDto;
+import com.prandiumnutri.dto.ConversationSummaryDto;
 import com.prandiumnutri.repository.ChatMessageRepository;
 import com.prandiumnutri.repository.NutritionistClientLinkRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,6 +101,65 @@ public class ChatService {
     @Transactional(readOnly = true)
     public long unreadTotal(Long userId) {
         return chatRepository.countUnreadTotalForUser(userId);
+    }
+
+    /**
+     * Summary de todos os links ACTIVE do user pro chat launcher (FAB).
+     * {@code filterPracticeId} opcional: quando nutri passa a practice ativa,
+     * filtra so vinculos daquela practice (evita ver clientes de outro contexto).
+     */
+    @Transactional(readOnly = true)
+    public List<ConversationSummaryDto> conversations(User requester, Long filterPracticeId) {
+        Long userId = requester.getId();
+        boolean isNutri = requester.getRole() == com.prandiumnutri.domain.Role.NUTRITIONIST;
+        List<NutritionistClientLink> links = isNutri
+                ? linkRepository.findByNutritionistIdOrderByInvitedAtDesc(userId)
+                : linkRepository.findByClientIdOrderByInvitedAtDesc(userId);
+
+        LocalDateTime onlineCutoff = LocalDateTime.now().minus(Duration.ofMinutes(2));
+
+        return links.stream()
+                .filter(l -> l.getStatus() == LinkStatus.ACTIVE)
+                .filter(l -> !isNutri || filterPracticeId == null
+                        || (l.getPractice() != null && l.getPractice().getId().equals(filterPracticeId)))
+                .map(l -> toSummary(l, userId, isNutri, onlineCutoff))
+                .sorted(Comparator
+                        .comparingLong(ConversationSummaryDto::unreadCount).reversed()
+                        .thenComparing(ConversationSummaryDto::lastMessageAt,
+                                Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+    }
+
+    private ConversationSummaryDto toSummary(NutritionistClientLink link, Long readerId,
+                                              boolean requesterIsNutri, LocalDateTime onlineCutoff) {
+        User counterparty = requesterIsNutri ? link.getClient() : link.getNutritionist();
+        var lastMsg = chatRepository.findFirstByLinkIdOrderByCreatedAtDesc(link.getId());
+        long unread = chatRepository.countUnreadForReader(link.getId(), readerId);
+        var practice = link.getPractice();
+        String practiceLabel = practice == null ? null
+                : (practice.getCompany() != null ? practice.getCompany().getName() : "Particular");
+        Long companyId = practice != null && practice.getCompany() != null
+                ? practice.getCompany().getId() : null;
+        boolean online = counterparty != null
+                && counterparty.getLastSeenAt() != null
+                && counterparty.getLastSeenAt().isAfter(onlineCutoff);
+        String preview = lastMsg.map(m -> {
+            String c = m.getContent();
+            return c != null && c.length() > 80 ? c.substring(0, 80) + "…" : c;
+        }).orElse(null);
+        return new ConversationSummaryDto(
+                link.getId(),
+                counterparty != null ? counterparty.getId() : null,
+                counterparty != null ? counterparty.getName() : "(desconhecido)",
+                requesterIsNutri ? "USER" : "NUTRITIONIST",
+                online,
+                practice != null ? practice.getId() : null,
+                practiceLabel,
+                companyId,
+                unread,
+                preview,
+                lastMsg.map(ChatMessage::getCreatedAt).orElse(null)
+        );
     }
 
     @Transactional(readOnly = true)

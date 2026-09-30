@@ -488,6 +488,11 @@
     "withPrefix": "Chat with",
     "practiceMismatch": "You switched to another profile ({{practice}}) — returning to the clients list.",
     "back": "Back",
+    "launcher": {
+      "title": "Conversations",
+      "empty": "No conversations available yet.",
+      "noMessages": "No messages yet"
+    },
     "loading": "Loading conversation...",
     "empty": "No messages yet. Send the first one!",
     "placeholder": "Type a message...",

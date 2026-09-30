@@ -6,7 +6,7 @@ import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
-  ChatMessage, ChatMeta,
+  ChatMessage, ChatMeta, ConversationSummary,
   ClientChecklist,
   Consultation,
   PdfChangeRequest, PdfChangeRequestStatus,
@@ -118,6 +118,12 @@ export class ApiService {
 
   chatUnreadTotal(): Observable<{ count: number }> {
     return this.http.get<{ count: number }>(`${this.base}/chat/unread`);
+  }
+
+  chatConversations(practiceId?: number | null): Observable<ConversationSummary[]> {
+    let params = new HttpParams();
+    if (practiceId != null) params = params.set('practiceId', practiceId);
+    return this.http.get<ConversationSummary[]>(`${this.base}/chat/conversations`, { params });
   }
 
   suggest(extraNotes?: string, scope: 'DAY' | 'WEEK' = 'DAY'): Observable<{ menu: string }> {

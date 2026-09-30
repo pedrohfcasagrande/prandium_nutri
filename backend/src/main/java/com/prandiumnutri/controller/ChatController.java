@@ -2,6 +2,7 @@ package com.prandiumnutri.controller;
 
 import com.prandiumnutri.dto.ChatMessageDto;
 import com.prandiumnutri.dto.ChatMetaDto;
+import com.prandiumnutri.dto.ConversationSummaryDto;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,12 @@ public class ChatController {
     @GetMapping("/unread")
     public Map<String, Long> unreadTotal() {
         return Map.of("count", chatService.unreadTotal(currentUser.id()));
+    }
+
+    @GetMapping("/conversations")
+    public List<ConversationSummaryDto> conversations(
+            @RequestParam(required = false) Long practiceId) {
+        return chatService.conversations(currentUser.get(), practiceId);
     }
 
     @GetMapping(value = "/{linkId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

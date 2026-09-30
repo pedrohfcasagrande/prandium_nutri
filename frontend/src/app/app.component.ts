@@ -19,6 +19,7 @@ import { ImpersonationService } from './services/impersonation.service';
 import { NotificationPollService } from './services/notification-poll.service';
 import { NotificationBellComponent } from './components/notification-bell.component';
 import { PracticeSwitcherComponent } from './components/practice-switcher.component';
+import { ChatLauncherComponent } from './components/chat-launcher.component';
 import { PracticeService } from './services/practice.service';
 import { PushService } from './services/push.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -31,7 +32,7 @@ import { effect } from '@angular/core';
     CommonModule, RouterOutlet, RouterLink, RouterLinkActive,
     MatToolbarModule, MatButtonModule, MatIconModule,
     MatSidenavModule, MatListModule, MatMenuModule, MatDividerModule, MatTooltipModule,
-    TranslateModule, NotificationBellComponent, PracticeSwitcherComponent
+    TranslateModule, NotificationBellComponent, PracticeSwitcherComponent, ChatLauncherComponent
   ],
   template: `
     @if (auth.isAuthenticated() && !isAuthRoute()) {
@@ -284,6 +285,9 @@ import { effect } from '@angular/core';
     } @else {
       <router-outlet />
     }
+
+    <!-- Fase 9G-2 refino: chat launcher flutuante (visibilidade controlada internamente) -->
+    <app-chat-launcher />
   `,
   styles: [`
     .app-container { height: 100vh; background: var(--nt-bg); }

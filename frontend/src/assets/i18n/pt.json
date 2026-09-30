@@ -488,6 +488,11 @@
     "withPrefix": "Chat com",
     "practiceMismatch": "Você trocou para outro perfil ({{practice}}) — voltando para a lista de clientes.",
     "back": "Voltar",
+    "launcher": {
+      "title": "Conversas",
+      "empty": "Nenhuma conversa disponível ainda.",
+      "noMessages": "Sem mensagens ainda"
+    },
     "loading": "Carregando conversa...",
     "empty": "Nenhuma mensagem ainda. Envie a primeira!",
     "placeholder": "Escreva uma mensagem...",

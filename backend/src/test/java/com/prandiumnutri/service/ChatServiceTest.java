@@ -2,6 +2,7 @@ package com.prandiumnutri.service;
 
 import com.prandiumnutri.domain.*;
 import com.prandiumnutri.dto.ChatMessageDto;
+import com.prandiumnutri.dto.ConversationSummaryDto;
 import com.prandiumnutri.repository.NutritionistClientLinkRepository;
 import com.prandiumnutri.repository.NutritionistPracticeRepository;
 import com.prandiumnutri.repository.PlanPriceRepository;
@@ -145,5 +146,57 @@ class ChatServiceTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> chatService.send(nutri, link.getId(), "x".repeat(2001)))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void conversations_returnsUnreadAndLastMessage() {
+        User nutri = makeUser(Role.NUTRITIONIST);
+        User c1 = makeUser(Role.USER);
+        User c2 = makeUser(Role.USER);
+        NutritionistClientLink l1 = activeLink(nutri, c1);
+        NutritionistClientLink l2 = activeLink(nutri, c2);
+
+        // c1: 2 msgs do cliente pro nutri (2 nao lidas), preview = "oi 2"
+        chatService.send(c1, l1.getId(), "oi 1");
+        chatService.send(c1, l1.getId(), "oi 2");
+        // c2: 1 msg do nutri pro cliente (0 nao lidas pro nutri, ele mesmo enviou)
+        chatService.send(nutri, l2.getId(), "oi c2");
+
+        List<ConversationSummaryDto> convs = chatService.conversations(nutri, null);
+        assertThat(convs).hasSize(2);
+        // ordem: quem tem nao lidas primeiro (l1)
+        assertThat(convs.get(0).linkId()).isEqualTo(l1.getId());
+        assertThat(convs.get(0).unreadCount()).isEqualTo(2L);
+        assertThat(convs.get(0).lastMessagePreview()).isEqualTo("oi 2");
+        assertThat(convs.get(0).counterpartyName()).isEqualTo(c1.getName());
+        assertThat(convs.get(1).linkId()).isEqualTo(l2.getId());
+        assertThat(convs.get(1).unreadCount()).isZero();
+    }
+
+    @Test
+    void conversations_filtersByPractice() {
+        User nutri = makeUser(Role.NUTRITIONIST);
+        User c1 = makeUser(Role.USER);
+        User c2 = makeUser(Role.USER);
+        NutritionistClientLink l1 = activeLink(nutri, c1);
+        NutritionistClientLink l2 = activeLink(nutri, c2);
+
+        var convsL1 = chatService.conversations(nutri, l1.getPractice().getId());
+        assertThat(convsL1).hasSize(1);
+        assertThat(convsL1.get(0).linkId()).isEqualTo(l1.getId());
+
+        var convsAll = chatService.conversations(nutri, null);
+        assertThat(convsAll).hasSize(2);
+    }
+
+    @Test
+    void conversations_skipsInactive() {
+        User nutri = makeUser(Role.NUTRITIONIST);
+        User client = makeUser(Role.USER);
+        NutritionistClientLink link = activeLink(nutri, client);
+        link.setStatus(LinkStatus.REVOKED_BY_NUTRI);
+        linkRepo.save(link);
+
+        assertThat(chatService.conversations(nutri, null)).isEmpty();
     }
 }

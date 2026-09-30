@@ -349,6 +349,20 @@ export interface ChatMeta {
   companyId: number | null;
 }
 
+export interface ConversationSummary {
+  linkId: number;
+  counterpartyId: number | null;
+  counterpartyName: string;
+  counterpartyRole: 'USER' | 'NUTRITIONIST';
+  counterpartyOnline: boolean;
+  practiceId: number | null;
+  practiceLabel: string | null;
+  companyId: number | null;
+  unreadCount: number;
+  lastMessagePreview: string | null;
+  lastMessageAt: string | null;
+}
+
 export interface ProgressEntry {
   id?: number;
   date: string;

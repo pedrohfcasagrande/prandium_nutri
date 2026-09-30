@@ -488,6 +488,11 @@
     "withPrefix": "Discussion avec",
     "practiceMismatch": "Vous avez changé de profil ({{practice}}) — retour à la liste des clients.",
     "back": "Retour",
+    "launcher": {
+      "title": "Conversations",
+      "empty": "Aucune conversation pour le moment.",
+      "noMessages": "Aucun message pour le moment"
+    },
     "loading": "Chargement de la conversation...",
     "empty": "Aucun message pour le moment. Envoyez le premier !",
     "placeholder": "Écrivez un message...",
