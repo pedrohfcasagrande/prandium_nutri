@@ -40,6 +40,62 @@ jobs:
           name: surefire-reports
           path: backend/target/surefire-reports/
 
+  backend-schema-smoke:
+    name: Backend schema (MySQL real)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: nutritracker_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Wait for MySQL
+        run: |
+          for i in $(seq 1 30); do
+            if mysqladmin ping -h 127.0.0.1 -uroot -proot --silent 2>/dev/null; then
+              echo "MySQL ready"; break
+            fi
+            echo "waiting for mysql... ($i)"
+            sleep 2
+          done
+
+      - name: Schema validation smoke (Flyway + Hibernate validate)
+        env:
+          SPRING_PROFILES_ACTIVE: ci-mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_NAME: nutritracker_ci
+          DB_USER: root
+          DB_PASS: root
+        run: mvn -B -ntp test -Dtest=SchemaValidationIT -DfailIfNoTests=false
+
+      - name: Upload surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-smoke-reports
+          path: backend/target/surefire-reports/
+
   frontend:
     name: Frontend (Angular)
     runs-on: ubuntu-latest

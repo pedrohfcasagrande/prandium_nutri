@@ -150,3 +150,29 @@ spring:
       ddl-auto: create-drop
   flyway:
     enabled: false
+
+---
+# --------------------------------------------------------------------
+# Perfil CI-MYSQL: smoke test contra MySQL real com Flyway aplicado.
+# Usado pelo job "backend-schema-smoke" no CI. Roda so o
+# SchemaValidationIT: boota o contexto e valida entities vs schema
+# gerado pelas migrations. Detecta discrepancias que o H2 do perfil
+# test mascara (naming quirks, tipos CHAR vs VARCHAR, etc).
+# --------------------------------------------------------------------
+spring:
+  config:
+    activate:
+      on-profile: ci-mysql
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:nutritracker_ci}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: ${DB_USER:root}
+    password: ${DB_PASS:root}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
