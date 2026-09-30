@@ -6,7 +6,7 @@ import {
   AdminCompany, AdminMetricsOverview, AdminUser, AppAlert, AppNotification,
   Appointment, AppointmentRequest, AssessmentSelfFill, AssessmentSnapshot, ClientAssessment,
   ClientLink, Company, CompanyClient, CompanyInvite, CompanyMember, CompanyMemberRole,
-  ChatMessage,
+  ChatMessage, ChatMeta,
   ClientChecklist,
   Consultation,
   PdfChangeRequest, PdfChangeRequestStatus,
@@ -102,6 +102,10 @@ export class ApiService {
   /** Fase 9G-1: chat cliente ↔ nutri (uma thread por linkId). */
   listChat(linkId: number): Observable<ChatMessage[]> {
     return this.http.get<ChatMessage[]>(`${this.base}/chat/${linkId}`);
+  }
+
+  chatMeta(linkId: number): Observable<ChatMeta> {
+    return this.http.get<ChatMeta>(`${this.base}/chat/${linkId}/meta`);
   }
 
   sendChat(linkId: number, content: string): Observable<ChatMessage> {

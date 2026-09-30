@@ -485,6 +485,8 @@
   "chat": {
     "title": "Conversa",
     "subtitle": "Mensagens diretas entre você e o profissional",
+    "withPrefix": "Chat com",
+    "practiceMismatch": "Você trocou para outro perfil ({{practice}}) — voltando para a lista de clientes.",
     "back": "Voltar",
     "loading": "Carregando conversa...",
     "empty": "Nenhuma mensagem ainda. Envie a primeira!",

@@ -1,6 +1,7 @@
 package com.prandiumnutri.controller;
 
 import com.prandiumnutri.dto.ChatMessageDto;
+import com.prandiumnutri.dto.ChatMetaDto;
 import com.prandiumnutri.security.CurrentUser;
 import com.prandiumnutri.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,11 @@ public class ChatController {
     @GetMapping("/{linkId}")
     public List<ChatMessageDto> list(@PathVariable Long linkId) {
         return chatService.list(currentUser.get(), linkId);
+    }
+
+    @GetMapping("/{linkId}/meta")
+    public ChatMetaDto meta(@PathVariable Long linkId) {
+        return chatService.meta(currentUser.get(), linkId);
     }
 
     @PostMapping("/{linkId}")

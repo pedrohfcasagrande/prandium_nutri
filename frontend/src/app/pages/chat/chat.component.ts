@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal, ViewChild, ElementRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
@@ -8,11 +8,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { TranslateModule } from '@ngx-translate/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { ChatMessage } from '../../models/models';
+import { PracticeService } from '../../services/practice.service';
+import { ChatMessage, ChatMeta } from '../../models/models';
 
 @Component({
   selector: 'app-chat',
@@ -20,14 +22,33 @@ import { ChatMessage } from '../../models/models';
   imports: [
     CommonModule, FormsModule, RouterLink,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatFormFieldModule, MatInputModule, TranslateModule
+    MatFormFieldModule, MatInputModule, MatSnackBarModule, TranslateModule
   ],
   template: `
     <div class="page">
       <div class="page-header">
         <div>
-          <h1>{{ 'chat.title' | translate }}</h1>
-          <p>{{ 'chat.subtitle' | translate }}</p>
+          @if (meta(); as m) {
+            <h1 class="chat-title">
+              <mat-icon class="counterparty-icon">
+                {{ m.counterpartyRole === 'NUTRITIONIST' ? 'medical_services' : 'person' }}
+              </mat-icon>
+              {{ 'chat.withPrefix' | translate }} {{ m.counterpartyName }}
+            </h1>
+            <p class="chat-context">
+              @if (m.practiceLabel) {
+                <span class="practice-chip"
+                      [class.company]="!!m.companyId"
+                      [class.particular]="!m.companyId">
+                  <mat-icon>{{ m.companyId ? 'business' : 'person_outline' }}</mat-icon>
+                  {{ m.practiceLabel }}
+                </span>
+              }
+            </p>
+          } @else {
+            <h1>{{ 'chat.title' | translate }}</h1>
+            <p>{{ 'chat.subtitle' | translate }}</p>
+          }
         </div>
         @if (backLink()) {
           <a mat-stroked-button [routerLink]="backLink()">
@@ -88,6 +109,22 @@ import { ChatMessage } from '../../models/models';
     </div>
   `,
   styles: [`
+    .chat-title { display: flex; align-items: center; gap: 8px; }
+    .counterparty-icon { color: var(--nt-primary); font-size: 28px; width: 28px; height: 28px; }
+    .chat-context { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .practice-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 0.8rem; font-weight: 500;
+      mat-icon { font-size: 14px; width: 14px; height: 14px; }
+    }
+    .practice-chip.particular {
+      background: var(--nt-surface-2); color: var(--nt-text-muted);
+    }
+    .practice-chip.company {
+      background: var(--nt-primary-soft); color: var(--nt-primary-dark);
+    }
+
     .chat-card { padding: 0 !important; display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 440px; }
     .messages {
       flex: 1; overflow-y: auto; padding: 20px;
@@ -138,9 +175,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private practices = inject(PracticeService);
+  private snack = inject(MatSnackBar);
+  private translate = inject(TranslateService);
 
   linkId!: number;
   messages = signal<ChatMessage[]>([]);
+  meta = signal<ChatMeta | null>(null);
   loading = signal<boolean>(true);
   sending = signal<boolean>(false);
   error = signal<string | null>(null);
@@ -155,7 +197,21 @@ export class ChatComponent implements OnInit, OnDestroy {
     effect(() => {
       this.messages();
       queueMicrotask(() => this.scrollToBottom());
-    });
+    }, { allowSignalWrites: true });
+    // Nutri: se o practice switcher muda pra outro perfil que nao contem este link,
+    // sai da tela (com aviso). Sem essa guarda, o nutri fica "conversando" num contexto
+    // que nao esta mais selecionado — inconsistente.
+    effect(() => {
+      const m = this.meta();
+      const active = this.practices.activePracticeId();
+      if (!m || this.auth.currentUser()?.role !== 'NUTRITIONIST') return;
+      if (m.practiceId != null && active != null && m.practiceId !== active) {
+        const msg = this.translate.instant('chat.practiceMismatch',
+          { practice: m.practiceLabel ?? '' });
+        this.snack.open(msg, 'OK', { duration: 4000 });
+        this.router.navigate(['/nutritionist/clients']);
+      }
+    }, { allowSignalWrites: true });
   }
 
   myId(): number | null {
@@ -171,6 +227,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.linkId = Number(this.route.snapshot.paramMap.get('linkId'));
     if (!Number.isFinite(this.linkId)) return;
+    this.api.chatMeta(this.linkId).subscribe({
+      next: m => this.meta.set(m),
+      error: () => {}
+    });
     this.load();
     this.connectStream();
   }

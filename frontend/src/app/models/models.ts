@@ -339,6 +339,16 @@ export interface ChatMessage {
   readAt: string | null;
 }
 
+export interface ChatMeta {
+  linkId: number;
+  counterpartyId: number | null;
+  counterpartyName: string;
+  counterpartyRole: 'USER' | 'NUTRITIONIST';
+  practiceId: number | null;
+  practiceLabel: string | null;
+  companyId: number | null;
+}
+
 export interface ProgressEntry {
   id?: number;
   date: string;

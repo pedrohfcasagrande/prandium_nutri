@@ -6,6 +6,7 @@ import com.prandiumnutri.domain.NotificationType;
 import com.prandiumnutri.domain.NutritionistClientLink;
 import com.prandiumnutri.domain.User;
 import com.prandiumnutri.dto.ChatMessageDto;
+import com.prandiumnutri.dto.ChatMetaDto;
 import com.prandiumnutri.repository.ChatMessageRepository;
 import com.prandiumnutri.repository.NutritionistClientLinkRepository;
 import lombok.RequiredArgsConstructor;
@@ -97,6 +98,27 @@ public class ChatService {
     @Transactional(readOnly = true)
     public long unreadTotal(Long userId) {
         return chatRepository.countUnreadTotalForUser(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public ChatMetaDto meta(User requester, Long linkId) {
+        NutritionistClientLink link = authorized(linkId, requester.getId());
+        boolean requesterIsNutri = link.getNutritionist().getId().equals(requester.getId());
+        User counterparty = requesterIsNutri ? link.getClient() : link.getNutritionist();
+        var practice = link.getPractice();
+        String practiceLabel = practice == null ? null
+                : (practice.getCompany() != null ? practice.getCompany().getName() : "Particular");
+        Long companyId = practice != null && practice.getCompany() != null
+                ? practice.getCompany().getId() : null;
+        return new ChatMetaDto(
+                link.getId(),
+                counterparty != null ? counterparty.getId() : null,
+                counterparty != null ? counterparty.getName() : "(desconhecido)",
+                requesterIsNutri ? "USER" : "NUTRITIONIST",
+                practice != null ? practice.getId() : null,
+                practiceLabel,
+                companyId
+        );
     }
 
     // ---------- SSE ----------
