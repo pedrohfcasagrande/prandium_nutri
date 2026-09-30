@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard, authGuard, companyGuard, guestGuard, nutritionistGuard, profileSetupGuard } from './services/guards';
+import { adminGuard, authGuard, companyGuard, guestGuard, loggedInGuard, nutritionistGuard, profileSetupGuard } from './services/guards';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -100,7 +100,7 @@ export const routes: Routes = [
   },
   {
     path: 'chat/:linkId',
-    canActivate: [authGuard],
+    canActivate: [loggedInGuard],
     loadComponent: () => import('./pages/chat/chat.component').then(m => m.ChatComponent)
   },
   {

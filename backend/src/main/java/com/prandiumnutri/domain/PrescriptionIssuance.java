@@ -47,7 +47,7 @@ public class PrescriptionIssuance {
     @Column(name = "requester_role", nullable = false, length = 20)
     private String requesterRole;   // 'NUTRITIONIST' ou 'CLIENT'
 
-    @Column(name = "pdf_sha256", nullable = false, length = 64)
+    @Column(name = "pdf_sha256", nullable = false, columnDefinition = "CHAR(64)")
     private String pdfSha256;
 
     @Column(name = "pdf_size_bytes", nullable = false)

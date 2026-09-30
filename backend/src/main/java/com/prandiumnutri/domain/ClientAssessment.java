@@ -103,10 +103,13 @@ public class ClientAssessment {
     @Column(length = 30) private String tmbFormula;    // MIFFLIN / HARRIS_BENEDICT / KATCH_MCARDLE
     private Double activityFactor;                     // override manual
     private Double targetCalories;
-    private Double targetProteinG;
-    private Double targetCarbsG;
-    private Double targetFatG;
+    @Column(name = "target_protein_g") private Double targetProteinG;
+    @Column(name = "target_carbs_g")   private Double targetCarbsG;
+    @Column(name = "target_fat_g")     private Double targetFatG;
     private Double targetWaterMl;
+    // Hibernate 6 naming produz "proteingper_kg" para camelCase com letra unica —
+    // forcamos o nome pra bater com a migration V027 (protein_g_per_kg).
+    @Column(name = "protein_g_per_kg")
     private Double proteinGPerKg;
     private Double fatPct;
     private Double calorieDeltaPct;
@@ -122,9 +125,9 @@ public class ClientAssessment {
     private Double hdl;
     private Double triglycerides;
     private Double tsh;
-    @Column(name = "t4_free") private Double t4Free;
-    private Double vitaminD;
-    private Double vitaminB12;
+    @Column(name = "t4_free")     private Double t4Free;
+    @Column(name = "vitamin_d")   private Double vitaminD;
+    @Column(name = "vitamin_b12") private Double vitaminB12;
     private Double iron;
     private Double ferritin;
     private Double crp;

@@ -31,6 +31,18 @@ export const authGuard: CanActivateFn = () => {
   return true;
 };
 
+/**
+ * Guard "puro" — só exige autenticação. Não gata por role nem force impersonation.
+ * Usado por features cross-role como o chat, onde nutri e cliente compartilham a
+ * mesma tela (thread por linkId).
+ */
+export const loggedInGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (!auth.isAuthenticated()) { router.navigate(['/login']); return false; }
+  return true;
+};
+
 export const guestGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
