@@ -6,6 +6,7 @@
 backend/target/
 backend/.mvn/
 backend/HELP.md
+backend/src/main/resources/application-local.yml
 
 # Frontend
 frontend/node_modules/
@@ -19,3 +20,4 @@ Thumbs.db
 
 # Env
 .env
+.env.prod

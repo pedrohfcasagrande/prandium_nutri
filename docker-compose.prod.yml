@@ -1,0 +1,122 @@
+# Producao: docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+# Caddy termina TLS (Let's Encrypt automatico) e encaminha para o nginx do frontend,
+# que por sua vez faz proxy de /api para o backend. Nenhuma porta de app exposta ao host.
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: prandium-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+  mysql:
+    image: mysql:8.4
+    container_name: prandium-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    command: --default-authentication-plugin=caching_sha2_password --innodb-buffer-pool-size=256M
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # sem "ports": acessivel so pela rede interna do compose
+
+  backend:
+    build: ./backend
+    container_name: prandium-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70"
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      CORS_ALLOWED_ORIGINS: https://${DOMAIN}
+      FRONTEND_URL: https://${DOMAIN}
+      CHECKOUT_SUCCESS_URL: https://${DOMAIN}/billing?checkout=success
+      CHECKOUT_CANCEL_URL: https://${DOMAIN}/pricing?checkout=canceled
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-flash-lite-latest}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN}
+      MP_WEBHOOK_SECRET: ${MP_WEBHOOK_SECRET}
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
+      MAIL_FROM: ${MAIL_FROM}
+      SPRING_MAIL_HOST: ${SMTP_HOST}
+      SPRING_MAIL_PORT: ${SMTP_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SMTP_USER}
+      SPRING_MAIL_PASSWORD: ${SMTP_PASS}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      PRANDIUMNUTRI_PUSH_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      PRANDIUMNUTRI_PUSH_VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      PRANDIUMNUTRI_PUSH_VAPID_SUBJECT: mailto:${MAIL_FROM}
+      PRANDIUMNUTRI_PUSH_FRONTEND_URL: https://${DOMAIN}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  frontend:
+    build: ./frontend
+    container_name: prandium-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # Backup diario do MySQL para ./backups (sincroniza essa pasta para fora do servidor:
+  # rclone para Backblaze B2 / Hetzner Storage Box / S3). Mantem 14 dias.
+  mysql-backup:
+    image: mysql:8.4
+    container_name: prandium-mysql-backup
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c 'while true; do
+        mysqldump -h mysql -u"$$DB_USER" -p"$$DB_PASS" --single-transaction --routines "$$DB_NAME"
+          | gzip > /backups/$$DB_NAME-$$(date +%F-%H%M).sql.gz
+        && find /backups -name "*.sql.gz" -mtime +14 -delete;
+        sleep 86400; done'
+
+volumes:
+  mysql_data:
+  caddy_data:
+  caddy_config:

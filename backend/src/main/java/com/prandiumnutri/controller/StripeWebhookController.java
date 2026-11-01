@@ -15,11 +15,14 @@ public class StripeWebhookController {
 
     private final PaymentWebhookService webhookService;
     private final String signingSecret;
+    private final boolean allowUnsigned;
 
     public StripeWebhookController(PaymentWebhookService webhookService,
-                                    @Value("${prandiumnutri.stripe.webhook-secret:}") String signingSecret) {
+                                    @Value("${prandiumnutri.stripe.webhook-secret:}") String signingSecret,
+                                    @Value("${prandiumnutri.stripe.allow-unsigned-webhooks:false}") boolean allowUnsigned) {
         this.webhookService = webhookService;
         this.signingSecret = signingSecret;
+        this.allowUnsigned = allowUnsigned;
     }
 
     @PostMapping
@@ -27,11 +30,20 @@ public class StripeWebhookController {
             @RequestBody String payload,
             @RequestHeader(value = "Stripe-Signature", required = false) String signature) {
         Event event;
+        boolean secretConfigured = signingSecret != null && !signingSecret.isBlank();
+        if (secretConfigured && (signature == null || signature.isBlank())) {
+            log.warn("Stripe webhook rejeitado: header Stripe-Signature ausente");
+            return ResponseEntity.badRequest().body("missing_signature");
+        }
+        if (!secretConfigured && !allowUnsigned) {
+            log.error("Stripe webhook rejeitado: STRIPE_WEBHOOK_SECRET nao configurado e allow-unsigned-webhooks=false");
+            return ResponseEntity.status(503).body("webhook_not_configured");
+        }
         try {
-            if (signingSecret != null && !signingSecret.isBlank() && signature != null) {
+            if (secretConfigured) {
                 event = Webhook.constructEvent(payload, signature, signingSecret);
             } else {
-                log.warn("Stripe webhook sem validacao de assinatura (secret ausente)");
+                log.warn("Stripe webhook sem validacao de assinatura (apenas dev/test)");
                 event = com.stripe.net.ApiResource.GSON.fromJson(payload, Event.class);
             }
         } catch (Exception e) {

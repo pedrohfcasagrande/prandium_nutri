@@ -44,6 +44,9 @@ prandiumnutri:
   stripe:
     secret-key: ${STRIPE_SECRET_KEY:}
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    allow-unsigned-webhooks: false   # sobrescrito para true apenas em dev/test
+  swagger:
+    public: false                    # sobrescrito para true apenas em dev/sandbox
   mercadopago:
     access-token: ${MP_ACCESS_TOKEN:}
     webhook-secret: ${MP_WEBHOOK_SECRET:}
@@ -79,6 +82,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+prandiumnutri:
+  stripe:
+    allow-unsigned-webhooks: true
+  swagger:
+    public: true
 
 ---
 # --------------------------------------------------------------------
@@ -105,6 +113,9 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+prandiumnutri:
+  swagger:
+    public: true
 
 ---
 # --------------------------------------------------------------------
@@ -131,6 +142,28 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+# Em prod estas variaveis sao OBRIGATORIAS (sem default): o boot falha se faltarem.
+prandiumnutri:
+  jwt:
+    secret: ${JWT_SECRET}
+  admin:
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  reset:
+    frontend-url: ${FRONTEND_URL}
+  checkout:
+    success-url: ${CHECKOUT_SUCCESS_URL}
+    cancel-url: ${CHECKOUT_CANCEL_URL}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 ---
 # --------------------------------------------------------------------
@@ -150,6 +183,9 @@ spring:
       ddl-auto: create-drop
   flyway:
     enabled: false
+prandiumnutri:
+  stripe:
+    allow-unsigned-webhooks: true
 
 ---
 # --------------------------------------------------------------------

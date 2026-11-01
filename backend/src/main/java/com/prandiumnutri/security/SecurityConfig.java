@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,6 +30,9 @@ public class SecurityConfig {
 
     @Value("${prandiumnutri.cors.allowed-origins}")
     private String allowedOrigins;
+
+    @Value("${prandiumnutri.swagger.public:false}")
+    private boolean swaggerPublic;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -58,10 +62,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/pricing/**").permitAll()
                 .requestMatchers("/api/onboarding/**").permitAll()
                 .requestMatchers("/api/pdf-verify/**").permitAll()   // Fase 9D-3: verificacao publica de PDF
+                .requestMatchers("/api/webhooks/**").permitAll()     // Stripe / Mercado Pago: autenticados por assinatura
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/actuator/health", "/error").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                                 "/swagger-resources/**", "/webjars/**").permitAll()
+                                 "/swagger-resources/**", "/webjars/**")
+                    .access((auth, ctx) -> new AuthorizationDecision(swaggerPublic))
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
